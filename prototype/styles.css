@@ -488,5 +488,3 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .pick-check { flex: none; display: flex; color: var(--charcoal-50); }
 .ctx-item[aria-selected="true"] .pick-check { color: var(--charcoal); }
 .pick-note { padding: 2px 8px 4px; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }
-.pick-foot { position: sticky; bottom: -6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 4px 2px 8px; background: #fff; font-size: 11px; color: var(--charcoal-light); }
-.wf-done { height: 24px; display: flex; align-items: center; padding: 0 12px; border-radius: 9999px; background: var(--charcoal); color: #fff; font-size: 11px; line-height: 16px; font-weight: 600; }

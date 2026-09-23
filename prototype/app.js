@@ -787,7 +787,8 @@ class App extends Component {
   }
 
   // Who a workflow runs for: the context picker's popover, rows and search, but you can pick
-  // several, and groups (Needs you, Individuals…) select all their clients at once.
+  // several, and groups (Needs you, Individuals…) select all their clients at once. Each click
+  // applies at once (the pill shows the count), so there's no Done: it closes like any popover.
   renderRunPicker(allClients) {
     const st = this.state;
     const clients = allClients.filter((c) => !st.wfExclude.includes(c.id));
@@ -825,10 +826,6 @@ class App extends Component {
             ${check(sel.has(c.id))}
           </button>`)}
         ${q && !shown.length && html`<div class="no-match">No client matches “${st.wfClientQ}”</div>`}
-        <div class="menu-foot pick-foot">
-          <span>${sel.size ? `${sel.size} selected` : 'None selected'}</span>
-          <button class="wf-done" onClick=${() => this.setState({ wfChoosing: false })}>Done</button>
-        </div>
       </div>`;
   }
 
