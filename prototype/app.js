@@ -1232,9 +1232,9 @@ class App extends Component {
             <div class="toolbar">
               <div class="toggle" role="tablist">
                 <button role="tab" aria-selected=${isClients} onClick=${() => this.setTab('clients')}><${Icon} name="users" />Clients</button>
-                <button role="tab" aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}><${Icon} name="workflow" />Workflows</button>
+                <button role="tab" aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}><${Icon} name="workflow" />Running</button>
               </div>
-              ${I('library', 'Workflow library', () => this.openWf({ full: true }), 'round-btn')}
+              ${I('library', 'Library', null, 'round-btn')}
               ${I('messagePlus', 'New thread', () => this.clearScope(), 'round-btn')}
             </div>
 
@@ -1266,8 +1266,8 @@ class App extends Component {
                                   </button>`)}`)}
                             </div>`}
                         </span>${I('plus', 'Add client')}</div>`
-                  : html`<span class="label">Workflows</span>
-                      <div class="head-icons">${I('search', 'Search workflows')}${I('plus', 'Start a workflow', () => this.openWf())}</div>`}
+                  : html`<span class="label">Running</span>
+                      <div class="head-icons">${I('search', 'Search running work')}${I('plus', 'Start a workflow', () => this.openWf())}</div>`}
               </div>
               ${isClients && activeFilter && html`
                 <div class="filter-bar">
@@ -1286,11 +1286,11 @@ class App extends Component {
                       <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>`
                   : html`
                       <div class="list-section across-clients">
-                        <div class="group-label">Running across clients</div>
+                        <div class="group-label">Across clients</div>
                         ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
                       </div>
                       <div class="list-section single-client">
-                        <div class="group-label">Running for one client</div>
+                        <div class="group-label">For one client</div>
                         ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}
                       </div>`}
               </div>
