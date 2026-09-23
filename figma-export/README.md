@@ -50,7 +50,9 @@ flattened away. One naming scheme throughout:
 - **A plain noun** for pieces used in many places: `Client row`,
   `Thread row`, `Form badge`, `Needs-you dot`, `Tab`, `Icon button`,
   `Primary button`, `Workflow chip`.
-- **Icon / name** for icons (`Icon / workflow`, `Icon / x`).
+- **Icon / name** for icons (`Icon / workflow`, `Icon / x`). Icons come in three
+  sizes, 12, 14 and 16, and each keeps an invisible `Bounds` square so Figma
+  measures the icon's box, not just its lines.
 - **Fill** and **Border** for a group's own background shapes.
 - Text layers are named by their text.
 

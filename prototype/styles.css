@@ -120,7 +120,7 @@ img { display: block; }
 .avatar { position: relative; width: 20px; height: 20px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 9999px; }
 .avatar-icon { display: flex; color: var(--charcoal); }
 .avatar-check {
-  width: 15px; height: 15px; display: none; align-items: center; justify-content: center;
+  width: 16px; height: 16px; display: none; align-items: center; justify-content: center;
   border-radius: 9999px; border: 0.5px solid rgba(36, 40, 44, 0.3); color: rgba(36, 40, 44, 0.25);
 }
 .row:hover .avatar-icon, .doc-row:hover .avatar-icon { display: none; }

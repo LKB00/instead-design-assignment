@@ -46,6 +46,8 @@ const PATHS = {
   sparkles: html`<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z" />`,
 };
 
+// Three icon sizes on a 2-pt grid: 12 small (inline: ×, chevrons, checks, arrows, pill icons),
+// 14 default (rows and buttons, as in Instead), 16 large (folders, header actions).
 const Icon = ({ name, size = 14, stroke = 1.5 }) => html`
   <svg class=${`i-${name}`} width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width=${stroke} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name]}</svg>`;
@@ -931,7 +933,7 @@ class App extends Component {
     const empty = st.wfTab === 'mine' && !q
       ? html`<div class="wf-empty">Nothing here yet. Describe the work you repeat and Instead drafts it, or upload the checklist you already use.</div>`
       : q && html`<button class="today-row wf-row" onClick=${() => this.startBuild(st.wfFull ? st.wfQuery : st.draft)}>
-          <span class="wf-row-icon"><${Icon} name="sparkles" size=${13} /></span>
+          <span class="wf-row-icon"><${Icon} name="sparkles" size=${14} /></span>
           <span class="today-name">Build “${(st.wfFull ? st.wfQuery : st.draft).trim()}” as a new workflow</span>
         </button>`;
     const wrap = (cls, body) => html`<div class=${'today-tray wf-tray' + cls}><section class="today wf" aria-label="Workflows">${body}</section>${composerEl}</div>`;
@@ -955,7 +957,7 @@ class App extends Component {
               <div class="group-label">${cat}</div>
               ${list.filter((t) => t.cat === cat).map((t) => html`
                 <button class=${'wf-lib-row' + (prev && prev.id === t.id ? ' on' : '')} onClick=${() => this.setState({ wfPreview: t.id })}>
-                  <span class="wf-row-icon"><${Icon} name=${t.icon || 'workflow'} size=${13} /></span>
+                  <span class="wf-row-icon"><${Icon} name=${t.icon || 'workflow'} size=${14} /></span>
                   <span class="row-name">${t.name}</span>
                 </button>`)}
             </div>`)}
@@ -986,8 +988,8 @@ class App extends Component {
       return wrap('', html`
         <div class="section-head today-head"><span class="label">Run a workflow</span><div class="head-icons">${close}</div></div>
         <div class="wf-stage">
-          <span class="wf-chip"><span class="wf-chip-icon"><${Icon} name="workflow" size=${11} /></span>${t.name}
-            <button class="chip-x" aria-label="Choose a different workflow" onClick=${() => this.setState({ wfPick: null, wfTargets: [] })}><${Icon} name="x" size=${10} stroke=${2} /></button></span>
+          <span class="wf-chip"><span class="wf-chip-icon"><${Icon} name="workflow" size=${12} /></span>${t.name}
+            <button class="chip-x" aria-label="Choose a different workflow" onClick=${() => this.setState({ wfPick: null, wfTargets: [] })}><${Icon} name="x" size=${12} stroke=${2} /></button></span>
         </div>
         <p class="wf-note">${t.desc} You’ll get: ${(t.output || '').replace(/^./, (ch) => ch.toLowerCase())}.</p>`);
     }
@@ -997,9 +999,9 @@ class App extends Component {
       return wrap('', html`
         <div class="section-head today-head"><span class="label">New workflow</span><div class="head-icons">${close}</div></div>
         <div class="wf-stage">
-          <span class="wf-chip"><span class="wf-chip-icon"><${Icon} name="sparkles" size=${11} /></span>New workflow</span>
+          <span class="wf-chip"><span class="wf-chip-icon"><${Icon} name="sparkles" size=${12} /></span>New workflow</span>
           ${st.wfFile && html`<span class="wf-chip"><${Icon} name="fileText" size=${12} />${st.wfFile}
-            <button class="chip-x" aria-label="Remove file" onClick=${() => this.setState({ wfFile: null })}><${Icon} name="x" size=${10} stroke=${2} /></button></span>`}
+            <button class="chip-x" aria-label="Remove file" onClick=${() => this.setState({ wfFile: null })}><${Icon} name="x" size=${12} stroke=${2} /></button></span>`}
         </div>
         <p class="wf-note">${st.wfFile
           ? `Instead reads ${st.wfFile} and turns it into steps. You review the draft before it’s saved.`
@@ -1021,7 +1023,7 @@ class App extends Component {
       <div class="today-rows">
         ${shown.map((t) => html`
           <button class="today-row wf-row" onClick=${() => this.stageWorkflow(t.id, clients)}>
-            <span class="wf-row-icon"><${Icon} name=${t.icon || 'workflow'} size=${13} /></span>
+            <span class="wf-row-icon"><${Icon} name=${t.icon || 'workflow'} size=${14} /></span>
             <span class="today-name">${t.name}</span>
             <span class="today-note">${t.cat}</span>
             <span class="today-open">Use<${Icon} name="moveRight" size=${12} /></span>
@@ -1045,7 +1047,7 @@ class App extends Component {
           <span class="step-n">${i + 1}</span>
           <input class="draft-step" aria-label=${`Step ${i + 1}`} value=${s} disabled=${locked}
             onInput=${(e) => this.editDraft(id, { steps: d.steps.map((x, j) => (j === i ? e.target.value : x)) })} />
-          ${!locked && html`<button class="chip-x" aria-label=${`Remove step ${i + 1}`} onClick=${() => this.editDraft(id, { steps: d.steps.filter((_, j) => j !== i) })}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
+          ${!locked && html`<button class="chip-x" aria-label=${`Remove step ${i + 1}`} onClick=${() => this.editDraft(id, { steps: d.steps.filter((_, j) => j !== i) })}><${Icon} name="x" size=${12} stroke=${2} /></button>`}
         </li>`)}
       </ol>
       ${!locked && html`<button class="more-row add-step" onClick=${() => this.editDraft(id, { steps: d.steps.concat(['']) })}>+ Add a step</button>`}
@@ -1074,12 +1076,12 @@ class App extends Component {
         aria-label=${`${fullName(c)}, ${ENTITY[c.entity] || c.entity}${attn ? `, needs attention: ${c.note}` : ''}`}>
         <span class="avatar">
           <span class="avatar-icon"><${Icon} name=${iconFor(c.entity)} /></span>
-          <span class="avatar-check"><${Icon} name="check" size=${9} /></span>
+          <span class="avatar-check"><${Icon} name="check" size=${12} /></span>
         </span>
         <span class="row-text"><span class="row-name">${railName(c)}</span></span>
         <span class="row-meta">
           ${wf && html`<button class="wf-count" title=${`${wf.name}: ${wf.done} of ${wf.total} done`} aria-label=${`Open ${wf.name}`}
-            onClick=${(e) => { e.stopPropagation(); this.pickWorkflow(wf.id); }}><${Icon} name="workflow" size=${10} />${wf.done}/${wf.total}</button>`}
+            onClick=${(e) => { e.stopPropagation(); this.pickWorkflow(wf.id); }}><${Icon} name="workflow" size=${12} />${wf.done}/${wf.total}</button>`}
           ${attn && html`<span class="dot" aria-hidden="true"></span>`}
           <span class="pill-xxs lime">${c.entity}</span>
         </span>
@@ -1107,7 +1109,7 @@ class App extends Component {
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
     const year = (y) => html`<div class="doc-year">
       <div class="doc-row" role="button" tabindex="0" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
-        <span class="avatar sm"><span class="avatar-icon"><${Icon} name=${st.openYears[y] ? 'folderOpen' : 'folder'} size=${st.openYears[y] ? 15 : 16} /></span><span class="avatar-check"><${Icon} name="check" size=${8} /></span></span>
+        <span class="avatar sm"><span class="avatar-icon"><${Icon} name=${st.openYears[y] ? 'folderOpen' : 'folder'} size=${16} /></span><span class="avatar-check"><${Icon} name="check" size=${12} /></span></span>
         <span class="doc-name">${y}</span>
         <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
       </div>
@@ -1270,32 +1272,32 @@ class App extends Component {
             ${audience ? html`<div class=${'ctx-pill' + (audience.n ? ' scoped' : ' pick') + (st.wfChoosing ? ' open' : '')}>
                 <button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.wfChoosing} aria-label=${`Run for: ${audience.label}. Change`}
                   onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ wfChoosing: !s.wfChoosing, wfClientQ: '' })); }}>
-                  <${Icon} name=${audience.icon} size=${13} />
+                  <${Icon} name=${audience.icon} size=${14} />
                   <span class="ctx-name">${audience.label}</span>
                   <${Icon} name="chevronDown" size=${12} />
                 </button>
-                ${audience.n > 0 && html`<button type="button" class="chip-x" aria-label="Clear clients" onClick=${() => this.setState({ wfTargets: [] })}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
+                ${audience.n > 0 && html`<button type="button" class="chip-x" aria-label="Clear clients" onClick=${() => this.setState({ wfTargets: [] })}><${Icon} name="x" size=${12} stroke=${2} /></button>`}
               </div>`
             : html`<div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
               ${sc
                 // Inside a thread (a client's or a workflow's) the pill is a label: it says who the chat
                 // covers, and moving elsewhere is the rail's job. Only the firm-level chat has the switcher.
                 ? html`<span class="ctx-btn ctx-label" aria-label=${`Chat context: ${fullName(sc)}`}>
-                    <${Icon} name=${iconFor(sc.entity)} size=${13} />
+                    <${Icon} name=${iconFor(sc.entity)} size=${14} />
                     <span class="ctx-name">${fullName(sc)}</span>
                   </span>`
                 // Inside a workflow thread the heading already names it: the pill says who it covers.
                 : sw ? html`<span class="ctx-btn ctx-label" aria-label=${`Chat context: the ${sw.clients} clients in ${sw.name}`}>
-                    <${Icon} name="users" size=${13} />
+                    <${Icon} name="users" size=${14} />
                     <span class="ctx-name">${sw.clients} clients</span>
                   </span>`
                 : html`<button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label="Chat context: All clients. Change"
                 onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxInline: false, ctxQuery: '', menu: false, showTip: false })); }}>
-                <${Icon} name="users" size=${13} />
+                <${Icon} name="users" size=${14} />
                 <span class="ctx-name">All clients</span>
                 <${Icon} name="chevronDown" size=${12} />
               </button>`}
-              ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
+              ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${12} stroke=${2} /></button>`}
             </div>`}
             ${I('paperclip', 'Attach files', null, 'circ')}
             ${I('settings2', 'Settings', null, 'circ')}
@@ -1332,7 +1334,7 @@ class App extends Component {
                     ? html`<label class="search-field"><${Icon} name="search" size=${12} />
                         <input ref=${(el) => el && !el.dataset.f && (el.dataset.f = '1', el.focus())} placeholder=${`Search ${clients.length} clients`} value=${st.query}
                           onInput=${(e) => this.setState({ query: e.target.value })} onKeyDown=${(e) => { if (e.key === 'Escape') this.setState({ query: null }); }} />
-                        <button class="chip-x" aria-label="Close search" onClick=${() => this.setState({ query: null })}><${Icon} name="x" size=${10} stroke=${2} /></button>
+                        <button class="chip-x" aria-label="Close search" onClick=${() => this.setState({ query: null })}><${Icon} name="x" size=${12} stroke=${2} /></button>
                       </label>`
                     : html`<span class="label">Clients</span>
                       <div class="head-icons">${I('search', 'Search clients', () => this.setState({ query: '' }))}${I('archiveX', 'Archived')}${I('arrowUpDown', 'Sort')}
@@ -1357,7 +1359,7 @@ class App extends Component {
               ${activeFilter && html`
                 <div class="filter-bar">
                   <span class="filter-chip">${activeFilter.label} · ${book.length}
-                    <button class="chip-x" aria-label="Clear filter" onClick=${() => this.setState({ filter: null })}><${Icon} name="x" size=${10} stroke=${2} /></button>
+                    <button class="chip-x" aria-label="Clear filter" onClick=${() => this.setState({ filter: null })}><${Icon} name="x" size=${12} stroke=${2} /></button>
                   </span>
                 </div>`}
               <div class="list" ref=${(el) => (this.listEl = el)}>
@@ -1434,7 +1436,7 @@ class App extends Component {
               <div class="proto-panel menu" role="dialog" aria-label="Preview the home at different book sizes">
                 <div class="proto-head">
                   <span class="label">Preview this home as</span>
-                  <button class="chip-x" aria-label="Close" onClick=${() => this.setState({ protoOpen: false })}><${Icon} name="x" size=${10} stroke=${2} /></button>
+                  <button class="chip-x" aria-label="Close" onClick=${() => this.setState({ protoOpen: false })}><${Icon} name="x" size=${12} stroke=${2} /></button>
                 </div>
                 ${SCENARIOS.map(([id, title, sub], i) => html`
                   <button class="menu-item proto-item" aria-pressed=${String(st.scenario === id)} onClick=${() => this.setScenario(id)}>

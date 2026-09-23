@@ -324,3 +324,7 @@ plugin, which maps flexbox to auto layout):
     you type after it filters the picker (no second search box, the cursor
     stays in the composer), ↑ ↓ move, Enter picks and removes the "@name"
     while keeping the rest of the message, Esc keeps typing.
+19. Icons on a grid: three sizes, 12 (inline: ×, chevrons, checks,
+    arrows, pill icons), 14 (default, as in Instead) and 16 (folders, header
+    actions), replacing seven ad-hoc sizes (8–16). The Figma export keeps
+    each icon's box, so icons measure 12, 14 or 16 instead of their lines.

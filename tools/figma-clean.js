@@ -113,6 +113,13 @@ window.figmaClean = function figmaClean(doc) {
     }
   });
   root.querySelectorAll('g[mask]:not([id])').forEach((g) => g.setAttribute('id', 'Clip'));
+  // Icons keep their full box (12, 14 or 16), not just the drawn lines, so Figma measures them
+  // at their real size: an invisible 24×24 square in the icon's own (scaled) coordinates.
+  root.querySelectorAll('g[id^="Icon / "][transform]').forEach((g) => {
+    const b = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    Object.entries({ id: 'Bounds', width: '24', height: '24', fill: 'none' }).forEach(([k, v]) => b.setAttribute(k, v));
+    g.insertBefore(b, g.firstChild);
+  });
   // A named group around one shape: the shape carries the name.
   root.querySelectorAll('g[id]').forEach((g) => {
     const c = g.firstElementChild;
