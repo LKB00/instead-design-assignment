@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Instead Pro — chat-first home</title>
+<title>Instead Pro — firm home</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -10,633 +10,554 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Libre+Baskerville:wght@400;700&display=swap">
 <style>
   body{margin:0}
-  .ws *{box-sizing:border-box}
-  .ws{font-family:'Lato',-apple-system,sans-serif}
-  .ws .heading{font-family:'Libre Baskerville',Georgia,serif}
-  .btn-reset{all:unset;box-sizing:border-box;cursor:pointer}
-  .btn-reset:focus-visible{outline:1.5px solid #24282C;outline-offset:1px}
-  .avatar{width:32px;height:32px;border-radius:999px;border:0.5px solid rgba(36,40,44,0.32);display:flex;align-items:center;justify-content:center;color:#24282C;flex:none}
-  .avatar svg{width:15px;height:15px}
-  .tab-btn{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;font-family:'Lato',sans-serif;font-size:13px;font-weight:600;padding:7px 0;border-radius:999px;flex:1}
-  .composer-input{all:unset;box-sizing:border-box;width:100%;font-family:'Lato',sans-serif;font-size:14px;color:#24282C}
-  .composer-input::placeholder{color:rgba(36,40,44,0.45)}
-  .chip-strip::-webkit-scrollbar{display:none}
+  .app *{box-sizing:border-box}
+  .app{font-family:'Lato',-apple-system,sans-serif;color:#24282C}
+  .serif{font-family:'Libre Baskerville',Georgia,serif}
+  .b{all:unset;box-sizing:border-box;cursor:pointer}
+  .b:focus-visible{outline:1.5px solid #24282C;outline-offset:2px}
+  .ic{display:flex;align-items:center;justify-content:center;color:rgba(36,40,44,0.62)}
+  .ic:hover{color:#24282C}
+  .row:hover{background:rgba(36,40,44,0.045)}
+  .circ{width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(36,40,44,0.05);color:rgba(36,40,44,0.7)}
+  .circ:hover{background:rgba(36,40,44,0.09);color:#24282C}
+  .label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(36,40,44,0.62)}
+  .badge{flex:none;font-size:11px;font-weight:700;color:#24282C;background:rgba(194,239,114,0.55);padding:2px 8px;border-radius:999px;line-height:1.4}
+  .input{all:unset;box-sizing:border-box;width:100%;font-family:'Lato',sans-serif;font-size:15px;color:#24282C}
+  .input::placeholder{color:rgba(36,40,44,0.42)}
+  .scroll::-webkit-scrollbar{width:0}
+  .scroll{scrollbar-width:none}
 </style>
 </helmet>
 
-<div class="ws" style="width: 960px; height: 800px; background: #F7F6F0; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 0.5px solid rgba(36,40,44,0.22);">
+<div class="app" style="width: 1440px; height: 900px; background: #F7F6F0; display: flex; flex-direction: column; overflow: hidden; position: relative;">
 
-  <!-- ============================================================ PULSE STRIP ============================================================ -->
-  <div style="flex: none; display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 60px; border-bottom: 0.5px solid rgba(36,40,44,0.16);">
-
-    <div class="heading" style="flex: none; font-size: 17px; font-weight: 700; font-family: 'Lato', sans-serif; color: #24282C; letter-spacing: -0.01em;">instead</div>
-
-    <div class="chip-strip" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; height: 100%;">
-      <sc-if value="{{hasAttention}}" hint-placeholder-val="{{true}}">
-        <sc-for list="{{attentionChips}}" as="chip" hint-placeholder-count="3">
-          <button type="button" class="btn-reset" aria-label="{{chip.ariaLabel}}" onClick="{{chip.pick}}" style="flex: none; display: flex; align-items: center; gap: 6px; padding: 4px 12px 4px 5px; border-radius: 999px; border: 0.5px solid rgba(201,123,74,0.55); background: #FFFFFF;">
-            <div class="avatar" style="width: 24px; height: 24px; border-color: rgba(201,123,74,0.6);">
-              <sc-if value="{{chip.iconUser}}" hint-placeholder-val="{{true}}">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              </sc-if>
-              <sc-if value="{{chip.iconLandmark}}" hint-placeholder-val="{{false}}">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>
-              </sc-if>
-              <sc-if value="{{chip.iconBuilding}}" hint-placeholder-val="{{false}}">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
-              </sc-if>
-            </div>
-            <span style="font-size: 12px; font-weight: 600; color: #24282C; white-space: nowrap;">{{chip.firstName}}</span>
-          </button>
-        </sc-for>
-      </sc-if>
-      <sc-if value="{{hasAttention}}" hint-placeholder-val="{{true}}"></sc-if>
-      <sc-if value="{{noAttention}}" hint-placeholder-val="{{false}}">
-        <span style="font-size: 12.5px; color: rgba(36,40,44,0.45); font-style: italic;">Book's quiet right now — nothing needs you.</span>
-      </sc-if>
+  <!-- ================= TRIAL BANNER ================= -->
+  <div style="flex: none; padding: 10px 12px 0;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 42px; padding: 0 5px 0 16px; border-radius: 999px; background: rgba(194,239,114,0.22); border: 0.5px solid rgba(194,239,114,0.9);">
+      <div style="font-size: 13px;"><b>Lokesh Kumar Bhatia</b> trial ends in 7 days.</div>
+      <button type="button" class="b" style="font-size: 12.5px; font-weight: 700; color: #F7F6F0; background: #24282C; padding: 8px 14px; border-radius: 999px;">Schedule with the Instead team</button>
     </div>
-
-    <button type="button" class="btn-reset" onClick="{{toggleDrawer}}" style="flex: none; display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 999px; border: 0.5px solid rgba(36,40,44,0.22); background: #FFFFFF;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-      <span style="font-size: 12.5px; font-weight: 600; color: #24282C;">Book &middot; {{clientCount}}</span>
-    </button>
   </div>
 
-  <!-- ============================================================ CHAT (full width) ============================================================ -->
-  <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+  <div style="flex: 1; display: flex; min-height: 0;">
 
-    <div style="flex: 1; overflow-y: auto; padding: 32px 64px 8px; display: flex; flex-direction: column;">
-      <sc-if value="{{threadEmpty}}" hint-placeholder-val="{{true}}">
-        <div style="flex: 1; display: flex; align-items: center;">
-          <div class="heading" style="font-size: 30px; font-weight: 400; color: #24282C; max-width: 560px; line-height: 1.25;">{{emptyHeading}}</div>
+    <!-- ================= RAIL ================= -->
+    <div style="width: 320px; flex: none; display: flex; flex-direction: column; padding: 18px 16px 14px 18px; min-height: 0;">
+
+      <div style="font-size: 25px; font-weight: 900; letter-spacing: -0.04em; padding: 2px 2px 16px;">instead</div>
+
+      <!-- toggle + actions -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="flex: 1; display: flex; padding: 3px; border-radius: 999px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.2);">
+          <button type="button" class="b" aria-pressed="{{isClientsTab}}" style="{{clientsTabStyle}}" onClick="{{selectClientsTab}}">Clients</button>
+          <button type="button" class="b" aria-pressed="{{isWorkflowsTab}}" style="{{workflowsTabStyle}}" onClick="{{selectWorkflowsTab}}">Workflows</button>
         </div>
-      </sc-if>
-      <sc-if value="{{threadEmpty}}" hint-placeholder-val="{{true}}"></sc-if>
+        <button type="button" class="b ic" aria-label="Library" style="width: 38px; height: 38px; border-radius: 999px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.2);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></svg>
+        </button>
+        <button type="button" class="b ic" aria-label="New thread" onClick="{{clearScope}}" style="width: 38px; height: 38px; border-radius: 999px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.2);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M12 7v6"></path><path d="M9 10h6"></path></svg>
+        </button>
+      </div>
 
-      <sc-for list="{{threadMessages}}" as="msg" hint-placeholder-count="0">
-        <sc-if value="{{msg.fromAssistant}}" hint-placeholder-val="{{true}}">
-          <div style="font-size: 14.5px; line-height: 1.6; color: #24282C; max-width: 620px; margin-bottom: 18px;">{{msg.text}}</div>
-        </sc-if>
-        <sc-if value="{{msg.fromUser}}" hint-placeholder-val="{{false}}">
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 18px;">
-            <div style="font-size: 14px; line-height: 1.5; color: #24282C; background: rgba(36,40,44,0.06); padding: 10px 16px; border-radius: 999px; max-width: 460px;">{{msg.text}}</div>
+      <!-- section header -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 24px 2px 8px;">
+        <sc-if value="{{isClientsTab}}" hint-placeholder-val="{{true}}">
+          <span class="label">Clients</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"></rect><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path><path d="m9.5 17 5-5"></path><path d="m9.5 12 5 5"></path></svg></span>
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg></span>
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></svg></span>
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>
           </div>
         </sc-if>
-      </sc-for>
-    </div>
+        <sc-if value="{{isWorkflowsTab}}" hint-placeholder-val="{{false}}">
+          <span class="label">Workflows</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span>
+            <button type="button" class="b ic" aria-label="Start a workflow" onClick="{{toggleWorkflowMenu}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+          </div>
+        </sc-if>
+      </div>
 
-    <!-- composer area -->
-    <div style="padding: 10px 64px 30px; position: relative;">
+      <!-- list -->
+      <div id="rail-scroll" class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; margin: 0 -6px; padding: 0 6px;">
 
-      <!-- one-time scope tooltip -->
-      <sc-if value="{{showTooltip}}" hint-placeholder-val="{{false}}">
-        <div style="position: absolute; left: 64px; right: 64px; bottom: 100%; margin-bottom: 10px; background: #24282C; color: #F7F6F0; border-radius: 16px; padding: 12px 16px; font-size: 12.5px; line-height: 1.5; display: flex; align-items: flex-start; gap: 10px; box-shadow: 0 6px 20px rgba(36,40,44,0.18);">
-          <div style="flex: 1;">This chat is now scoped to <b>{{scopedClientName}}</b> — only their thread and documents are used here. Click the &times; on the pill to return to general chat.</div>
-          <button type="button" class="btn-reset" style="flex: none; color: #F7F6F0; font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px;" onClick="{{dismissTooltip}}">Got it</button>
-        </div>
-      </sc-if>
+        <sc-if value="{{isClientsTab}}" hint-placeholder-val="{{true}}">
+          <sc-if value="{{grouped}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px 4px;">
+              <span style="width: 6px; height: 6px; border-radius: 999px; background: #C97B4A;"></span>
+              <span style="font-size: 11px; font-weight: 700; color: #24282C;">Needs you &middot; {{attentionCount}}</span>
+            </div>
+          </sc-if>
 
-      <!-- workflow-start menu -->
-      <sc-if value="{{workflowMenuOpen}}" hint-placeholder-val="{{false}}">
-        <div style="position: absolute; left: 64px; bottom: 100%; margin-bottom: 10px; width: 300px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.22); border-radius: 18px; padding: 8px; box-shadow: 0 10px 28px rgba(36,40,44,0.16); display: flex; flex-direction: column; gap: 2px;">
-          <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(36,40,44,0.5); padding: 6px 10px 4px;">Start a workflow</div>
-          <sc-for list="{{workflowMenuItems}}" as="item" hint-placeholder-count="4">
-            <button type="button" class="btn-reset" onClick="{{item.pick}}" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; text-align: left;">
-              <div class="avatar" style="width: 26px; height: 26px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="M13 12h8"></path></svg>
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 13px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.name}}</div>
-                <div style="font-size: 11px; color: rgba(36,40,44,0.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{item.subtitle}}</div>
+          <sc-for list="{{clientRows}}" as="c" hint-placeholder-count="6">
+            <sc-if value="{{c.dividerBefore}}" hint-placeholder-val="{{false}}">
+              <div style="height: 0.5px; background: rgba(36,40,44,0.14); margin: 6px 8px;"></div>
+            </sc-if>
+            <button type="button" class="b row" aria-label="{{c.ariaLabel}}" style="{{c.rowStyle}}" onClick="{{c.pick}}">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="position: relative; flex: none; width: 18px; height: 18px; color: #24282C;">
+                  <sc-if value="{{c.iconUser}}" hint-placeholder-val="{{true}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
+                  </sc-if>
+                  <sc-if value="{{c.iconBuilding}}" hint-placeholder-val="{{false}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{c.iconLandmark}}" hint-placeholder-val="{{false}}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18"></path><path d="M6 18v-7"></path><path d="M10 18v-7"></path><path d="M14 18v-7"></path><path d="M18 18v-7"></path><path d="m12 2 8 5H4z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{c.showDot}}" hint-placeholder-val="{{false}}">
+                    <span aria-hidden="true" style="position: absolute; right: -3px; bottom: -2px; width: 8px; height: 8px; border-radius: 999px; background: {{c.dotColor}}; border: 1.5px solid #F7F6F0;"></span>
+                  </sc-if>
+                </div>
+                <div style="flex: 1; min-width: 0; text-align: left;">
+                  <div style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{c.displayName}}</div>
+                  <sc-if value="{{c.showNote}}" hint-placeholder-val="{{false}}">
+                    <div style="font-size: 11.5px; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;">{{c.note}}</div>
+                  </sc-if>
+                </div>
+                <sc-if value="{{c.hasWorkflow}}" hint-placeholder-val="{{false}}">
+                  <span title="Workflow running" style="flex: none; display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: rgba(36,40,44,0.75); border: 0.5px solid rgba(36,40,44,0.25); padding: 1px 7px 1px 5px; border-radius: 999px;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>{{c.workflowProgress}}
+                  </span>
+                </sc-if>
+                <span class="badge">{{c.entity}}</span>
               </div>
             </button>
           </sc-for>
+
+          <button type="button" class="b row" style="display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 6px; padding: 8px 12px; border-radius: 999px; border: 0.5px solid rgba(36,40,44,0.14); font-size: 14px; color: rgba(36,40,44,0.8);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            Add new client
+          </button>
+        </sc-if>
+
+        <sc-if value="{{isWorkflowsTab}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 4px 8px;"><span style="font-size: 11px; font-weight: 700;">Across clients</span></div>
+          <sc-for list="{{acrossRows}}" as="w" hint-placeholder-count="2">
+            <button type="button" class="b row" aria-label="{{w.ariaLabel}}" style="{{w.rowStyle}}" onClick="{{w.pick}}">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
+                <div style="flex: 1; min-width: 0; text-align: left;">
+                  <div style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{w.name}}</div>
+                  <div style="font-size: 11.5px; color: rgba(36,40,44,0.58); margin-top: 1px;">{{w.sub}}</div>
+                </div>
+                <span style="flex: none; font-size: 11px; font-weight: 700; color: rgba(36,40,44,0.75); border: 0.5px solid rgba(36,40,44,0.25); padding: 1px 8px; border-radius: 999px;">{{w.progress}}</span>
+              </div>
+            </button>
+          </sc-for>
+          <div style="padding: 14px 8px 4px;"><span style="font-size: 11px; font-weight: 700;">Single client</span></div>
+          <sc-for list="{{singleRows}}" as="w" hint-placeholder-count="2">
+            <button type="button" class="b row" aria-label="{{w.ariaLabel}}" style="{{w.rowStyle}}" onClick="{{w.pick}}">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
+                <div style="flex: 1; min-width: 0; text-align: left;">
+                  <div style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{w.name}}</div>
+                  <div style="font-size: 11.5px; color: rgba(36,40,44,0.58); margin-top: 1px;">{{w.sub}}</div>
+                </div>
+                <span style="flex: none; font-size: 11px; font-weight: 700; color: rgba(36,40,44,0.75); border: 0.5px solid rgba(36,40,44,0.25); padding: 1px 8px; border-radius: 999px;">{{w.progress}}</span>
+              </div>
+            </button>
+          </sc-for>
+        </sc-if>
+      </div>
+
+      <!-- threads -->
+      <div style="flex: none; padding-top: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 2px 8px;">
+          <span class="label">Threads</span>
+          <button type="button" class="b ic" aria-label="New thread" onClick="{{clearScope}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
         </div>
+        <sc-if value="{{hasThread}}" hint-placeholder-val="{{false}}">
+          <button type="button" class="b row" onClick="{{clearScope}}" style="{{threadRowStyle}}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{threadTitle}}</span>
+              <span style="font-size: 11px; color: rgba(36,40,44,0.5);">Now</span>
+            </div>
+          </button>
+        </sc-if>
+        <sc-if value="{{noThread}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 0 10px; color: rgba(36,40,44,0.55);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"></path><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"></path></svg>
+            <span style="font-size: 13px;">Start your first thread</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- user card -->
+      <div style="flex: none; margin-top: 12px; background: rgba(36,40,44,0.035); border-radius: 22px; padding: 14px 14px 12px 16px;">
+        <div class="serif" style="font-size: 15px;">Lokesh Kumar Bhatia</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+          <div style="width: 28px; height: 28px; border-radius: 999px; background: rgba(36,40,44,0.07); display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: 'Libre Baskerville', serif; color: rgba(36,40,44,0.75);">LB</div>
+          <div style="display: flex; gap: 14px;">
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6"></path><path d="M22 11h-6"></path></svg></span>
+            <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MAIN / CHAT ================= -->
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 0 40px;">
+
+      <sc-if value="{{isEmpty}}" hint-placeholder-val="{{true}}">
+        <div style="flex: 1;"></div>
+        <div class="serif" style="text-align: center; font-size: 34px; line-height: 1.25; padding-bottom: 56px;">{{emptyHeading}}</div>
       </sc-if>
 
-      <!-- pinned scope pill -->
-      <sc-if value="{{scoped}}" hint-placeholder-val="{{false}}">
-        <div style="display: flex; margin-bottom: 10px;">
-          <div style="display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 0.5px solid {{scopeBorderColor}}; border-radius: 999px; padding: 5px 8px 5px 12px;">
-            <sc-if value="{{scopeIsWorkflow}}" hint-placeholder-val="{{false}}">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="M13 12h8"></path></svg>
+      <sc-if value="{{hasMessages}}" hint-placeholder-val="{{false}}">
+        <div id="chat-scroll" class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 40px 0 16px;">
+          <div style="max-width: 760px; margin: 0 auto;">
+            <div class="serif" style="font-size: 30px; padding-bottom: 28px;">{{threadHeading}}</div>
+            <sc-for list="{{messages}}" as="m" hint-placeholder-count="0">
+              <sc-if value="{{m.fromUser}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 22px;">
+                  <div class="serif" style="font-size: 15px; line-height: 1.5; background: rgba(36,40,44,0.05); padding: 10px 18px; border-radius: 999px; max-width: 520px;">{{m.text}}</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{m.fromAssistant}}" hint-placeholder-val="{{true}}">
+                <div style="font-size: 15px; line-height: 1.7; margin-bottom: 10px; max-width: 680px;">{{m.text}}</div>
+                <div style="display: flex; gap: 14px; margin-bottom: 26px; color: rgba(36,40,44,0.55);">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"></path><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"></path></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                </div>
+              </sc-if>
+            </sc-for>
+            <sc-if value="{{typing}}" hint-placeholder-val="{{false}}">
+              <div style="font-size: 13px; color: rgba(36,40,44,0.55); font-weight: 700;">Thinking&hellip;</div>
             </sc-if>
-            <span style="font-size: 13px; font-weight: 600; color: #24282C;">{{scopedClientName}}</span>
-            <sc-if value="{{scopeHasSuffix}}" hint-placeholder-val="{{false}}">
-              <span style="font-size: 11px; font-weight: 400; color: rgba(36,40,44,0.55);">&middot; {{scopedSuffix}}</span>
-            </sc-if>
-            <button type="button" class="btn-reset" aria-label="Clear scope, return to general chat" style="width: 20px; height: 20px; border-radius: 999px; background: rgba(36,40,44,0.08); display: flex; align-items: center; justify-content: center;" onClick="{{clearScope}}">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
           </div>
         </div>
       </sc-if>
 
-      <!-- input row -->
-      <div style="display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.22); border-radius: 999px; padding: 8px 10px 8px 10px;">
-        <button type="button" class="btn-reset" aria-label="Start a workflow" onClick="{{toggleWorkflowMenu}}" style="flex: none; width: 32px; height: 32px; border-radius: 999px; background: rgba(36,40,44,0.06); display: flex; align-items: center; justify-content: center;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-        <input class="composer-input" type="text" placeholder="{{composerPlaceholder}}" value="{{composerValue}}" onChange="{{handleComposerChange}}" onKeyDown="{{handleComposerKeyDown}}">
-        <button type="button" class="btn-reset" aria-label="Send" style="flex: none; width: 32px; height: 32px; border-radius: 999px; background: #C2EF72; display: flex; align-items: center; justify-content: center;" onClick="{{handleSend}}">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-        </button>
-      </div>
-    </div>
-  </div>
+      <!-- composer -->
+      <div style="flex: none; width: 100%; max-width: 820px; margin: 0 auto; position: relative; padding-bottom: {{composerBottomPad}};">
 
-  <!-- ============================================================ DRAWER (overlay) ============================================================ -->
-  <sc-if value="{{drawerOpen}}" hint-placeholder-val="{{false}}">
-    <div style="position: absolute; inset: 0; background: rgba(36,40,44,0.28); z-index: 10;" onClick="{{closeDrawer}}"></div>
-    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 380px; background: #F7F6F0; border-right: 0.5px solid rgba(36,40,44,0.22); box-shadow: 12px 0 32px rgba(36,40,44,0.18); z-index: 11; display: flex; flex-direction: column;">
-
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px;">
-        <div class="heading" style="font-size: 16px; font-weight: 700; font-family: 'Lato', sans-serif; color: #24282C;">Your book</div>
-        <button type="button" class="btn-reset" aria-label="Close" onClick="{{closeDrawer}}" style="width: 26px; height: 26px; border-radius: 999px; background: rgba(36,40,44,0.08); display: flex; align-items: center; justify-content: center;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-
-      <div style="padding: 0 16px 14px;">
-        <div style="display: flex; padding: 3px; border-radius: 999px; border: 0.5px solid rgba(36,40,44,0.22); background: #FFFFFF;">
-          <button type="button" class="tab-btn" aria-pressed="{{isClientsTab}}" style="{{clientsTabStyle}}" onClick="{{selectClientsTab}}">Clients</button>
-          <button type="button" class="tab-btn" aria-pressed="{{isWorkflowsTab}}" style="{{workflowsTabStyle}}" onClick="{{selectWorkflowsTab}}">Workflows</button>
-        </div>
-      </div>
-
-      <div style="padding: 4px 16px 12px; display: flex; align-items: baseline; justify-content: space-between; border-bottom: 0.5px solid rgba(36,40,44,0.16);">
-        <sc-if value="{{isClientsTab}}" hint-placeholder-val="{{true}}">
-          <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #24282C;">Clients</span>
-          <span style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58);">{{clientCount}} active</span>
+        <sc-if value="{{showTooltip}}" hint-placeholder-val="{{false}}">
+          <div style="position: absolute; left: 0; bottom: 100%; margin-bottom: 10px; max-width: 420px; background: #24282C; color: #F7F6F0; border-radius: 18px; padding: 12px 16px; font-size: 13px; line-height: 1.5; box-shadow: 0 8px 24px rgba(36,40,44,0.18); z-index: 5;">
+            Chat is now scoped to <b>{{scopeName}}</b>. Answers use only their documents and history. Tap &times; on the chip to go back to your whole firm.
+            <div style="margin-top: 8px;"><button type="button" class="b" onClick="{{dismissTooltip}}" style="font-size: 12px; font-weight: 700; color: #24282C; background: #C2EF72; padding: 4px 12px; border-radius: 999px;">Got it</button></div>
+          </div>
         </sc-if>
-        <sc-if value="{{isWorkflowsTab}}" hint-placeholder-val="{{false}}">
-          <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #24282C;">Workflows</span>
-          <span style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58);">{{workflowCount}} active</span>
-        </sc-if>
-      </div>
 
-      <div id="rail-scroll" style="flex: 1; overflow-y: auto; padding: 8px 10px 20px;">
-
-        <sc-if value="{{isClientsTab}}" hint-placeholder-val="{{true}}">
-
-          <sc-if value="{{grouped}}" hint-placeholder-val="{{true}}">
-            <div style="display: flex; align-items: center; gap: 7px; padding: 10px 10px 5px;">
-              <span style="width: 6px; height: 6px; border-radius: 999px; background: #C97B4A; display: inline-block; flex: none;"></span>
-              <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #24282C;">Needs attention &middot; {{attentionCount}}</span>
-            </div>
-
-            <sc-for list="{{attentionRows}}" as="client" hint-placeholder-count="3">
-              <button type="button" class="btn-reset" aria-label="{{client.ariaLabel}}" style="{{client.rowStyle}}" onClick="{{client.pick}}">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <div style="position: relative; flex: none; width: 32px; height: 32px;">
-                    <div class="avatar">
-                      <sc-if value="{{client.iconUser}}" hint-placeholder-val="{{true}}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                      </sc-if>
-                      <sc-if value="{{client.iconLandmark}}" hint-placeholder-val="{{false}}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>
-                      </sc-if>
-                      <sc-if value="{{client.iconBuilding}}" hint-placeholder-val="{{false}}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
-                      </sc-if>
-                    </div>
-                    <span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 999px; background: #C97B4A; border: 1.5px solid #F7F6F0;"></span>
-                  </div>
-                  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left;">
-                    <div style="font-size: 14px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.name}}</div>
-                    <div style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.note}}</div>
-                  </div>
-                  <sc-if value="{{client.hasWorkflow}}" hint-placeholder-val="{{false}}">
-                    <span style="flex: none; display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: #24282C; background: rgba(36,40,44,0.08); padding: 3px 8px 3px 6px; border-radius: 999px;">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="M13 12h8"></path></svg>{{client.workflowProgress}}
-                    </span>
-                  </sc-if>
-                  <span style="flex: none; font-size: 11.5px; font-weight: 700; letter-spacing: 0.01em; color: #24282C; background: #C2EF72; padding: 3px 10px; border-radius: 999px;">{{client.entity}}</span>
+        <sc-if value="{{workflowMenuOpen}}" hint-placeholder-val="{{false}}">
+          <div style="position: absolute; left: 0; bottom: 100%; margin-bottom: 10px; width: 340px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.2); border-radius: 22px; padding: 8px; box-shadow: 0 12px 32px rgba(36,40,44,0.14); z-index: 6;">
+            <div class="label" style="padding: 8px 12px 6px;">Start a workflow</div>
+            <sc-for list="{{menuItems}}" as="i" hint-placeholder-count="4">
+              <button type="button" class="b row" onClick="{{i.pick}}" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 12px; border-radius: 999px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
+                <div style="flex: 1; min-width: 0; text-align: left;">
+                  <div style="font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{i.name}}</div>
+                  <div style="font-size: 11.5px; color: rgba(36,40,44,0.55);">{{i.sub}}</div>
                 </div>
               </button>
             </sc-for>
+          </div>
+        </sc-if>
 
-            <div style="height: 0.5px; background: rgba(36,40,44,0.16); margin: 8px 10px 4px;"></div>
+        <div style="background: {{trayBg}}; border-radius: 30px;">
+          <sc-if value="{{scoped}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 8px 10px 8px;">
+              <div style="display: inline-flex; align-items: center; gap: 8px; background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.18); border-radius: 999px; padding: 4px 5px 4px 10px;">
+                <sc-if value="{{scopeIsClient}}" hint-placeholder-val="{{true}}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
+                </sc-if>
+                <sc-if value="{{scopeIsWorkflow}}" hint-placeholder-val="{{false}}">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#24282C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg>
+                </sc-if>
+                <span style="font-size: 14px;">{{scopeName}}</span>
+                <span class="badge">{{scopeTag}}</span>
+                <button type="button" class="b ic" aria-label="Clear scope" onClick="{{clearScope}}" style="width: 22px; height: 22px; border-radius: 999px; background: rgba(36,40,44,0.06);">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                </button>
+              </div>
+            </div>
           </sc-if>
 
-          <sc-for list="{{otherRows}}" as="client" hint-placeholder-count="4">
-            <button type="button" class="btn-reset" aria-label="{{client.ariaLabel}}" style="{{client.rowStyle}}" onClick="{{client.pick}}">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="position: relative; flex: none; width: 32px; height: 32px;">
-                  <div class="avatar">
-                    <sc-if value="{{client.iconUser}}" hint-placeholder-val="{{true}}">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    </sc-if>
-                    <sc-if value="{{client.iconLandmark}}" hint-placeholder-val="{{false}}">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>
-                    </sc-if>
-                    <sc-if value="{{client.iconBuilding}}" hint-placeholder-val="{{false}}">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
-                    </sc-if>
-                  </div>
-                  <sc-if value="{{client.showDot}}" hint-placeholder-val="{{false}}">
-                    <span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 999px; background: {{client.dotColor}}; border: 1.5px solid #F7F6F0;"></span>
-                  </sc-if>
-                </div>
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left;">
-                  <div style="font-size: 14px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.name}}</div>
-                  <sc-if value="{{client.note}}" hint-placeholder-val="{{false}}">
-                    <div style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.note}}</div>
-                  </sc-if>
-                </div>
-                <sc-if value="{{client.hasWorkflow}}" hint-placeholder-val="{{false}}">
-                  <span style="flex: none; display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: #24282C; background: rgba(36,40,44,0.08); padding: 3px 8px 3px 6px; border-radius: 999px;">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="M13 12h8"></path></svg>{{client.workflowProgress}}
-                  </span>
-                </sc-if>
-                <span style="flex: none; font-size: 11.5px; font-weight: 700; letter-spacing: 0.01em; color: #24282C; background: #C2EF72; padding: 3px 10px; border-radius: 999px;">{{client.entity}}</span>
+          <div style="background: #FFFFFF; border: 0.5px solid rgba(36,40,44,0.22); border-radius: 30px; padding: 20px 14px 12px 22px;">
+            <input class="input" type="text" placeholder="{{placeholder}}" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onKey}}">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 18px; margin-left: -10px;">
+              <div style="display: flex; gap: 8px;">
+                <span class="circ" aria-label="Attach"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></span>
+                <span class="circ" aria-label="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg></span>
+                <button type="button" class="b circ" aria-label="Start a workflow" onClick="{{toggleWorkflowMenu}}" style="{{wfBtnStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="8" x="3" y="3" rx="2"></rect><path d="M7 11v4a2 2 0 0 0 2 2h4"></path><rect width="8" height="8" x="13" y="13" rx="2"></rect></svg></button>
               </div>
-            </button>
-          </sc-for>
-
-        </sc-if>
-
-        <sc-if value="{{isWorkflowsTab}}" hint-placeholder-val="{{false}}">
-
-          <div style="padding: 10px 10px 5px;">
-            <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #24282C;">Across clients</span>
+              <div style="display: flex; gap: 8px;">
+                <span class="circ" aria-label="Dictate"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><path d="M12 19v3"></path></svg></span>
+                <button type="button" class="b" aria-label="Send" onClick="{{onSend}}" style="{{sendStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg></button>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <sc-for list="{{acrossClientRows}}" as="wf" hint-placeholder-count="2">
-            <button type="button" class="btn-reset" aria-label="{{wf.ariaLabel}}" style="{{wf.rowStyle}}" onClick="{{wf.pick}}">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path></svg>
-                </div>
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left;">
-                  <div style="font-size: 14px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{wf.name}}</div>
-                  <div style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{wf.clientCount}} clients</div>
-                </div>
-                <span style="flex: none; font-size: 11px; font-weight: 700; color: #24282C; background: rgba(36,40,44,0.08); padding: 3px 9px; border-radius: 999px;">{{wf.progressLabel}}</span>
-              </div>
-            </button>
-          </sc-for>
-
-          <div style="padding: 14px 10px 5px;">
-            <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #24282C;">Single client</span>
+        <!-- needs-you shortcuts (general, empty only) -->
+        <sc-if value="{{showNeedsYou}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 18px;">
+            <span style="font-size: 12px; color: rgba(36,40,44,0.55); margin-right: 2px;">Needs you today</span>
+            <sc-for list="{{needsYou}}" as="n" hint-placeholder-count="3">
+              <button type="button" class="b row" onClick="{{n.pick}}" style="display: flex; align-items: center; gap: 7px; padding: 6px 12px 6px 10px; border-radius: 999px; border: 0.5px solid rgba(36,40,44,0.18); background: #FFFFFF;">
+                <span style="width: 6px; height: 6px; border-radius: 999px; background: #C97B4A;"></span>
+                <span style="font-size: 13px;">{{n.name}}</span>
+                <span style="font-size: 12px; color: rgba(36,40,44,0.55);">{{n.note}}</span>
+              </button>
+            </sc-for>
           </div>
-
-          <sc-for list="{{singleClientRows}}" as="wf" hint-placeholder-count="2">
-            <button type="button" class="btn-reset" aria-label="{{wf.ariaLabel}}" style="{{wf.rowStyle}}" onClick="{{wf.pick}}">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path></svg>
-                </div>
-                <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left;">
-                  <div style="font-size: 14px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{wf.name}}</div>
-                  <div style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{wf.clientName}}</div>
-                </div>
-                <span style="flex: none; font-size: 11px; font-weight: 700; color: #24282C; background: rgba(36,40,44,0.08); padding: 3px 9px; border-radius: 999px;">{{wf.progressLabel}}</span>
-              </div>
-            </button>
-          </sc-for>
-
         </sc-if>
-
       </div>
-    </div>
-  </sc-if>
 
+      <sc-if value="{{isEmpty}}" hint-placeholder-val="{{true}}">
+        <div style="flex: 1.3;"></div>
+      </sc-if>
+    </div>
+  </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"scenario":{"editor":"enum","default":"grouped","options":["grouped","few-attention","calm"]},"$preview":{"width":960,"height":800}}'>
-const ROW_BASE = 'all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;padding:8px 10px;border-radius:999px;';
-const ROW_ON = ROW_BASE + 'background:rgba(36,40,44,0.08);';
-const ROW_OFF = ROW_BASE + 'background:transparent;';
-const TAB_ON = 'all:unset;box-sizing:border-box;cursor:pointer;text-align:center;font-family:\'Lato\',sans-serif;font-size:13px;font-weight:600;padding:7px 0;border-radius:999px;flex:1;background:#24282C;color:#F7F6F0;';
-const TAB_OFF = 'all:unset;box-sizing:border-box;cursor:pointer;text-align:center;font-family:\'Lato\',sans-serif;font-size:13px;font-weight:600;padding:7px 0;border-radius:999px;flex:1;background:transparent;color:#24282C;';
-
-const ENTITY_LABELS = {
-  '1040': 'Individual (1040)',
-  '1120': 'C Corporation (1120)',
-  '1120S': 'S Corporation (1120-S)',
-  '1065': 'Partnership (1065)',
-  '1041': 'Trust & Estate (1041)'
-};
+<script type="text/x-dc" data-dc-script data-props='{"scenario":{"editor":"enum","default":"grouped","options":["grouped","few-attention","calm"]},"$preview":{"width":1440,"height":900}}'>
+const ROW = 'display:block;width:100%;padding:7px 10px;border-radius:999px;';
+const ROW_ON = ROW + 'background:rgba(36,40,44,0.07);';
+const ROW_OFF = ROW + 'background:transparent;';
+const TAB = 'flex:1;text-align:center;font-size:13.5px;padding:7px 0;border-radius:999px;';
+const TAB_ON = TAB + 'background:#24282C;color:#F7F6F0;font-weight:700;';
+const TAB_OFF = TAB + 'background:transparent;color:#24282C;';
+const ENTITY = { '1040': 'Individual', '1120': 'C Corp', '1120S': 'S Corp', '1065': 'Partnership', '1041': 'Trust & Estate' };
 
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      drawerOpen: false,
-      drawerTab: 'clients',
-      scope: null, // {type:'client'|'workflow', id}
-      hasEverSelectedClient: false,
-      showTooltip: false,
-      workflowMenuOpen: false,
-      composerValue: '',
+      tab: 'clients',
+      scope: null,
+      seenTip: false,
+      showTip: false,
+      menu: false,
+      draft: '',
+      typing: false,
       threads: {
-        general: [],
         ashish: [
-          { from: 'assistant', text: "Hi Lokesh, good to be working with you on Ashish Khoshya's file. His 1040 workpaper is under review — want me to pull the latest draft?" }
+          { from: 'assistant', text: "Hi Lokesh, good to be working with you on Ashish Khoshya's file. His 1040 workpaper is two of three steps through review — want me to pull up what's left?" }
         ],
         c1: [
-          { from: 'assistant', text: "Hi Lokesh, good to be working with you on Meera Iyer's file. Her K-1 is still missing and the deadline is in 2 days — want me to draft a reminder?" }
+          { from: 'assistant', text: "Meera Iyer's K-1 from Alderwood Partners still hasn't come in, and her return is due in 2 days. I can draft a reminder to her, or file an extension now — which would you like?" }
         ]
       }
     };
-    this.scrollPos = { clients: 0, workflows: 0 };
+    this.scroll = { clients: 0, workflows: 0 };
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.drawerTab !== this.state.drawerTab) {
+    if (prevState.tab !== this.state.tab) {
       const el = document.getElementById('rail-scroll');
-      if (el) el.scrollTop = this.scrollPos[this.state.drawerTab] || 0;
+      if (el) el.scrollTop = this.scroll[this.state.tab] || 0;
     }
+    const chat = document.getElementById('chat-scroll');
+    if (chat) chat.scrollTop = chat.scrollHeight;
   }
 
-  toggleDrawer() {
-    return () => this.setState((s) => ({ drawerOpen: !s.drawerOpen }));
-  }
-
-  closeDrawer() {
-    return () => this.setState({ drawerOpen: false });
-  }
-
-  switchDrawerTab(tab) {
+  setTab(tab) {
     return () => {
+      if (tab === this.state.tab) return;
       const el = document.getElementById('rail-scroll');
-      if (el) this.scrollPos[this.state.drawerTab] = el.scrollTop;
-      this.setState({ drawerTab: tab });
+      if (el) this.scroll[this.state.tab] = el.scrollTop;
+      this.setState({ tab });
     };
   }
 
   pickClient(id) {
-    return () => {
-      const first = !this.state.hasEverSelectedClient;
-      this.setState({
-        scope: { type: 'client', id },
-        hasEverSelectedClient: true,
-        showTooltip: first,
-        drawerOpen: false
-      });
-    };
+    return () => this.setState((s) => ({ scope: { type: 'client', id }, seenTip: true, showTip: !s.seenTip, menu: false }));
   }
 
-  pickWorkflowFromDrawer(id) {
-    return () => this.setState({ scope: { type: 'workflow', id }, drawerOpen: false });
+  pickWorkflow(id) {
+    return () => this.setState({ scope: { type: 'workflow', id }, menu: false, showTip: false });
   }
 
-  pickWorkflowFromMenu(id) {
-    return () => this.setState({ scope: { type: 'workflow', id }, workflowMenuOpen: false });
-  }
-
-  toggleWorkflowMenu() {
-    return () => this.setState((s) => ({ workflowMenuOpen: !s.workflowMenuOpen }));
-  }
-
-  clearScope() {
-    return () => this.setState({ scope: null, showTooltip: false });
-  }
-
-  dismissTooltip() {
-    return () => this.setState({ showTooltip: false });
-  }
-
-  handleComposerChange() {
-    return (e) => this.setState({ composerValue: e.target.value });
-  }
-
-  handleComposerKeyDown() {
-    return (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.send();
-      }
-    };
-  }
-
-  handleSend() {
-    return () => this.send();
-  }
-
-  send() {
-    const text = this.state.composerValue.trim();
-    if (!text) return;
-    const scope = this.state.scope;
-    const key = scope ? (scope.type === 'client' ? scope.id : 'wf:' + scope.id) : 'general';
-    const existing = this.state.threads[key] || [];
-    const threads = Object.assign({}, this.state.threads, {
-      [key]: existing.concat([{ from: 'user', text }])
-    });
-    this.setState({ threads, composerValue: '' });
-  }
-
-  iconKindFor(entity) {
-    if (entity.indexOf('1040') === 0) return 'user';
-    if (entity.indexOf('1041') === 0 || entity === '706' || entity === '709') return 'landmark';
-    return 'building';
-  }
-
-  entityLabel(entity) {
-    return ENTITY_LABELS[entity] || entity;
-  }
-
-  firstName(name) {
-    return name.split(' ')[0];
-  }
-
-  clientDataset(scenario) {
-    const ashish = { id: 'ashish', name: 'Ashish Khoshya', entity: '1040', status: 'in_progress', note: 'Review 1040 draft in progress' };
-    if (scenario === 'few-attention') {
-      return [
-        ashish,
-        { id: 'c1', name: 'Daniel Cho', entity: '1040', status: 'on_track' },
-        { id: 'c2', name: 'Priya Nair', entity: '1040', status: 'needs_attention', note: 'Missing signature on Form 8879' },
-        { id: 'c3', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1 documents' },
-        { id: 'c4', name: 'Fern & Co.', entity: '1120S', status: 'on_track' }
-      ];
-    }
-    if (scenario === 'calm') {
-      return [
-        ashish,
-        { id: 'c1', name: 'Daniel Cho', entity: '1040', status: 'on_track' },
-        { id: 'c2', name: 'Sana Kapoor', entity: '1040', status: 'on_track' },
-        { id: 'c3', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
-        { id: 'c4', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Draft under review' }
-      ];
-    }
-    return [
-      { id: 'c1', name: 'Meera Iyer', entity: '1040', status: 'needs_attention', note: 'K-1 missing, due in 2 days' },
-      { id: 'c2', name: 'Raghav Sethi', entity: '1120', status: 'needs_attention', note: 'E-signature overdue 6 days' },
-      { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', note: 'Extension deadline Friday' },
+  clients(scenario) {
+    const ashish = { id: 'ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'in_progress', note: 'Review 1040 draft' };
+    if (scenario === 'few-attention') return [
       ashish,
-      { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering documents' },
-      { id: 'c6', name: 'Daniel Cho', entity: '1040', status: 'on_track' },
+      { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
+      { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', note: '8879 unsigned 4 days' },
+      { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1s' },
+      { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' }
+    ];
+    if (scenario === 'calm') return [
+      ashish,
+      { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
+      { id: 'c8', first: 'Sana', last: 'Kapoor', entity: '1040', status: 'on_track' },
+      { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' }
+    ];
+    return [
+      { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', note: 'K-1 missing · due in 2 days' },
+      { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', note: 'E-sign overdue 6 days' },
+      { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', note: 'Extension due Friday' },
+      ashish,
+      { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1s' },
+      { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
       { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
-      { id: 'c8', name: 'Sana Kapoor', entity: '1040', status: 'on_track' }
+      { id: 'c8', first: 'Sana', last: 'Kapoor', entity: '1040', status: 'on_track' },
+      { id: 'c9', first: 'Owen', last: 'Brecker', entity: '1040', status: 'on_track' },
+      { id: 'c10', name: 'Northgate Dental PC', entity: '1120S', status: 'on_track' }
     ];
   }
 
-  workflowDataset() {
+  workflows() {
     return {
-      acrossClients: [
-        { id: 'w1', name: 'Collect missing K-1s', clientCount: 5, done: 3, total: 5 },
-        { id: 'w2', name: 'Send engagement letters', clientCount: 4, done: 1, total: 4 }
+      across: [
+        { id: 'w1', name: 'Collect missing K-1s', clients: 5, done: 3, total: 5 },
+        { id: 'w2', name: 'Send Q3 estimate reminders', clients: 12, done: 7, total: 12 }
       ],
-      singleClient: [
+      single: [
         { id: 'w3', name: 'Review 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 2, total: 3 },
-        { id: 'w4', name: 'Prepare Form 8879 signature', clientId: 'c1', clientName: 'Meera Iyer', done: 0, total: 2 }
+        { id: 'w4', name: 'File extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2 }
       ]
     };
   }
 
-  statusWord(status) {
-    if (status === 'needs_attention') return 'Needs attention';
-    if (status === 'in_progress') return 'In progress';
-    return 'On track';
+  fullName(c) { return c.name || (c.first + ' ' + c.last); }
+  railName(c) { return c.name || (c.last + ', ' + c.first); }
+  kind(entity) { return entity === '1040' ? 'user' : (entity === '1041' ? 'landmark' : 'building'); }
+
+  reply(scopeObj, clients, wfs) {
+    if (!scopeObj) return "Happy to help. Should I run this across your whole book, or for a specific client? You can also pick one from the left.";
+    if (scopeObj.type === 'client') {
+      const c = clients.find((x) => x.id === scopeObj.id);
+      return "On it — working inside " + (c ? this.fullName(c) : 'this client') + "'s file, using their documents and prior-year return.";
+    }
+    const w = wfs.find((x) => x.id === scopeObj.id);
+    return w ? ('Added to “' + w.name + '.” ' + w.done + ' of ' + w.total + ' done so far — I’ll update the checklist as I go.') : 'Noted.';
+  }
+
+  send(clients, wfs) {
+    const text = this.state.draft.trim();
+    if (!text) return;
+    const s = this.state.scope;
+    const key = s ? (s.type === 'client' ? s.id : 'wf:' + s.id) : 'general';
+    const thread = (this.state.threads[key] || []).concat([{ from: 'user', text }]);
+    this.setState({ threads: Object.assign({}, this.state.threads, { [key]: thread }), draft: '', typing: true, menu: false });
+    const answer = this.reply(s, clients, wfs);
+    setTimeout(() => {
+      this.setState((st) => {
+        const cur = st.threads[key] || [];
+        return { typing: false, threads: Object.assign({}, st.threads, { [key]: cur.concat([{ from: 'assistant', text: answer }]) }) };
+      });
+    }, 900);
   }
 
   renderVals() {
     const scenario = this.props.scenario ?? 'grouped';
-    const isClientsTab = this.state.drawerTab === 'clients';
-    const isWorkflowsTab = this.state.drawerTab === 'workflows';
-
-    const clients = this.clientDataset(scenario);
+    const st = this.state;
+    const isClientsTab = st.tab === 'clients';
+    const clients = this.clients(scenario);
+    const wf = this.workflows();
+    const allWf = wf.across.concat(wf.single);
     const attention = clients.filter((c) => c.status === 'needs_attention');
     const grouped = attention.length >= 3;
-    const scope = this.state.scope;
-    const selectedClientId = scope && scope.type === 'client' ? scope.id : null;
+    const ordered = grouped ? attention.concat(clients.filter((c) => c.status !== 'needs_attention')) : clients;
+    const scope = st.scope;
+    const wfByClient = {};
+    wf.single.forEach((w) => { wfByClient[w.clientId] = w; });
 
-    const wfData = this.workflowDataset();
-    const singleWorkflowByClient = {};
-    wfData.singleClient.forEach((w) => { singleWorkflowByClient[w.clientId] = w; });
-
-    const toClientRow = (c) => {
-      const kind = this.iconKindFor(c.entity);
-      const selected = c.id === selectedClientId;
-      const wf = singleWorkflowByClient[c.id];
+    const clientRows = ordered.map((c, i) => {
+      const k = this.kind(c.entity);
+      const w = wfByClient[c.id];
+      const attn = c.status === 'needs_attention';
       return {
-        name: c.name,
+        displayName: this.railName(c),
         entity: c.entity,
-        iconUser: kind === 'user',
-        iconLandmark: kind === 'landmark',
-        iconBuilding: kind === 'building',
-        note: c.note || null,
-        showDot: c.status === 'in_progress' || (c.status === 'needs_attention' && !grouped),
-        dotColor: c.status === 'needs_attention' ? '#C97B4A' : 'rgba(36,40,44,0.55)',
-        hasWorkflow: !!wf,
-        workflowProgress: wf ? (wf.done + '/' + wf.total) : '',
-        rowStyle: selected ? ROW_ON : ROW_OFF,
+        note: c.note || '',
+        showNote: attn,
+        iconUser: k === 'user', iconBuilding: k === 'building', iconLandmark: k === 'landmark',
+        showDot: attn || c.status === 'in_progress',
+        dotColor: attn ? '#C97B4A' : 'rgba(36,40,44,0.5)',
+        hasWorkflow: !!w,
+        workflowProgress: w ? (w.done + '/' + w.total) : '',
+        dividerBefore: grouped && i === attention.length,
+        rowStyle: scope && scope.type === 'client' && scope.id === c.id ? ROW_ON : ROW_OFF,
         pick: this.pickClient(c.id),
-        ariaLabel: c.name + ', ' + c.entity + ', ' + this.statusWord(c.status)
+        ariaLabel: this.fullName(c) + ', ' + c.entity + (attn ? ', needs attention' : '')
       };
-    };
-
-    const selectedWorkflowId = scope && scope.type === 'workflow' ? scope.id : null;
-
-    const toAcrossRow = (w) => ({
-      name: w.name,
-      clientCount: w.clientCount,
-      progressLabel: w.done + ' of ' + w.total,
-      rowStyle: w.id === selectedWorkflowId ? ROW_ON : ROW_OFF,
-      pick: this.pickWorkflowFromDrawer(w.id),
-      ariaLabel: w.name + ', ' + w.clientCount + ' clients, ' + w.done + ' of ' + w.total + ' done'
     });
 
-    const toSingleRow = (w) => ({
+    const wfRow = (w, sub) => ({
       name: w.name,
-      clientName: w.clientName,
-      progressLabel: w.done + ' of ' + w.total,
-      rowStyle: w.id === selectedWorkflowId ? ROW_ON : ROW_OFF,
-      pick: this.pickWorkflowFromDrawer(w.id),
-      ariaLabel: w.name + ' for ' + w.clientName + ', ' + w.done + ' of ' + w.total + ' done'
+      sub,
+      progress: w.done + ' of ' + w.total,
+      rowStyle: scope && scope.type === 'workflow' && scope.id === w.id ? ROW_ON : ROW_OFF,
+      pick: this.pickWorkflow(w.id),
+      ariaLabel: w.name + ', ' + w.done + ' of ' + w.total + ' done'
     });
 
-    // pulse strip chips
-    const toChip = (c) => {
-      const kind = this.iconKindFor(c.entity);
-      return {
-        firstName: this.firstName(c.name),
-        iconUser: kind === 'user',
-        iconLandmark: kind === 'landmark',
-        iconBuilding: kind === 'building',
-        pick: this.pickClient(c.id),
-        ariaLabel: 'Open ' + c.name + ' — needs attention'
-      };
-    };
-    const attentionChips = attention.map(toChip);
-
-    // workflow-start menu
-    const allWorkflows = wfData.acrossClients.concat(wfData.singleClient);
-    const workflowMenuItems = allWorkflows.map((w) => ({
-      name: w.name,
-      subtitle: w.clientCount ? (w.clientCount + ' clients &middot; ' + w.done + ' of ' + w.total) : (w.clientName + ' &middot; ' + w.done + ' of ' + w.total),
-      pick: this.pickWorkflowFromMenu(w.id)
-    }));
-
-    // chat scope
-    const scopedClient = scope && scope.type === 'client' ? clients.find((c) => c.id === scope.id) : null;
-    const scopedWorkflow = scope && scope.type === 'workflow' ? allWorkflows.find((w) => w.id === scope.id) : null;
-    const scoped = !!(scopedClient || scopedWorkflow);
-    const threadKey = scopedClient ? scopedClient.id : (scopedWorkflow ? 'wf:' + scopedWorkflow.id : 'general');
-    const threadMessages = (this.state.threads[threadKey] || []).map((m) => ({
-      text: m.text,
-      fromAssistant: m.from === 'assistant',
-      fromUser: m.from === 'user'
-    }));
+    const sc = scope && scope.type === 'client' ? clients.find((c) => c.id === scope.id) : null;
+    const sw = scope && scope.type === 'workflow' ? allWf.find((w) => w.id === scope.id) : null;
+    const scoped = !!(sc || sw);
+    const key = sc ? sc.id : (sw ? 'wf:' + sw.id : 'general');
+    const messages = (st.threads[key] || []).map((m) => ({ text: m.text, fromUser: m.from === 'user', fromAssistant: m.from === 'assistant' }));
+    const hasMessages = messages.length > 0;
+    const general = st.threads.general || [];
+    const firstGeneral = general.find((m) => m.from === 'user');
 
     let emptyHeading = 'How can I support your firm today?';
-    if (scopedClient) emptyHeading = 'How can I support ' + scopedClient.name + '?';
-    if (scopedWorkflow) emptyHeading = "Let's work on " + scopedWorkflow.name + '.';
+    if (sc) emptyHeading = 'How can I support ' + this.fullName(sc) + '?';
+    if (sw) emptyHeading = 'Let’s keep “' + sw.name + '” moving.';
+
+    const canSend = st.draft.trim().length > 0;
 
     return {
-      drawerOpen: this.state.drawerOpen,
-      toggleDrawer: this.toggleDrawer(),
-      closeDrawer: this.closeDrawer(),
-
       isClientsTab,
-      isWorkflowsTab,
+      isWorkflowsTab: !isClientsTab,
       clientsTabStyle: isClientsTab ? TAB_ON : TAB_OFF,
-      workflowsTabStyle: isWorkflowsTab ? TAB_ON : TAB_OFF,
-      selectClientsTab: this.switchDrawerTab('clients'),
-      selectWorkflowsTab: this.switchDrawerTab('workflows'),
+      workflowsTabStyle: isClientsTab ? TAB_OFF : TAB_ON,
+      selectClientsTab: this.setTab('clients'),
+      selectWorkflowsTab: this.setTab('workflows'),
 
-      clientCount: clients.length,
       grouped,
       attentionCount: attention.length,
-      attentionRows: grouped ? attention.map(toClientRow) : [],
-      otherRows: (grouped ? clients.filter((c) => c.status !== 'needs_attention') : clients).map(toClientRow),
+      clientRows,
+      acrossRows: wf.across.map((w) => wfRow(w, w.clients + ' clients')),
+      singleRows: wf.single.map((w) => wfRow(w, w.clientName)),
 
-      workflowCount: wfData.acrossClients.length + wfData.singleClient.length,
-      acrossClientRows: wfData.acrossClients.map(toAcrossRow),
-      singleClientRows: wfData.singleClient.map(toSingleRow),
+      hasThread: !!firstGeneral,
+      noThread: !firstGeneral,
+      threadTitle: firstGeneral ? firstGeneral.text : '',
+      threadRowStyle: !scoped ? ROW_ON : ROW_OFF,
 
-      hasAttention: attentionChips.length > 0,
-      noAttention: attentionChips.length === 0,
-      attentionChips,
-
-      workflowMenuOpen: this.state.workflowMenuOpen,
-      toggleWorkflowMenu: this.toggleWorkflowMenu(),
-      workflowMenuItems,
+      isEmpty: !hasMessages,
+      hasMessages,
+      messages,
+      typing: st.typing,
+      emptyHeading,
+      threadHeading: sc ? this.fullName(sc) : (sw ? sw.name : 'Your firm'),
+      composerBottomPad: hasMessages ? '28px' : '0px',
 
       scoped,
-      scopeIsWorkflow: !!scopedWorkflow,
-      scopedClientName: scopedClient ? scopedClient.name : (scopedWorkflow ? scopedWorkflow.name : ''),
-      scopeHasSuffix: !!scopedClient,
-      scopedSuffix: scopedClient ? this.entityLabel(scopedClient.entity) : '',
-      scopeBorderColor: scopedWorkflow ? '#C2EF72' : 'rgba(36,40,44,0.22)',
-      clearScope: this.clearScope(),
-      showTooltip: this.state.showTooltip,
-      dismissTooltip: this.dismissTooltip(),
+      scopeIsClient: !!sc,
+      scopeIsWorkflow: !!sw,
+      scopeName: sc ? this.fullName(sc) : (sw ? sw.name : ''),
+      scopeTag: sc ? sc.entity : (sw ? (sw.done + ' of ' + sw.total) : ''),
+      trayBg: scoped ? 'rgba(36,40,44,0.04)' : 'transparent',
+      clearScope: () => this.setState({ scope: null, showTip: false, menu: false }),
+      showTooltip: st.showTip,
+      dismissTooltip: () => this.setState({ showTip: false }),
 
-      threadEmpty: threadMessages.length === 0,
-      threadMessages,
-      emptyHeading,
+      workflowMenuOpen: st.menu,
+      toggleWorkflowMenu: () => this.setState((s) => ({ menu: !s.menu, showTip: false })),
+      wfBtnStyle: st.menu ? 'background:#24282C;color:#F7F6F0;' : '',
+      menuItems: allWf.map((w) => ({ name: w.name, sub: (w.clients ? w.clients + ' clients' : w.clientName) + ' · ' + w.done + ' of ' + w.total, pick: this.pickWorkflow(w.id) })),
 
-      composerPlaceholder: scoped ? 'Ask a follow up…' : 'Give me a task or question to work on…',
-      composerValue: this.state.composerValue,
-      handleComposerChange: this.handleComposerChange(),
-      handleComposerKeyDown: this.handleComposerKeyDown(),
-      handleSend: this.handleSend()
+      placeholder: scoped ? 'Ask a follow up…' : 'Give me a task or question to work on…',
+      draft: st.draft,
+      onDraft: (e) => this.setState({ draft: e.target.value }),
+      onKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.send(clients, allWf); } },
+      onSend: () => this.send(clients, allWf),
+      sendStyle: 'width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;' + (canSend ? 'background:#C2EF72;color:#24282C;' : 'background:rgba(194,239,114,0.35);color:rgba(36,40,44,0.45);'),
+
+      showNeedsYou: !scoped && !hasMessages && attention.length > 0,
+      needsYou: attention.slice(0, 3).map((c) => ({ name: this.fullName(c), note: c.note, pick: this.pickClient(c.id) }))
     };
   }
 }

@@ -15,19 +15,24 @@ Interactive canvas (Claude Artifact — Design, clickable prototype):
 Open it, then use Play on the `Workspace` artboard. Click an avatar chip
 in the top strip, open "Book," start a workflow from the composer's `+`.
 
-## The structural bet
+## The approach
 
-A permanent client rail next to chat reads as an inbox with a chat panel
-bolted on. Instead:
+Built inside Instead's real shell (trial banner, narrow rail, centered
+question, one composer) so it reads as the actual product. The real app is
+already chat-first; the work is in what the rail and the empty chat tell a
+Pro in the first three seconds:
 
-- **A pulse strip** across the top of the screen — small avatar + first-name
-  chips, but *only* for clients needing attention right now. Calm clients
-  never appear here at all.
-- **A "Book" drawer** — the full client roster and workflow list (Clients /
-  Workflows tabs), opened on demand, closes itself the moment you act on
-  something inside it.
-- **Chat fills the rest of the canvas** by default — no permanent sidebar
-  competing with it.
+- **"Needs you" at two depths** — clients needing attention float to the
+  top of the rail with a one-line reason; the same people appear as chips
+  under the empty composer, one tap from a scoped chat.
+- **Clients | Workflows** as one toggle in the rail, each tab keeping its
+  own scroll and selection.
+- **Selecting is scoping** — clicking a client pins a chip above the
+  composer (Instead's existing pattern, now with ×) and opens their own
+  thread; sending a message gets a mock reply.
+
+An earlier iteration replaced the rail with a top strip + drawer; it's
+described on the `Decisions` artboard as a direction tried and dropped.
 
 Full reasoning, including the tradeoff this makes and what's deliberately
 left unresolved, is written out on the `Decisions` artboard on the canvas
@@ -35,9 +40,8 @@ left unresolved, is written out on the `Decisions` artboard on the canvas
 
 ## What's here
 
-- `project/Workspace.dc.html` — the interactive home screen: pulse strip,
-  chat pane, composer, and the Book drawer (rail content moved into an
-  overlay). A `scenario` tweak switches mock data between `grouped`
+- `project/Workspace.dc.html` — the interactive firm home (1440×900):
+  banner, rail, chat, composer. A `scenario` tweak switches mock data between `grouped`
   (3+ clients need attention → grouped under a label),
   `few-attention` (1 client needs attention → no grouping), and `calm`
   (mostly on-track, pulse strip goes quiet).

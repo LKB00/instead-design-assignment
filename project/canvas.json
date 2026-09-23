@@ -2,10 +2,10 @@
   "v": 3,
   "attachments": {},
   "boards": {
-    "Artboard-874g.dc.html": { "h": 600, "w": 800, "x": 1720, "y": 0 },
-    "Workspace.dc.html": { "h": 800, "is_interactive": true, "w": 960, "x": 0, "y": 0 },
-    "Decisions.dc.html": { "h": 800, "w": 620, "x": 1040, "y": 0 },
-    "StatusKey.dc.html": { "h": 420, "w": 380, "x": 0, "y": 880 }
+    "Artboard-874g.dc.html": { "h": 600, "w": 800, "x": 2240, "y": 0 },
+    "Workspace.dc.html": { "h": 900, "is_interactive": true, "w": 1440, "x": 0, "y": 0, "title": "Instead Pro — firm home" },
+    "Decisions.dc.html": { "h": 900, "w": 640, "x": 1520, "y": 0, "title": "Decisions & tradeoffs" },
+    "StatusKey.dc.html": { "h": 420, "w": 380, "x": 0, "y": 1020 }
   },
   "createdOnFiles": { "at": "2026-09-23T00:00:00Z", "v": 1 },
   "designSystems": [],
@@ -13,9 +13,9 @@
   "notes": {
     "n1": {
       "kind": "title1",
-      "maxW": 900,
+      "maxW": 1440,
       "size": 14,
-      "text": "Chat-first home. Pulse strip = who needs you, always visible. \"Book\" opens the full roster/workflows as a drawer. Click a chip or drawer row to scope chat; \"+\" in composer starts a workflow.",
+      "text": "Play the firm home: click a client or a \"Needs you\" chip to scope chat, send a message, switch Clients | Workflows, start a workflow from the composer.",
       "w": 260,
       "x": 0,
       "y": -80
@@ -23,5 +23,5 @@
   },
   "order": ["Workspace.dc.html", "Decisions.dc.html", "StatusKey.dc.html", "Artboard-874g.dc.html"],
   "pages": [],
-  "title": "Instead Pro — chat-first home"
+  "title": "Instead Pro — firm home"
 }
