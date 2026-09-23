@@ -33,10 +33,14 @@ const PATHS = {
   timerReset: html`<path d="M10 2h4" /><path d="M12 14v-4" /><path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-5.3 14L4 17.6" /><path d="M9 17H4v5" />`,
   panelLeftClose: html`<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="m16 15-3-3 3-3" />`,
   folderOpen: html`<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />`,
+  moveRight: html`<path d="M18 8L22 12L18 16" /><path d="M2 12H22" />`,
+  check: html`<path d="M20 6 9 17l-5-5" />`,
+  bookmark: html`<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />`,
+  fileText: html`<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />`,
   folder: html`<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />`,
 };
 
-const Icon = ({ name, size = 18, stroke = 1.5 }) => html`
+const Icon = ({ name, size = 14, stroke = 1.5 }) => html`
   <svg width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width=${stroke} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name]}</svg>`;
 
@@ -151,6 +155,8 @@ class App extends Component {
       activeThread: {},
       titles: { 'ashish#1': 'Friendly greeting exchange', 'c1#1': 'K-1 follow-up', 'ref-ashish#1': 'Friendly greeting exchange' },
       openYears: { 2026: true, 2025: false },
+      railW: 316,
+      threadsH: 260,
       selectedWorkflow: null,
     };
     this.scrollPos = { clients: 0, workflows: 0 };
@@ -189,6 +195,21 @@ class App extends Component {
     if (scopeChanged && this.inputEl) this.inputEl.focus();
   }
 
+  // Instead lets you drag the rail's width and the Threads section's height.
+  startResize(e, axis) {
+    e.preventDefault();
+    const startX = e.clientX, startY = e.clientY, w0 = this.state.railW, h0 = this.state.threadsH;
+    const cls = axis === 'col' ? 'dragging-col' : 'dragging-row';
+    document.body.classList.add(cls);
+    const move = (ev) => {
+      if (axis === 'col') this.setState({ railW: Math.max(260, Math.min(480, w0 + ev.clientX - startX)) });
+      else this.setState({ threadsH: Math.max(120, Math.min(480, h0 - (ev.clientY - startY))) });
+    };
+    const up = () => { document.body.classList.remove(cls); window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
+
   setTab(tab) {
     if (tab === this.state.tab) return;
     if (this.listEl) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
@@ -197,7 +218,10 @@ class App extends Component {
 
   pickClient(id) {
     if (this.listEl && !(this.state.scope && this.state.scope.type === 'client')) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
-    this.setState((s) => ({ scope: { type: 'client', id }, seenTip: true, showTip: !s.seenTip, menu: false }));
+    this.setState((s) => ({ scope: { type: 'client', id }, seenTip: true, showTip: !s.seenTip, menu: false, panelLoading: id, panelEntering: id }));
+    clearTimeout(this.loadT); clearTimeout(this.enterT);
+    this.enterT = setTimeout(() => this.setState({ panelEntering: null }), 320);
+    this.loadT = setTimeout(() => this.setState({ panelLoading: null }), 700);
   }
 
   pickWorkflow(id) {
@@ -260,96 +284,108 @@ class App extends Component {
   // ---------- render pieces ----------
   renderClientRow(c, { selected, divider, wf }) {
     const attn = c.status === 'needs_attention';
-    const showDot = attn || c.status === 'in_progress';
+    const busy = c.status === 'in_progress';
     return html`
       ${divider && html`<div class="divider"></div>`}
-      <button class=${'row' + (selected ? ' on' : '') + (attn ? ' tall' : '')} onClick=${() => this.pickClient(c.id)}
+      <div class=${'row' + (selected ? ' on' : '') + (attn ? ' tall' : '')} role="button" tabindex="0"
+        onClick=${() => this.pickClient(c.id)} onKeyDown=${(e) => { if (e.key === 'Enter') this.pickClient(c.id); }}
         aria-label=${`${fullName(c)}, ${ENTITY[c.entity] || c.entity}${attn ? ', needs attention' : ''}`}>
-        <div class="row-inner">
-          <div class="row-icon">
-            <${Icon} name=${iconFor(c.entity)} size=${18} stroke=${1.5} />
-            ${showDot && html`<span class="status-dot" style=${{ background: attn ? 'var(--amber)' : 'rgba(36,40,44,0.5)' }}></span>`}
-          </div>
-          <div class="row-text">
-            <div class="row-name">${railName(c)}</div>
-            ${attn && html`<div class="row-note">${c.note}</div>`}
-          </div>
-          ${wf && html`<span class="meta-pill" title=${`${wf.name} — ${wf.done} of ${wf.total} done`}><${Icon} name="workflow" size=${12} stroke=${1.75} />${wf.done}/${wf.total}</span>`}
-          <span class="badge">${c.entity}</span>
-        </div>
-      </button>`;
+        <span class="avatar">
+          <span class="avatar-icon"><${Icon} name=${iconFor(c.entity)} /></span>
+          <span class="avatar-check"><${Icon} name="check" size=${9} /></span>
+          ${(attn || busy) && html`<span class=${'status-dot' + (attn ? ' attn' : '')}></span>`}
+        </span>
+        <span class="row-text">
+          <span class="row-name">${railName(c)}</span>
+          ${attn && html`<span class="row-note">${c.note}</span>`}
+        </span>
+        <span class="row-meta">
+          ${wf && html`<span class="pill-xxs outline" title=${`${wf.name} — ${wf.done} of ${wf.total} done`}><${Icon} name="workflow" size=${10} />${wf.done}/${wf.total}</span>`}
+          <span class="pill-xxs lime">${c.entity}</span>
+        </span>
+        <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
+      </div>`;
   }
 
   renderWorkflowRow(w, sub) {
     const s = this.state.scope;
     const selected = s && s.type === 'workflow' && s.id === w.id;
     return html`
-      <button class=${'row tall' + (selected ? ' on' : '')} onClick=${() => this.pickWorkflow(w.id)}
+      <div class=${'row tall' + (selected ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.pickWorkflow(w.id)}
         aria-label=${`${w.name}, ${w.done} of ${w.total} done`}>
-        <div class="row-inner">
-          <div class="row-icon"><${Icon} name="workflow" size=${18} stroke=${1.5} /></div>
-          <div class="row-text">
-            <div class="row-name">${w.name}</div>
-            <div class="row-note">${sub}</div>
-          </div>
-          <span class="meta-pill">${w.done} of ${w.total}</span>
-        </div>
-      </button>`;
+        <span class="avatar"><span class="avatar-icon"><${Icon} name="workflow" /></span></span>
+        <span class="row-text"><span class="row-name">${w.name}</span><span class="row-note">${sub}</span></span>
+        <span class="row-meta"><span class="pill-xxs outline">${w.done} of ${w.total}</span></span>
+        <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
+      </div>`;
   }
 
   renderClientShell(c, activeKey) {
     const st = this.state;
     const list = st.clientThreads[c.id] || [];
-    const I = (name, label, onClick, size = 18) => html`<button class="ic" aria-label=${label} onClick=${onClick}><${Icon} name=${name} size=${size} stroke=${1.5} /></button>`;
+    const loading = st.panelLoading === c.id;
+    const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
     const year = (y) => html`
-      <button class="folder-row" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
-        <${Icon} name=${st.openYears[y] ? 'folderOpen' : 'folder'} size=${20} stroke=${1.5} /><span>${y}</span>
-      </button>
-      ${st.openYears[y] && html`<button class="upload-row"><${Icon} name="plus" size=${18} stroke=${1.5} />Upload files</button>`}`;
+      <div class="doc-row" role="button" tabindex="0" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
+        <span class="avatar sm"><span class="avatar-icon"><${Icon} name=${st.openYears[y] ? 'folderOpen' : 'folder'} size=${st.openYears[y] ? 15 : 16} /></span><span class="avatar-check"><${Icon} name="check" size=${8} /></span></span>
+        <span class="doc-name">${y}</span>
+        <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
+      </div>
+      ${st.openYears[y] && html`<button class="upload-row"><${Icon} name="plus" />Upload files</button>`}`;
     return html`
       <aside class="client-shell">
         <nav class="icon-col" aria-label="Workspace">
-          <button class="logo-tile" aria-label="Back to firm" onClick=${() => this.clearScope()}>i</button>
+          <button class="logo-tile" aria-label="Back to firm" onClick=${() => this.clearScope()}><img src="./img/instead-lime.svg" alt="" /></button>
           <div class="col-spacer"></div>
-          ${I('userPlus', 'Invite teammate')}
-          ${I('settings2', 'Settings')}
+          ${I('userPlus', 'Invite teammate', null, 'col-btn')}
+          ${I('settings2', 'Settings', null, 'col-btn')}
           <div class="col-initials serif">LB</div>
         </nav>
 
-        <section class="client-panel" aria-label=${`${fullName(c)} workspace`}>
+        <section class=${'client-panel' + (st.panelEntering === c.id ? ' entering' : '')} aria-label=${`${fullName(c)} workspace`}>
           <header class="cp-header">
             <h2 class="serif cp-name">${fullName(c)}</h2>
-            <span class="badge cp-badge">${c.entity}</span>
-            <div class="cp-header-spacer"></div>
-            ${I('x', 'Close client', () => this.clearScope())}
+            <span class="pill-xxs lime">${c.entity}</span>
+            <div class="flex1"></div>
+            ${I('x', 'Close client', () => this.clearScope(), 'ic lg')}
           </header>
 
           <div class="cp-actions">
-            <button class="cp-new" onClick=${() => this.newClientThread(c.id)}><${Icon} name="messagePlus" size=${18} stroke=${1.5} />New client thread</button>
-            ${I('moreVertical', 'More')}
-            ${I('timerReset', 'History')}
-            ${I('panelLeftClose', 'Collapse panel', () => this.clearScope())}
+            <button class="nav-pill" onClick=${() => this.newClientThread(c.id)}>
+              <span class="nav-pill-icon"><${Icon} name="messagePlus" /></span><span class="flex1">New client thread</span><span class="nav-pill-go"><${Icon} name="moveRight" /></span>
+            </button>
+            ${I('moreVertical', 'More', null, 'ic lg')}
+            ${I('timerReset', 'History', null, 'ic lg')}
+            ${I('panelLeftClose', 'Collapse panel', () => this.clearScope(), 'ic lg')}
           </div>
 
           <div class="cp-docs">
-            <div class="section-head cp-head">
+            <div class="section-head">
               <span class="label">Tax docs</span>
               <div class="head-icons">${I('search', 'Search documents')}${I('archiveX', 'Archived')}${I('plus', 'Add document')}</div>
             </div>
-            <div class="cp-doc-list">${year(2026)}${year(2025)}</div>
+            <div class="cp-doc-list">
+              ${loading
+                ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => html`<div class="skeleton" style=${{ animationDelay: `${i * 60}ms` }}></div>`)
+                : html`${year(2026)}${year(2025)}`}
+            </div>
           </div>
 
           <div class="cp-threads">
-            <div class="section-head cp-head">
+            <div class="section-head">
               <span class="label">Client threads</span>
               <div class="head-icons">${I('plus', 'New client thread', () => this.newClientThread(c.id))}</div>
             </div>
-            <div class="threads-list cp-thread-list">
-              ${list.length
-                ? list.map((k) => html`<button class=${'thread-row cp-thread' + (k === activeKey ? ' on' : '')} onClick=${() => this.openClientThread(c.id, k)}>
-                    <span class="t">${st.titles[k] || 'New thread'}</span><span class="thread-when">Now</span>
-                  </button>`)
-                : html`<div class="empty-threads"><${Icon} name="messages" size=${18} stroke=${1.5} />Start your first thread</div>`}
+            <div class="threads-list">
+              ${loading
+                ? [0, 1, 2].map((i) => html`<div class="skeleton" style=${{ animationDelay: `${i * 60}ms` }}></div>`)
+                : list.length
+                  ? list.map((k) => html`<div class=${'thread-row' + (k === activeKey ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.openClientThread(c.id, k)}>
+                      <span class="t">${st.titles[k] || 'New thread'}</span>
+                      <span class="thread-when">${k.endsWith('#1') ? '1h' : 'Now'}</span>
+                      <span class="thread-actions"><button class="ic sm" aria-label="Bookmark" onClick=${(e) => e.stopPropagation()}><${Icon} name="bookmark" /></button><button class="ic sm" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button></span>
+                    </div>`)
+                  : html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
             </div>
           </div>
         </section>
@@ -379,118 +415,100 @@ class App extends Component {
 
     const canSend = st.draft.trim().length > 0;
     const isClients = st.tab === 'clients';
+    const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
 
     return html`
       <div class="app">
-        <div class="banner-wrap">
-          <div class="banner">
-            <div><b>Lokesh Kumar Bhatia</b> trial ends in 7 days.</div>
-            <button class="btn-dark">Schedule with the Instead team</button>
-          </div>
+        <div class="banner">
+          <span class="banner-text"><b>Lokesh Kumar Bhatia</b> trial ends in 7 days.</span>
+          <button class="btn-dark">Schedule with the Instead team</button>
         </div>
 
         <div class="body">
-          <!-- RAIL: firm view, or Instead's client panel while a client is open -->
-          ${sc ? this.renderClientShell(sc, key) : html`<aside class="rail">
-            <img class="wordmark" src="./img/instead-logo.svg" alt="instead" />
+          ${sc ? this.renderClientShell(sc, key) : html`
+          <aside class="rail" style=${{ '--rail-w': `${st.railW}px`, '--threads-h': `${st.threadsH}px` }}>
+            <div class="rail-resize" aria-hidden="true" onMouseDown=${(e) => this.startResize(e, 'col')}><div class="rail-line"></div><div class="rail-grip"></div></div>
+            <div class="rail-logo"><img src="./img/instead-logo.svg" alt="instead" /></div>
 
             <div class="toolbar">
               <div class="toggle" role="tablist">
-                <button role="tab" aria-selected=${isClients} onClick=${() => this.setTab('clients')}><${Icon} name="users" size=${18} stroke=${1.5} />Clients</button>
-                <button role="tab" aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}><${Icon} name="workflow" size=${18} stroke=${1.5} />Workflows</button>
+                <button role="tab" aria-selected=${isClients} onClick=${() => this.setTab('clients')}><${Icon} name="users" />Clients</button>
+                <button role="tab" aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}><${Icon} name="workflow" />Workflows</button>
               </div>
-              <button class="round-btn" aria-label="Library"><${Icon} name="library" size=${18} stroke=${1.5} /></button>
-              <button class="round-btn" aria-label="New thread" onClick=${() => this.clearScope()}><${Icon} name="messagePlus" size=${18} stroke=${1.5} /></button>
+              ${I('library', 'Library', null, 'round-btn')}
+              ${I('messagePlus', 'New thread', () => this.clearScope(), 'round-btn')}
             </div>
 
             <div class="clients-pane">
-            <div class="section-head">
-              ${isClients
-                ? html`<span class="label">Clients</span>
-                    <div class="head-icons">
-                      <button class="ic" aria-label="Search clients"><${Icon} name="search" size=${18} stroke=${1.5} /></button>
-                      <button class="ic" aria-label="Archived"><${Icon} name="archiveX" size=${18} stroke=${1.5} /></button>
-                      <button class="ic" aria-label="Sort"><${Icon} name="arrowUpDown" size=${18} stroke=${1.5} /></button>
-                      <button class="ic" aria-label="Filter"><${Icon} name="listFilter" size=${18} stroke=${1.5} /></button>
-                      <button class="ic" aria-label="Add client"><${Icon} name="plus" size=${18} stroke=${1.5} /></button>
-                    </div>`
-                : html`<span class="label">Workflows</span>
-                    <div class="head-icons">
-                      <button class="ic" aria-label="Search workflows"><${Icon} name="search" size=${18} stroke=${1.5} /></button>
-                      <button class="ic" aria-label="Start a workflow" onClick=${() => this.setState((s) => ({ menu: !s.menu }))}><${Icon} name="plus" size=${18} stroke=${1.5} /></button>
-                    </div>`}
-            </div>
-
-            <div class="list" ref=${(el) => (this.listEl = el)}>
-              ${isClients
-                ? html`
-                    ${grouped && html`<div class="group-label"><span class="dot"></span><b>Needs you</b> · ${attention.length}</div>`}
-                    ${ordered.map((c, i) => this.renderClientRow(c, {
-                      selected: sc && sc.id === c.id,
-                      divider: grouped && i === attention.length,
-                      wf: wfByClient[c.id],
-                    }))}
-                    <button class="add-row"><${Icon} name="plus" size=${18} stroke=${1.5} />Add new client</button>`
-                : html`
-                    <div class="group-label">Across clients</div>
-                    ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
-                    <div class="group-label spaced">Single client</div>
-                    ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}`}
-            </div>
+              <div class="section-head">
+                ${isClients
+                  ? html`<span class="label">Clients</span>
+                      <div class="head-icons">${I('search', 'Search clients')}${I('archiveX', 'Archived')}${I('arrowUpDown', 'Sort')}${I('listFilter', 'Filter')}${I('plus', 'Add client')}</div>`
+                  : html`<span class="label">Workflows</span>
+                      <div class="head-icons">${I('search', 'Search workflows')}${I('plus', 'Start a workflow', () => this.setState((s) => ({ menu: !s.menu })))}</div>`}
+              </div>
+              <div class="list" ref=${(el) => (this.listEl = el)}>
+                ${isClients
+                  ? html`
+                      ${grouped && html`<div class="group-label"><span class="dot"></span><b>Needs you</b><span>· ${attention.length}</span></div>`}
+                      ${ordered.map((c, i) => this.renderClientRow(c, { selected: false, divider: grouped && i === attention.length, wf: wfByClient[c.id] }))}
+                      <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>`
+                  : html`
+                      <div class="group-label">Across clients</div>
+                      ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
+                      <div class="group-label spaced">Single client</div>
+                      ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}`}
+              </div>
             </div>
 
             <div class="threads-pane">
+              <div class="threads-resize" aria-hidden="true" onMouseDown=${(e) => this.startResize(e, 'row')}></div>
               <div class="section-head">
                 <span class="label">Threads</span>
-                <div class="head-icons"><button class="ic" aria-label="New thread" onClick=${() => this.clearScope()}><${Icon} name="plus" size=${18} stroke=${1.5} /></button></div>
+                <div class="head-icons">${I('plus', 'New thread', () => this.clearScope())}</div>
               </div>
               <div class="threads-list">
                 ${firstGeneral
-                  ? html`<button class=${'thread-row' + (!scoped ? ' on' : '')} onClick=${() => this.clearScope()}>
+                  ? html`<div class=${'thread-row' + (!scoped ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.clearScope()}>
                       <span class="t">${firstGeneral.text}</span><span class="thread-when">Now</span>
-                    </button>`
-                  : html`<div class="empty-threads"><${Icon} name="messages" size=${18} stroke=${1.5} />Start your first thread</div>`}
+                    </div>`
+                  : html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
               </div>
             </div>
 
-            <div class="user-card">
-              <div class="serif name">Lokesh Kumar Bhatia</div>
-              <div class="user-card-row">
-                <div class="initials serif">LB</div>
-                <div class="head-icons">
-                  <button class="ic" aria-label="Invite teammate"><${Icon} name="userPlus" size=${18} stroke=${1.5} /></button>
-                  <button class="ic" aria-label="Settings"><${Icon} name="settings2" size=${18} stroke=${1.5} /></button>
+            <div class="user-wrap">
+              <div class="user-card">
+                <div class="serif user-name">Lokesh Kumar Bhatia</div>
+                <div class="user-card-row">
+                  <div class="initials serif">LB</div>
+                  <div class="head-icons">${I('userPlus', 'Invite teammate')}${I('settings2', 'Settings')}</div>
                 </div>
               </div>
             </div>
           </aside>`}
 
-          <!-- MAIN -->
-          <main class=${'main' + (sc ? ' client' : '') + (scoped && !hasMessages ? ' scoped-empty' : '')}>
-            ${!hasMessages && html`<div class="spacer"></div><h1 class="serif hero">${heroText}</h1>`}
+          <main class=${'main' + (sc ? ' client' : '') + (hasMessages ? ' docked' : '')}>
+            ${!hasMessages && html`
+              <div class="hero-wrap">
+                <${Hero} text=${heroText} intro=${!this.introPlayed && !scoped} onIntroDone=${() => { this.introPlayed = true; }} key=${heroText} />
+              </div>`}
 
             ${hasMessages && html`
               <div class="chat-scroll" ref=${(el) => (this.chatEl = el)}>
                 <div class="chat-col">
                   ${messages.map((m, i) => (m.from === 'user'
-                    ? (i === 0
-                      ? html`<h2 class="serif turn-title">${m.text}</h2>`
-                      : html`<h3 class="serif turn-heading">${m.text}</h3>`)
+                    ? html`<div class=${'serif user-turn' + (i === 0 ? ' first' : '')}>${m.text}</div>`
                     : html`<div class="answer">
-                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.ul
-                          ? html`<ul>${b.ul.map((li) => html`<li>${li}</li>`)}</ul>`
-                          : html`<p>${b.p}</p>`))}
+                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.ul ? html`<ul>${b.ul.map((li) => html`<li>${li}</li>`)}</ul>` : html`<p>${b.p}</p>`))}
                         <div class="msg-actions">
-                          <button class="ic" aria-label="Good response"><${Icon} name="thumbsUp" size=${18} stroke=${1.5} /></button>
-                          <button class="ic" aria-label="Bad response"><${Icon} name="thumbsDown" size=${18} stroke=${1.5} /></button>
-                          <button class="ic" aria-label="Edit as document"><${Icon} name="filePen" size=${18} stroke=${1.5} /></button>
+                          ${I('thumbsUp', 'Good response', null, 'fb')}${I('thumbsDown', 'Bad response', null, 'fb')}${I('filePen', 'Edit as document', null, 'fb')}
                         </div>
                       </div>`))}
-                  ${st.typing && html`<div class="status-line">${st.typing}<${Icon} name="chevronDown" size=${16} stroke=${1.75} /></div>`}
+                  ${st.typing && html`<div class="status-line">${st.typing}<${Icon} name="chevronDown" size=${12} /></div>`}
                 </div>
               </div>`}
 
-            <div class=${'composer-wrap' + (hasMessages ? ' docked' : '')}>
+            <div class="composer-wrap">
               ${st.showTip && sc && html`
                 <div class="popover tooltip" role="status">
                   Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Tap × on the chip to go back to your whole firm.
@@ -503,56 +521,49 @@ class App extends Component {
                   ${ALL_WF.map((w, i) => html`
                     <button class="menu-item" role="menuitem" onClick=${() => this.pickWorkflow(w.id)}>
                       <span class="menu-num">${i + 1}</span>
-                      <div class="row-text">
-                        <div class="row-name">${w.name}</div>
-                        <div class="row-note">${w.clients ? `${w.clients} clients` : w.clientName} · ${w.done} of ${w.total}</div>
-                      </div>
+                      <span class="row-text"><span class="row-name">${w.name}</span><span class="row-note">${w.clients ? `${w.clients} clients` : w.clientName} · ${w.done} of ${w.total}</span></span>
                     </button>`)}
                 </div>`}
 
               <div class=${'tray' + (scoped ? ' scoped' : '')}>
                 ${scoped && html`
-                  <div class="tray-chip-row">
+                  <div class="tray-chips">
                     <div class="scope-chip">
-                      <${Icon} name=${sc ? 'userRound' : 'workflow'} size=${18} stroke=${1.5} />
-                      <span>${sc ? fullName(sc) : sw.name}</span>
-                      <span class="badge">${sc ? sc.entity : `${sw.done} of ${sw.total}`}</span>
-                      <button class="chip-x" aria-label="Clear scope, back to whole firm" onClick=${() => this.clearScope()}><${Icon} name="x" size=${12} stroke=${2} /></button>
+                      <${Icon} name=${sc ? 'userRound' : 'workflow'} />
+                      <span class="chip-name">${sc ? fullName(sc) : sw.name}</span>
+                      <span class="pill-xxs lime">${sc ? sc.entity : `${sw.done} of ${sw.total}`}</span>
+                      <button class="chip-x" aria-label="Clear scope, back to whole firm" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>
                     </div>
                   </div>`}
 
-                <div class=${'composer' + (scoped ? ' in-tray' : '')}>
-                  <input ref=${(el) => (this.inputEl = el)} type="text"
+                <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
+                  <textarea ref=${(el) => (this.inputEl = el)} rows="1"
                     placeholder=${scoped ? 'Ask a follow up...' : 'Give me a task or question to work on...'}
                     value=${st.draft}
                     onInput=${(e) => this.setState({ draft: e.target.value })}
-                    onKeyDown=${(e) => { if (e.key === 'Enter') { e.preventDefault(); this.send(clients); } }} />
+                    onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
                   <div class="composer-controls">
                     <div class="controls-group">
-                      <button class="circ" aria-label="Attach files"><${Icon} name="paperclip" size=${18} stroke=${1.5} /></button>
-                      <button class="circ" aria-label="Settings"><${Icon} name="settings2" size=${18} stroke=${1.5} /></button>
-                      ${!(sc && hasMessages) && html`<button class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
-                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" size=${18} stroke=${1.5} /></button>`}
+                      ${I('paperclip', 'Attach files', null, 'circ')}
+                      ${I('settings2', 'Settings', null, 'circ')}
+                      ${!(sc && hasMessages) && html`<button type="button" class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
+                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" /></button>`}
                     </div>
                     <div class="controls-group">
-                      <button class="circ" aria-label="Dictate"><${Icon} name="mic" size=${18} stroke=${1.5} /></button>
-                      <button class=${'send' + (canSend ? ' ready' : '')} aria-label="Send" onClick=${() => this.send(clients)}><${Icon} name="arrowUp" size=${18} stroke=${1.5} /></button>
+                      ${I('mic', 'Dictate', null, 'circ')}
+                      <button type="submit" class=${'send' + (canSend ? ' ready' : '')} aria-label="Send"><${Icon} name="arrowUp" /></button>
                     </div>
                   </div>
-                </div>
+                </form>
               </div>
 
               ${!scoped && !hasMessages && attention.length > 0 && html`
                 <div class="needs-you">
                   <span class="needs-you-label">Needs you today</span>
                   ${attention.slice(0, 3).map((c) => html`
-                    <button class="need-chip" onClick=${() => this.pickClient(c.id)}>
-                      <span class="dot"></span><span>${fullName(c)}</span><span class="note">${c.note}</span>
-                    </button>`)}
+                    <button class="need-chip" onClick=${() => this.pickClient(c.id)}><span class="dot"></span><span>${fullName(c)}</span><span class="note">${c.note}</span></button>`)}
                 </div>`}
             </div>
-
-            ${!hasMessages && html`<div class="spacer lower"></div>`}
           </main>
         </div>
 
@@ -562,6 +573,27 @@ class App extends Component {
             <button aria-pressed=${String(st.scenario === id)} onClick=${() => this.setState({ scenario: id, scope: null, showTip: false })}>${label}</button>`)}
         </div>`}
       </div>`;
+  }
+}
+
+// Instead's hero: the logo flips (rotateX) into the heading, which types in 15ms per character.
+class Hero extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { phase: props.intro ? 'logo' : 'text' };
+  }
+  componentDidMount() {
+    if (this.state.phase !== 'logo') return;
+    this.t1 = setTimeout(() => this.setState({ phase: 'flip' }), 1100);
+    this.t2 = setTimeout(() => { this.setState({ phase: 'text' }); this.props.onIntroDone && this.props.onIntroDone(); }, 1400);
+  }
+  componentWillUnmount() { clearTimeout(this.t1); clearTimeout(this.t2); }
+  render({ text }, { phase }) {
+    if (phase !== 'text') return html`<img class=${'hero-logo' + (phase === 'flip' ? ' leaving' : '')} src="./img/instead-logo.svg" alt="instead" />`;
+    let n = 0;
+    return html`<h1 class="serif hero-title entering" aria-label=${text}>
+      ${text.split(' ').map((word, wi) => html`${wi > 0 && html`<span class="tw-space"> </span>`}<span class="tw-word" aria-hidden="true">${[...word].map((ch) => html`<span class="tw-char" style=${{ animationDelay: `${(n++) * 15}ms` }}>${ch}</span>`)}</span>`)}
+    </h1>`;
   }
 }
 
