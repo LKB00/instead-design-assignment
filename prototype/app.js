@@ -27,6 +27,8 @@ const PATHS = {
   thumbsUp: html`<path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />`,
   thumbsDown: html`<path d="M17 14V2" /><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />`,
   copy: html`<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
+  filePen: html`<path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M13.378 15.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />`,
+  chevronDown: html`<path d="m6 9 6 6 6-6" />`,
 };
 
 const Icon = ({ name, size = 18, stroke = 1.5 }) => html`
@@ -84,6 +86,23 @@ const ALL_WF = WORKFLOWS.across.concat(WORKFLOWS.single);
 const PARAMS = new URLSearchParams(location.search);
 const SHOW_DEMO_SWITCH = PARAMS.get('demo') !== '0';
 
+// Instead's own opening reply for a new client thread (verbatim from app.instead.com).
+const greeting = (name) => ({
+  from: 'assistant',
+  blocks: [
+    { p: `Hi Lokesh, good to be working with you on ${name}'s file.` },
+    { p: 'What would you like to do today? A few things I can help with:' },
+    { ul: [
+      'Prepare or review a 1040 return or workpaper',
+      'Build a tax plan or an individual tax estimate for 2026',
+      'Analyze and implement a specific tax strategy (Augusta Rule, Accountable Plan, S Corp conversion, etc.)',
+      'Answer a federal or state tax research question',
+      "Work with the client's documents (organize, extract, summarize)",
+    ] },
+    { p: 'Just let me know what you need.' },
+  ],
+});
+
 const fullName = (c) => c.name || `${c.first} ${c.last}`;
 const railName = (c) => c.name || `${c.last}, ${c.first}`;
 const iconFor = (entity) => (entity === '1040' ? 'userRound' : entity === '1041' ? 'landmark' : 'building');
@@ -95,15 +114,28 @@ class App extends Component {
     this.state = {
       scenario: PARAMS.get('scenario') || 'grouped',
       tab: 'clients',
-      scope: null, // { type: 'client' | 'workflow', id }
-      seenTip: false,
+      scope: PARAMS.get('scope') ? { type: 'client', id: PARAMS.get('scope') } : null, // { type: 'client' | 'workflow', id }
+      seenTip: PARAMS.has('scope'),
       showTip: false,
       menu: false,
       draft: '',
       typing: false,
       threads: {
-        ashish: [{ from: 'assistant', text: "Hi Lokesh, good to be working with you on Ashish Khoshya's file. His 1040 workpaper is two of three steps through review — want me to pull up what's left?" }],
-        c1: [{ from: 'assistant', text: "Meera Iyer's K-1 from Alderwood Partners still hasn't come in, and her return is due in 2 days. I can draft a reminder to her, or file an extension now — which would you like?" }],
+        ashish: [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')],
+        c1: [
+          { from: 'user', text: "What's blocking Meera's return?" },
+          { from: 'assistant', blocks: [
+            { p: 'Her K-1 from Alderwood Partners still hasn’t come in, and the return is due in 2 days.' },
+            { p: 'A few ways I can keep this on track:' },
+            { ul: [
+              'Draft a reminder to Meera asking her to forward the K-1',
+              'File an extension so the deadline isn’t at risk',
+              'Prepare the rest of the return and leave the K-1 lines open',
+            ] },
+            { p: 'Which would you like?' },
+          ] },
+        ],
+        ...(PARAMS.get('thread') === 'hey' ? { 'ref-ashish': [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')] } : {}),
       },
       selectedWorkflow: null,
     };
@@ -141,14 +173,28 @@ class App extends Component {
     this.setState({ scope: null, showTip: false, menu: false });
   }
 
-  replyFor(scope, clients) {
-    if (!scope) return 'Happy to help. Should I run this across your whole book, or for a specific client? You can also pick one from the left.';
-    if (scope.type === 'client') {
-      const c = clients.find((x) => x.id === scope.id);
-      return `On it — working inside ${c ? fullName(c) : 'this client'}'s file, using their documents and prior-year return.`;
-    }
-    const w = ALL_WF.find((x) => x.id === scope.id);
-    return w ? `Added to “${w.name}.” ${w.done} of ${w.total} done so far — I'll update the checklist as I go.` : 'Noted.';
+  replyFor(scope, clients, isFirst) {
+    const c = scope && scope.type === 'client' ? clients.find((x) => x.id === scope.id) : null;
+    const w = scope && scope.type === 'workflow' ? ALL_WF.find((x) => x.id === scope.id) : null;
+    if (c && isFirst) return { status: `Opening ${fullName(c)}'s file`, msg: greeting(fullName(c)) };
+    if (c) return {
+      status: `Reading ${fullName(c)}'s documents`,
+      msg: { from: 'assistant', blocks: [
+        { p: `On it. I'll work from ${fullName(c)}'s uploaded documents and prior-year return.` },
+        { p: 'I’ll flag anything missing before I make changes.' },
+      ] },
+    };
+    if (w) return {
+      status: 'Updating workflow',
+      msg: { from: 'assistant', blocks: [{ p: `Added to “${w.name}.” ${w.done} of ${w.total} done so far — I’ll update the checklist as I go.` }] },
+    };
+    return {
+      status: 'Searching authoritative tax guidance',
+      msg: { from: 'assistant', blocks: [
+        { p: 'Happy to help. Should I run this across your whole book, or for a specific client?' },
+        { p: 'You can also pick a client on the left to keep the answer scoped to their file.' },
+      ] },
+    };
   }
 
   send(clients) {
@@ -156,17 +202,17 @@ class App extends Component {
     if (!text) return;
     const s = this.state.scope;
     const key = s ? (s.type === 'client' ? s.id : `wf:${s.id}`) : 'general';
-    const answer = this.replyFor(s, clients);
+    const { status, msg } = this.replyFor(s, clients, !(this.state.threads[key] || []).length);
     this.setState((st) => ({
       threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'user', text }]) },
-      draft: '', typing: true, menu: false, showTip: false,
+      draft: '', typing: status, menu: false, showTip: false,
     }));
     setTimeout(() => {
       this.setState((st) => ({
         typing: false,
-        threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'assistant', text: answer }]) },
+        threads: { ...st.threads, [key]: (st.threads[key] || []).concat([msg]) },
       }));
-    }, 900);
+    }, 1100);
   }
 
   // ---------- render pieces ----------
@@ -319,22 +365,27 @@ class App extends Component {
           </aside>
 
           <!-- MAIN -->
-          <main class="main">
+          <main class=${'main' + (scoped && !hasMessages ? ' scoped-empty' : '')}>
             ${!hasMessages && html`<div class="spacer"></div><h1 class="serif hero">${heroText}</h1>`}
 
             ${hasMessages && html`
               <div class="chat-scroll" ref=${(el) => (this.chatEl = el)}>
                 <div class="chat-col">
-                  <h2 class="serif thread-heading">${sc ? fullName(sc) : sw ? sw.name : 'Your firm'}</h2>
-                  ${messages.map((m) => (m.from === 'user'
-                    ? html`<div class="msg-user"><div class="serif">${m.text}</div></div>`
-                    : html`<div class="msg-ai">${m.text}</div>
+                  ${messages.map((m, i) => (m.from === 'user'
+                    ? (i === 0
+                      ? html`<h2 class="serif turn-title">${m.text}</h2>`
+                      : html`<h3 class="serif turn-heading">${m.text}</h3>`)
+                    : html`<div class="answer">
+                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.ul
+                          ? html`<ul>${b.ul.map((li) => html`<li>${li}</li>`)}</ul>`
+                          : html`<p>${b.p}</p>`))}
                         <div class="msg-actions">
                           <button class="ic" aria-label="Good response"><${Icon} name="thumbsUp" size=${18} stroke=${1.5} /></button>
                           <button class="ic" aria-label="Bad response"><${Icon} name="thumbsDown" size=${18} stroke=${1.5} /></button>
-                          <button class="ic" aria-label="Copy"><${Icon} name="copy" size=${18} stroke=${1.5} /></button>
-                        </div>`))}
-                  ${st.typing && html`<div class="thinking"><i></i><i></i><i></i></div>`}
+                          <button class="ic" aria-label="Edit as document"><${Icon} name="filePen" size=${18} stroke=${1.5} /></button>
+                        </div>
+                      </div>`))}
+                  ${st.typing && html`<div class="status-line">${st.typing}<${Icon} name="chevronDown" size=${16} stroke=${1.75} /></div>`}
                 </div>
               </div>`}
 
@@ -369,7 +420,7 @@ class App extends Component {
                     </div>
                   </div>`}
 
-                <div class="composer">
+                <div class=${'composer' + (scoped ? ' in-tray' : '')}>
                   <input ref=${(el) => (this.inputEl = el)} type="text"
                     placeholder=${scoped ? 'Ask a follow up...' : 'Give me a task or question to work on...'}
                     value=${st.draft}
@@ -379,8 +430,8 @@ class App extends Component {
                     <div class="controls-group">
                       <button class="circ" aria-label="Attach files"><${Icon} name="paperclip" size=${18} stroke=${1.5} /></button>
                       <button class="circ" aria-label="Settings"><${Icon} name="settings2" size=${18} stroke=${1.5} /></button>
-                      <button class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
-                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" size=${18} stroke=${1.5} /></button>
+                      ${!(sc && hasMessages) && html`<button class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
+                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" size=${18} stroke=${1.5} /></button>`}
                     </div>
                     <div class="controls-group">
                       <button class="circ" aria-label="Dictate"><${Icon} name="mic" size=${18} stroke=${1.5} /></button>
