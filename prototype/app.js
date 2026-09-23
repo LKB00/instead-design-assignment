@@ -1186,12 +1186,12 @@ class App extends Component {
           placeholder=${st.wfPick ? 'Add any context for this workflow, or send to start...'
             : st.wfTray === 'build' ? (st.wfFile ? 'Anything to add? Or send and Instead drafts it...' : 'Describe the work you repeat, step by step...')
             : st.wfTray ? 'Search workflows, or describe a new one...'
-            : sc ? (hasMessages ? 'Ask a follow up...' : 'Ask a question or give a task...') : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
+            : sc ? (hasMessages ? 'Ask a follow up...' : 'Ask a question or give a task...') : sw ? 'Ask a follow up...' : 'Give me a task or question to work on...'}
           value=${st.draft}
           onInput=${(e) => {
             const v = e.target.value;
             if (v === '/' && !st.wfTray) return this.openWf();
-            if (!sc && (v === '@' || v.endsWith(' @'))) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
+            if (!scoped && (v === '@' || v.endsWith(' @'))) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
             this.setState({ draft: v });
           }}
           onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
@@ -1208,16 +1208,21 @@ class App extends Component {
               </div>`
             : html`<div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
               ${sc
-                // Inside a client the thread belongs to them: the pill says whose data this uses, and
-                // switching clients is the rail's job. Firm and workflow chats keep the switcher.
+                // Inside a thread (a client's or a workflow's) the pill is a label: it says who the chat
+                // covers, and moving elsewhere is the rail's job. Only the firm-level chat has the switcher.
                 ? html`<span class="ctx-btn ctx-label" aria-label=${`Chat context: ${fullName(sc)}`}>
                     <${Icon} name=${iconFor(sc.entity)} size=${13} />
                     <span class="ctx-name">${fullName(sc)}</span>
                   </span>`
-                : html`<button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label=${`Chat context: ${sw ? sw.name : 'All clients'}. Change`}
+                // Inside a workflow thread the heading already names it: the pill says who it covers.
+                : sw ? html`<span class="ctx-btn ctx-label" aria-label=${`Chat context: the ${sw.clients} clients in ${sw.name}`}>
+                    <${Icon} name="users" size=${13} />
+                    <span class="ctx-name">${sw.clients} clients</span>
+                  </span>`
+                : html`<button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label="Chat context: All clients. Change"
                 onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxQuery: '', menu: false, showTip: false })); }}>
-                <${Icon} name=${sw ? 'workflow' : 'users'} size=${13} />
-                <span class="ctx-name">${sw ? sw.name : 'All clients'}</span>
+                <${Icon} name="users" size=${13} />
+                <span class="ctx-name">All clients</span>
                 <${Icon} name="chevronDown" size=${12} />
               </button>`}
               ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}

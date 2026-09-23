@@ -110,9 +110,10 @@ rail's scroll intact.
 do workflows start?** Selecting a client scopes the chat to them, and the
 context lives in the composer itself. At the firm level it's a switcher,
 "All clients ⌄", that narrows the chat to a client or workflow without leaving
-it (search, Recent, Needs you; or type `@`). Inside a client it's a label,
-"Alderwood LLC ×": the thread belongs to that client, so switching clients is
-the rail's job, and × goes home. The pill sits in the same place in every
+it (search, Recent, Needs you; or type `@`). Inside a thread it's a label
+that says who the chat covers: "Alderwood LLC ×" in a client, "12 clients ×"
+in a cross-client workflow (whose name is already the heading). Moving
+elsewhere is the rail's job, and × goes home. The pill sits in the same place in every
 state. Workflows
 start from both places, through one path: the composer's workflow button,
 typing `/`, plain language ("can we file an extension?" → Instead offers to
