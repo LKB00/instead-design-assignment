@@ -485,6 +485,4 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .cl-summary { height: 44px; padding: 0 4px; }
 
 /* Run-for picker: the context picker in multi-select mode. */
-.pick-check { flex: none; display: flex; color: var(--charcoal-50); }
-.ctx-item[aria-selected="true"] .pick-check { color: var(--charcoal); }
-.pick-note { padding: 2px 8px 4px; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }
+.ctx-item[aria-selected="true"] .pick-note { padding: 2px 8px 4px; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }

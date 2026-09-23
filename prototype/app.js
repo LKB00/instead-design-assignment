@@ -800,7 +800,8 @@ class App extends Component {
       .concat(Object.keys(ENTITY).map((e) => ({ name: PLURAL[e], icon: iconFor(e), cs: clients.filter((c) => c.entity === e) }))).filter((g) => g.cs.length);
     const q = st.wfClientQ.trim().toLowerCase();
     const shown = clients.filter((c) => !q || fullName(c).toLowerCase().includes(q)).sort((a, b) => railName(a).localeCompare(railName(b)));
-    const check = (on) => html`<span class="pick-check"><${Icon} name=${on ? 'circleCheck' : 'circle'} size=${14} /></span>`;
+    // Same mark as the context picker: a check on what's chosen, nothing on the rest.
+    const check = (on) => on && html`<span class="proto-check"><${Icon} name="check" size=${12} /></span>`;
     return html`
       <div class="popover menu ctx-picker run-picker" role="listbox" aria-multiselectable="true" aria-label="Run for" onClick=${(e) => e.stopPropagation()}>
         <label class="search-field ctx-search"><${Icon} name="search" size=${12} />

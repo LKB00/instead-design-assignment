@@ -317,4 +317,6 @@ plugin, which maps flexbox to auto layout):
     in-tray list with tab-style groups; it's now the context picker's
     popover in multi-select mode (groups, clients with checks; no Done, since
     each click applies at once), so
-    "who is this for?" looks the same everywhere.
+    "who is this for?" looks the same everywhere. Selected rows are marked
+    the same way in both (sand background and a check); no empty circles,
+    which read as "pick one".
