@@ -20,6 +20,8 @@ walkthrough recorded by the designer. The designer is Lokesh Kumar Bhatia;
 the prototype uses his real Instead trial account name.
 
 - Repo: https://github.com/LKB00/instead-design-assignment (public)
+- Live: https://lkb00.github.io/instead-design-assignment/ (GitHub Pages,
+  deployed from `prototype/` by `.github/workflows/pages.yml`)
 - Run: `python3 -m http.server 5173 --directory prototype`, open
   http://localhost:5173
 

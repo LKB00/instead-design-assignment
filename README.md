@@ -1,5 +1,7 @@
 # Instead Pro — Chat-First Home (Design Exercise)
 
+[![Open the prototype](https://img.shields.io/badge/Open-the%20prototype-C2EF72?style=flat-square&labelColor=24282C)](https://lkb00.github.io/instead-design-assignment/)
+
 Instead's product design exercise: re-imagine how a Pro lands and orients
 when they open Instead Pro. The brief is explicit that **chat is the room,
 not a feature inside the room** — this reworks the home screen around that,
@@ -12,7 +14,9 @@ readable on its own without any other history.
 ## View the design
 
 The clickable prototype in `prototype/` is the current design and the source
-of truth. Run it locally:
+of truth. **Open it in the browser:
+https://lkb00.github.io/instead-design-assignment/** (redeployed from
+`prototype/` on every push to `main`). Or run it locally:
 
 ```bash
 python3 -m http.server 5173 --directory prototype
