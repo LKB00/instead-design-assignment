@@ -33,7 +33,8 @@ body {
   font: 400 16px/24px Lato, sans-serif; -webkit-font-smoothing: antialiased;
 }
 button, textarea { all: unset; box-sizing: border-box; cursor: pointer; }
-button:focus-visible, [role="button"]:focus-visible, textarea:focus-visible { outline: 1.5px solid var(--charcoal); outline-offset: 2px; }
+button:focus-visible, [role="button"]:focus-visible { outline: 1.5px solid var(--charcoal); outline-offset: 2px; }
+textarea:focus, textarea:focus-visible { outline: none; }
 svg { display: block; flex: none; }
 img { display: block; }
 .serif { font-family: 'Libre Baskerville', serif; }
@@ -241,9 +242,6 @@ img { display: block; }
 .composer-wrap { flex: none; position: relative; width: 100%; max-width: 742px; padding-bottom: 8px; }
 .main.docked .composer-wrap { max-width: 646px; padding-bottom: 8px; }
 .tray { border-radius: 24px 24px 0 0; }
-.tray.scoped { background: var(--sand); padding: 8px 8px 0; }
-.tray-chips { display: flex; align-items: flex-start; gap: 8px; height: 53px; padding-bottom: 24px; margin-bottom: -16px; }
-.tray-chips .scope-chip { flex: none; }
 .scope-chip {
   height: 29px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 4px;
   background: #fff; border: 0.5px solid var(--control-border); border-radius: 9999px; animation: chipIn .2s var(--ease);
@@ -253,13 +251,12 @@ img { display: block; }
 .chip-x { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; color: var(--charcoal-50); }
 .chip-x:hover { background: var(--sand-dark); color: var(--charcoal); }
 @keyframes chipIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-.tray.scoped .composer { margin: 0 -8px; }
 
 .composer {
   position: relative; display: flex; flex-direction: column; gap: 12px; padding: 12px 8px 8px;
   background: #fff; border: 0.5px solid var(--gray-400); border-radius: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
-.main.docked .composer, .tray.scoped .composer { padding: 8px; }
+.main.docked .composer { padding: 8px; }
 .composer textarea {
   display: block; width: 100%; height: 30px; margin-bottom: 6px; padding: 4px 8px; resize: none; cursor: text;
   font: 400 14px/22px Lato, sans-serif; color: var(--charcoal); white-space: pre-wrap;
@@ -294,11 +291,18 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 
 
 /* ---------- Prototype-only data switch ---------- */
-.scenario { position: fixed; right: 12px; top: 56px; z-index: 20; display: flex; gap: 2px; padding: 2px; background: #fff; border: 0.5px solid var(--control-border); border-radius: 9999px; font-size: 11px; line-height: 16px; opacity: .45; transition: opacity .15s; }
-.scenario:hover { opacity: 1; }
-.scenario span { padding: 3px 6px 3px 8px; color: var(--charcoal-50); }
-.scenario button { padding: 3px 8px; border-radius: 9999px; color: var(--charcoal-light); }
-.scenario button[aria-pressed="true"] { background: var(--sand-dark); color: var(--charcoal); }
+.proto { position: fixed; right: 16px; bottom: 16px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.proto-btn {
+  height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 8px 0 10px; border-radius: 9999px;
+  background: #fff; border: 0.5px dashed var(--gray-400); font-size: 11px; line-height: 16px; color: var(--charcoal-light);
+  opacity: .7; transition: opacity .15s, color .15s;
+}
+.proto-btn:hover, .proto-btn.on { opacity: 1; color: var(--charcoal); }
+.proto-panel { width: 280px; animation: popIn .18s var(--ease); }
+.proto-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 4px 8px; }
+.proto-item[aria-pressed="true"] { background: var(--sand); }
+.proto-key { width: 20px; height: 20px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 9999px; border: 0.5px solid var(--control-border); font-size: 10px; color: var(--charcoal-50); }
+.proto-check { color: var(--charcoal); }
 
 /* ---------- Who needs you: rail flag + chat briefing ---------- */
 .flag { display: flex; align-items: center; gap: 5px; font-size: 10px; line-height: 16px; color: var(--charcoal-light); white-space: nowrap; }
@@ -361,3 +365,20 @@ button.wf-count:hover { background: var(--sand-dark); color: var(--charcoal); }
 .no-match { padding: 16px 8px; font-size: 12px; line-height: 16px; color: var(--charcoal-50); }
 .pg-icon .count { font-size: 12px; line-height: 16px; font-weight: 700; color: var(--charcoal); }
 .offer-alt.sm { flex: none; height: 28px; padding: 0 12px; }
+
+/* ---------- Context pill: who this chat is about, inside the composer ---------- */
+.ctx-pill {
+  height: 28px; max-width: 220px; display: flex; align-items: center; gap: 2px; padding: 0 4px 0 0; border-radius: 9999px;
+  border: 0.5px solid var(--control-border); background: #fff; color: var(--charcoal-light); transition: background .15s, border-color .15s, color .15s;
+}
+.ctx-pill:hover, .ctx-pill.open { border-color: var(--gray-400); color: var(--charcoal); }
+.ctx-pill.scoped { background: var(--sand-dark); border-color: transparent; color: var(--charcoal); }
+.ctx-btn { min-width: 0; height: 100%; display: flex; align-items: center; gap: 6px; padding: 0 4px 0 10px; font-size: 12px; line-height: 16px; font-weight: 500; }
+.ctx-pill:not(.scoped) .ctx-btn { padding-right: 6px; }
+.ctx-btn > svg:last-child { color: var(--charcoal-50); }
+.ctx-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctx-pill .chip-x:hover { background: rgba(36, 40, 44, 0.08); }
+.ctx-picker { width: 320px; max-height: 420px; overflow-y: auto; }
+.ctx-search { flex: none; height: 30px; margin: 0 0 4px; padding: 0 10px; }
+.ctx-item[aria-selected="true"] { background: var(--sand); }
+.ctx-item .dot { width: 5px; height: 5px; }

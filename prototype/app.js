@@ -171,6 +171,13 @@ const WF_THREADS = Object.fromEntries(ALL_WF.map((w) => [wfKey(w.id), [
 ]]));
 
 const PARAMS = new URLSearchParams(location.search);
+// Reviewer-only: the same home at different book sizes.
+const SCENARIOS = [
+  ['two', '2 clients', 'A new firm; nothing to group yet'],
+  ['grouped', '12 clients', 'A typical book; 3 need you today'],
+  ['large', '200 clients', 'At scale; 14 need you, list capped'],
+  ['calm', 'Calm week', 'Nobody needs you; the home stays quiet'],
+];
 const SHOW_DEMO_SWITCH = PARAMS.get('demo') !== '0';
 
 // Instead's own opening reply for a new client thread (verbatim from app.instead.com).
@@ -206,6 +213,7 @@ class App extends Component {
       showTip: false,
       menu: false,
       rowMenu: null,
+      ctxOpen: false, ctxQuery: '', recent: [], // the context picker in the composer
       showAllNeeds: false,
       query: null, // null = search closed; '' = open // client id whose ⋮ menu is open
       draft: '',
@@ -243,12 +251,16 @@ class App extends Component {
       selectedWorkflow: null,
     };
     this.scrollPos = { clients: 0, workflows: 0 };
-    this.onKeyDown = (e) => { if (e.key === 'Escape') this.setState({ menu: false, rowMenu: null, showTip: false }); };
+    this.onKeyDown = (e) => {
+      if (e.key === 'Escape') this.setState({ menu: false, rowMenu: null, showTip: false, protoOpen: false, ctxOpen: false });
+      const typing = /^(INPUT|TEXTAREA)$/.test((e.target && e.target.tagName) || '');
+      if (!typing && SHOW_DEMO_SWITCH && /^[1-4]$/.test(e.key) && !e.metaKey && !e.ctrlKey) this.setScenario(SCENARIOS[+e.key - 1][0]);
+    };
   }
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKeyDown);
-    this.onDocClick = () => { if (this.state.rowMenu) this.setState({ rowMenu: null }); };
+    this.onDocClick = () => { if (this.state.rowMenu || this.state.ctxOpen) this.setState({ rowMenu: null, ctxOpen: false }); };
     document.addEventListener('click', this.onDocClick);
   }
   componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); document.removeEventListener('click', this.onDocClick); }
@@ -303,7 +315,21 @@ class App extends Component {
     this.setState({ tab });
   }
 
+  remember(scope) {
+    this.setState((s) => ({ recent: [scope, ...s.recent.filter((r) => !(r.type === scope.type && r.id === scope.id))].slice(0, 6) }));
+  }
+
+  // One control for "who is this chat about": firm, a client, or a workflow.
+  setContext(item) {
+    this.setState({ ctxOpen: false, ctxQuery: '' });
+    const cur = this.state.scope;
+    if (!item) return this.clearScope();
+    if (item.type === 'client') return this.pickClient(item.id, { from: cur && cur.type === 'workflow' ? cur : null });
+    return this.pickWorkflow(item.id);
+  }
+
   pickClient(id, { from = null, thread = null } = {}) {
+    this.remember({ type: 'client', id });
     if (this.listEl && !(this.state.scope && this.state.scope.type === 'client')) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
     this.setState((s) => ({
       scope: { type: 'client', id }, from, seenTip: true, showTip: !s.seenTip && !from && !thread, menu: false, panelLoading: id, panelEntering: id,
@@ -322,6 +348,7 @@ class App extends Component {
       else this.pickClient(w.clientId, { thread: wfKey(id) });
       return;
     }
+    this.remember({ type: 'workflow', id });
     this.setState({ scope: { type: 'workflow', id }, from: null, menu: false, showTip: false });
   }
 
@@ -376,6 +403,10 @@ class App extends Component {
   answerInstead(t) {
     const key = this.threadKey();
     this.setState((st) => ({ threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'assistant', blocks: [{ p: t.answer }] }]) } }));
+  }
+
+  setScenario(id) {
+    this.setState({ scenario: id, scope: null, from: null, showTip: false, showAllNeeds: false, query: null, protoOpen: false });
   }
 
   askWhichClient(tid) {
@@ -541,6 +572,55 @@ class App extends Component {
         </div>`;
       })}
     </div>`;
+  }
+
+  renderContextPicker(clients, attention) {
+    const st = this.state;
+    const cur = st.scope;
+    const same = (a, b) => a && b && a.type === b.type && a.id === b.id;
+    const clientItem = (c) => ({ type: 'client', id: c.id, icon: iconFor(c.entity), name: fullName(c), sub: c.status === 'needs_attention' ? c.flag : ENTITY[c.entity], attn: c.status === 'needs_attention' });
+    const wfItem = (w) => ({ type: 'workflow', id: w.id, icon: 'workflow', name: w.name, sub: w.clientName || `${w.clients} clients` });
+    const toItem = (r) => {
+      if (r.type === 'client') { const c = clients.find((x) => x.id === r.id); return c && clientItem(c); }
+      const w = ALL_WF.find((x) => x.id === r.id); return w && wfItem(w);
+    };
+    const q = st.ctxQuery.trim().toLowerCase();
+    let sections;
+    if (q) {
+      sections = [
+        ['Clients', clients.filter((c) => fullName(c).toLowerCase().includes(q)).slice(0, 6).map(clientItem)],
+        ['Workflows', ALL_WF.filter((w) => w.name.toLowerCase().includes(q)).slice(0, 3).map(wfItem)],
+      ];
+    } else {
+      const recent = [st.from, ...st.recent].filter(Boolean).filter((r, i, a) => !same(r, cur) && a.findIndex((x) => same(x, r)) === i).slice(0, 3).map(toItem).filter(Boolean);
+      const seen = recent.map((r) => r.type + r.id);
+      const needs = attention.filter((c) => !same({ type: 'client', id: c.id }, cur) && !seen.includes('client' + c.id)).slice(0, 3).map(clientItem);
+      sections = [['Recent', recent], ['Needs you', needs]];
+    }
+    const check = html`<span class="proto-check"><${Icon} name="check" size=${12} /></span>`;
+    const row = (it) => html`
+      <button class="menu-item ctx-item" role="option" aria-selected=${!!same(it, cur)} onClick=${() => this.setContext(it)}>
+        <span class="menu-icon"><${Icon} name=${it.icon} /></span>
+        <span class="row-text"><span class="row-name">${it.name}</span><span class="row-note">${it.sub}</span></span>
+        ${it.attn && html`<span class="dot"></span>`}
+        ${same(it, cur) && check}
+      </button>`;
+    return html`
+      <div class="popover menu ctx-picker" role="listbox" aria-label="Chat context" onClick=${(e) => e.stopPropagation()}>
+        <label class="search-field ctx-search"><${Icon} name="search" size=${12} />
+          <input ref=${(el) => el && !el.dataset.f && (el.dataset.f = '1', el.focus())} placeholder=${`Search ${clients.length} clients and workflows`}
+            value=${st.ctxQuery} onInput=${(e) => this.setState({ ctxQuery: e.target.value })} />
+        </label>
+        ${!q && html`
+          <button class="menu-item ctx-item" role="option" aria-selected=${!cur} onClick=${() => this.setContext(null)}>
+            <span class="menu-icon"><${Icon} name="users" /></span>
+            <span class="row-text"><span class="row-name">All clients</span><span class="row-note">Your whole firm</span></span>
+            ${!cur && check}
+          </button>`}
+        ${sections.filter(([, items]) => items.length).map(([title, items]) => html`<span class="label">${title}</span>${items.map(row)}`)}
+        ${q && sections.every(([, items]) => !items.length) && html`<div class="no-match">Nothing matches “${st.ctxQuery}”</div>`}
+        <div class="menu-foot">Tip: type <kbd>@</kbd> in chat to switch who this is about</div>
+      </div>`;
   }
 
   renderBrief(ids, clients) {
@@ -817,7 +897,7 @@ class App extends Component {
             <div class="composer-wrap">
               ${st.showTip && sc && html`
                 <div class="popover tooltip" role="status">
-                  Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Tap × on the chip to go back to your whole firm.
+                  Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Switch or clear it from the pill in the chat box.
                   <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
                 </div>`}
 
@@ -833,33 +913,34 @@ class App extends Component {
                   <div class="menu-foot">Tip: type <kbd>/</kbd> in chat, or just describe the work</div>
                 </div>`}
 
-              <div class=${'tray' + (scoped ? ' scoped' : '')}>
-                ${scoped && html`
-                  <div class="tray-chips">
-                    ${st.from && st.from.type === 'workflow' && html`
-                      <button class="scope-chip back-chip" onClick=${() => this.goBack()} aria-label=${`Back to ${ALL_WF.find((w) => w.id === st.from.id).name}`}>
-                        <${Icon} name="arrowLeft" size=${12} /><span class="chip-name">${ALL_WF.find((w) => w.id === st.from.id).name}</span>
-                      </button>`}
-                    <div class="scope-chip">
-                      <${Icon} name=${sc ? 'userRound' : 'workflow'} />
-                      <span class="chip-name">${sc ? fullName(sc) : sw.name}</span>
-                      <span class="pill-xxs lime">${sc ? sc.entity : `${sw.done} of ${sw.total}`}</span>
-                      <button class="chip-x" aria-label="Clear scope, back to whole firm" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>
-                    </div>
-                  </div>`}
-
+              ${st.ctxOpen && this.renderContextPicker(clients, attention)}
+              <div class="tray">
                 <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
                   <textarea ref=${(el) => (this.inputEl = el)} rows="1"
-                    placeholder=${scoped ? 'Ask a follow up...' : 'Give me a task or question to work on...'}
+                    placeholder=${sc ? (hasMessages ? 'Ask a follow up...' : `Ask about ${fullName(sc)}...`) : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
                     value=${st.draft}
-                    onInput=${(e) => (e.target.value === '/' ? this.setState({ draft: '', menu: true, showTip: false }) : this.setState({ draft: e.target.value }))}
+                    onInput=${(e) => {
+                      const v = e.target.value;
+                      if (v === '/') return this.setState({ draft: '', menu: true, showTip: false, ctxOpen: false });
+                      if (v === '@' || v.endsWith(' @')) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
+                      this.setState({ draft: v });
+                    }}
                     onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
                   <div class="composer-controls">
                     <div class="controls-group">
+                      <div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
+                        <button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label=${`Chat context: ${sc ? fullName(sc) : sw ? sw.name : 'All clients'}. Change`}
+                          onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxQuery: '', menu: false, showTip: false })); }}>
+                          <${Icon} name=${sc ? iconFor(sc.entity) : sw ? 'workflow' : 'users'} size=${13} />
+                          <span class="ctx-name">${sc ? fullName(sc) : sw ? sw.name : 'All clients'}</span>
+                          <${Icon} name="chevronDown" size=${12} />
+                        </button>
+                        ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
+                      </div>
                       ${I('paperclip', 'Attach files', null, 'circ')}
                       ${I('settings2', 'Settings', null, 'circ')}
                       <button type="button" class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
-                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" /></button>
+                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false, ctxOpen: false }))}><${Icon} name="workflow" /></button>
                     </div>
                     <div class="controls-group">
                       ${I('mic', 'Dictate', null, 'circ')}
@@ -879,11 +960,26 @@ class App extends Component {
           </main>
         </div>
 
-        ${SHOW_DEMO_SWITCH && html`<div class="scenario" aria-label="Prototype data scenario">
-          <span>Data</span>
-          ${[['two', '2 clients'], ['grouped', '12 clients'], ['large', '200 clients'], ['calm', 'Calm']].map(([id, label]) => html`
-            <button aria-pressed=${String(st.scenario === id)} onClick=${() => this.setState({ scenario: id, scope: null, from: null, showTip: false, showAllNeeds: false, query: null })}>${label}</button>`)}
-        </div>`}
+        ${SHOW_DEMO_SWITCH && html`
+          <div class="proto">
+            ${st.protoOpen && html`
+              <div class="proto-panel menu" role="dialog" aria-label="Preview the home at different book sizes">
+                <div class="proto-head">
+                  <span class="label">Preview this home as</span>
+                  <button class="chip-x" aria-label="Close" onClick=${() => this.setState({ protoOpen: false })}><${Icon} name="x" size=${10} stroke=${2} /></button>
+                </div>
+                ${SCENARIOS.map(([id, title, sub], i) => html`
+                  <button class="menu-item proto-item" aria-pressed=${String(st.scenario === id)} onClick=${() => this.setScenario(id)}>
+                    <span class="proto-key">${i + 1}</span>
+                    <span class="row-text"><span class="row-name">${title}</span><span class="row-note">${sub}</span></span>
+                    ${st.scenario === id && html`<span class="proto-check"><${Icon} name="check" size=${12} /></span>`}
+                  </button>`)}
+                <div class="menu-foot">Prototype control, not part of the product. Press <kbd>1</kbd>–<kbd>4</kbd> to switch.</div>
+              </div>`}
+            <button class=${'proto-btn' + (st.protoOpen ? ' on' : '')} aria-expanded=${!!st.protoOpen} onClick=${() => this.setState((s) => ({ protoOpen: !s.protoOpen }))}>
+              <${Icon} name="users" size=${12} />${(SCENARIOS.find(([id]) => id === st.scenario) || [, 'Prototype'])[1]}<${Icon} name="chevronDown" size=${12} />
+            </button>
+          </div>`}
       </div>`;
   }
 }

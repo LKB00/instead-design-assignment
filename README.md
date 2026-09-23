@@ -24,8 +24,8 @@ python3 -m http.server 5173 --directory prototype
 
 Then open http://localhost:5173. The standalone prototype in `prototype/`
 (Preact + htm from a CDN, no build step) mirrors the `Workspace` artboard;
-the "Data" switch in the top-right swaps between 2, 12 and 200 clients and a
-calm book where nobody needs attention (or use `?scenario=two|grouped|large|calm`).
+the dashed "Prototype" button in the bottom-right (or keys 1–4) previews the
+home at 2, 12 and 200 clients and a calm week where nobody needs attention (or use `?scenario=two|grouped|large|calm`).
 
 ## The approach
 
@@ -78,12 +78,16 @@ between them?** A workflow lives where its work lives. Cross-client ones stay
 at the firm level; single-client ones open inside their client's panel. The
 Workflows tab indexes both. Every workflow is a chat thread that opens with
 Instead's checklist (open items first, finished ones folded into one line).
-Drilling from a workflow into a client leaves a back chip
-("← Collect missing K-1s"); × always goes home with the rail's tab and
-scroll intact.
+Drilling from a workflow into a client keeps the workflow at the top of the
+context picker's Recent list, one tap back; × always goes home with the
+rail's tab and scroll intact.
 
 **3. Chat and the client list: does selecting a client change context? Where
-do workflows start?** Selecting a client scopes the chat to them. Workflows
+do workflows start?** Selecting a client scopes the chat to them, and the
+context lives in the composer itself: a pill reading "All clients ⌄" or
+"Alderwood LLC ⌄" that switches context without leaving the chat (search,
+Recent, Needs you; or type `@`). The composer looks the same in every
+state, and the same control scales from one client to a workflow. Workflows
 start from both places, through one path: the composer's workflow menu, typing
 `/`, plain language ("can we file an extension?" → Instead offers to start one
 or just answer), or a client's ⋮ menu. The scope decides who it's for; a
