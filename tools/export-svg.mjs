@@ -99,7 +99,7 @@ await comp('.wf-tray', 'workflow-tray-browse');
 await page.click('.wf-row');
 await sleep(300);
 await comp('.wf-tray', 'workflow-tray-staged');
-await page.click('.wf-stage button.wf-chip');
+await page.click('.ctx-pill .ctx-btn');
 await sleep(300);
 await page.evaluate(() => [...document.querySelectorAll('.wf-set')].find((b) => /Needs you/.test(b.textContent)).click());
 await sleep(200);

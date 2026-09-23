@@ -921,19 +921,14 @@ class App extends Component {
           </button>`)}</div>`);
     }
 
-    // Staged: the workflow and who it's for, as chips. Send starts it; nothing runs before that.
+    // Staged: the workflow as a chip; who it runs for is the composer pill. Send starts it; nothing runs before that.
     if (st.wfPick) {
       const t = TEMPLATES.find((x) => x.id === st.wfPick);
-      const n = st.wfTargets.length;
-      const one = n === 1 && clients.find((c) => c.id === st.wfTargets[0]);
       return wrap('', html`
         <div class="section-head today-head"><span class="label">Run a workflow</span><div class="head-icons">${close}</div></div>
         <div class="wf-stage">
           <span class="wf-chip"><span class="wf-chip-icon"><${Icon} name="workflow" size=${11} /></span>${t.name}
             <button class="chip-x" aria-label="Choose a different workflow" onClick=${() => this.setState({ wfPick: null, wfTargets: [] })}><${Icon} name="x" size=${10} stroke=${2} /></button></span>
-          ${sc ? html`<span class="wf-chip"><${Icon} name=${iconFor(sc.entity)} size=${12} />${fullName(sc)}</span>`
-            : n ? html`<button class="wf-chip" onClick=${() => this.setState({ wfChoosing: true, wfClientQ: '' })}><${Icon} name=${one ? iconFor(one.entity) : 'users'} size=${12} />${one ? fullName(one) : `${n} clients`}<${Icon} name="chevronDown" size=${12} /></button>`
-            : html`<button class="wf-chip add" onClick=${() => this.setState({ wfChoosing: true, wfClientQ: '' })}><${Icon} name="plus" size=${12} />Choose clients</button>`}
         </div>
         <p class="wf-note">${t.desc} You’ll get: ${(t.output || '').replace(/^./, (ch) => ch.toLowerCase())}.</p>`);
     }
@@ -1168,6 +1163,12 @@ class App extends Component {
     if (sc) heroText = `How can I support ${fullName(sc)}?`;
     if (sw) heroText = `Let’s keep “${sw.name}” moving.`;
 
+    // Staging a workflow outside a client: the composer pill becomes who it runs for.
+    const audience = st.wfPick && !sc && (() => {
+      const n = st.wfTargets.length;
+      const one = n === 1 && clients.find((c) => c.id === st.wfTargets[0]);
+      return { n, label: one ? fullName(one) : n ? `${n} clients` : 'Choose clients', icon: one ? iconFor(one.entity) : n ? 'users' : 'plus' };
+    })();
     const canSend = st.draft.trim().length > 0 || !!st.wfPick || (st.wfTray === 'build' && !!st.wfFile);
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
 
@@ -1196,7 +1197,16 @@ class App extends Component {
           onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
         <div class="composer-controls">
           <div class="controls-group">
-            <div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
+            ${audience ? html`<div class=${'ctx-pill' + (audience.n ? ' scoped' : ' pick') + (st.wfChoosing ? ' open' : '')}>
+                <button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.wfChoosing} aria-label=${`Run for: ${audience.label}. Change`}
+                  onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ wfChoosing: !s.wfChoosing, wfClientQ: '' })); }}>
+                  <${Icon} name=${audience.icon} size=${13} />
+                  <span class="ctx-name">${audience.label}</span>
+                  <${Icon} name="chevronDown" size=${12} />
+                </button>
+                ${audience.n > 0 && html`<button type="button" class="chip-x" aria-label="Clear clients" onClick=${() => this.setState({ wfTargets: [] })}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
+              </div>`
+            : html`<div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
               ${sc
                 // Inside a client the thread belongs to them: the pill says whose data this uses, and
                 // switching clients is the rail's job. Firm and workflow chats keep the switcher.
@@ -1211,7 +1221,7 @@ class App extends Component {
                 <${Icon} name="chevronDown" size=${12} />
               </button>`}
               ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
-            </div>
+            </div>`}
             ${I('paperclip', 'Attach files', null, 'circ')}
             ${I('settings2', 'Settings', null, 'circ')}
             <button type="button" class=${'circ' + (st.wfTray ? ' active' : '')} aria-label="Workflows" aria-expanded=${!!st.wfTray}

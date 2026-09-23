@@ -118,9 +118,10 @@ start from both places, through one path: the composer's workflow button,
 typing `/`, plain language ("can we file an extension?" → Instead offers to
 start one or just answer), or a client's ⋮ menu. The library opens in the same
 sand tray as "Needs you", above the chat box, so starting work never leaves the
-chat: pick a workflow and it sits there as a chip next to who it's for (the
-current client, or "Choose clients" with quick sets like Needs you or S Corps),
-with a line on what you'll get; add context and send. Nothing runs before
+chat: pick a workflow and it sits there as a chip, with a line on what you'll
+get, and the composer's pill becomes who it runs for (the current client, or
+"5 clients ⌄" / "Choose clients" with quick sets like Needs you or S Corps) —
+one "who" control, never two; add context and send. Nothing runs before
 send. Run it for one client and it's a single-client run in their panel; for
 many, it's a cross-client run with a row per client. Building is chat too:
 describe the work or upload the checklist you already use, Instead drafts the

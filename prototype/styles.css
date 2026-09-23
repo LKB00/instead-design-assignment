@@ -426,7 +426,7 @@ button.wf-chip { padding-right: 10px; transition: border-color .15s; }
 button.wf-chip:hover { border-color: var(--gray-400); }
 .wf-chip > svg:first-child { color: var(--charcoal-light); }
 .wf-chip:not(:has(.wf-chip-icon)) { padding-left: 10px; }
-.wf-chip.add { border-style: dashed; color: var(--charcoal-light); }
+.ctx-pill.pick { border-style: dashed; }
 .wf-chip-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--lime); color: var(--charcoal); }
 .wf-note { margin: 0; padding: 0 8px 2px; font-size: 12px; line-height: 18px; color: var(--charcoal-light); }
 .wf-done { height: 22px; display: flex; align-items: center; padding: 0 10px; border-radius: 9999px; background: var(--charcoal); color: #fff; font-size: 11px; line-height: 16px; font-weight: 600; }
