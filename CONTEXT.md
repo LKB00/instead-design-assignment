@@ -168,10 +168,10 @@ the book.**
    rail stays Instead's A–Z book. Cost: inside a thread, who needs you is
    only amber dots scattered through A–Z (the context picker's "Needs you"
    is one click).
-2. **No always-visible list of everything running.** Runs live in threads
-   (firm or client), and the full list is one click away ("4 workflows
-   running →"). Cost: inside a client you don't see firm-wide runs; the home
-   and Needs you cover what needs you.
+2. **Single-client workflows appear in two places** (the rail's Threads
+   and the client's panel) on purpose: Threads answers "what's running?"
+   from the home, the panel answers "what's happening with this client?".
+   At scale Threads shows five, then "Show N more".
 3. **Instead offers workflows instead of assuming**, because not every
    question is a workflow. Cost: one extra click when the pro did mean it.
 4. **No client switcher inside a client chat.** Changing client from the
@@ -328,3 +328,7 @@ plugin, which maps flexbox to auto layout):
     arrows, pill icons), 14 (default, as in Instead) and 16 (folders, header
     actions), replacing seven ad-hoc sizes (8–16). The Figma export keeps
     each icon's box, so icons measure 12, 14 or 16 instead of their lines.
+20. Brief check: "see ongoing workflows, both cross-client and
+    single-client" was only half met (single-client runs were just "1/3"
+    badges). Threads now lists every running workflow, single-client ones
+    with the client's name, capped at five with "Show N more".

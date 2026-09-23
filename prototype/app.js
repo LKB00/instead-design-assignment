@@ -1209,8 +1209,12 @@ class App extends Component {
     const firmThreads = Object.keys(st.threads).filter((k) => (k === 'general' || k.startsWith('general#')) && (st.threads[k] || []).length)
       .sort((a, b) => (+(b.split('#')[1] || 1)) - (+(a.split('#')[1] || 1)));
     const titleOf = (k) => { const m = st.threads[k].find((x) => x.from === 'user'); return m ? m.text : 'New thread'; };
-    // A run is a thread: cross-client runs are firm threads, single-client runs sit in their client's panel.
-    const firmRuns = status.workflows.filter((w) => !w.clientId);
+    // Every running workflow is visible from the home, so the book's work in progress is one glance:
+    // cross-client runs are firm threads; single-client runs also live in their client's panel and
+    // show here with the client's name. Capped so 200 clients don't bury the threads.
+    const runs = status.workflows;
+    const RUNS_SHOWN = 5;
+    const firmRuns = st.runsAll ? runs : runs.slice(0, RUNS_SHOWN);
 
     // A calm week keeps Instead's greeting; otherwise the home leads with who needs you.
     let heroText = status.headline;
@@ -1383,10 +1387,12 @@ class App extends Component {
                     onClick=${() => this.openFirmThread(k)} onKeyDown=${(e) => { if (e.key === 'Enter') this.openFirmThread(k); }}>
                     <span class="t">${titleOf(k)}</span><span class="thread-when">${i === 0 ? 'Now' : 'Today'}</span>
                   </div>`)}
-                ${firmRuns.map((w) => html`<div class=${'thread-row wf' + (sw && sw.id === w.id ? ' on' : '')} role="button" tabindex="0" title=${`${w.name}: ${w.done} of ${w.total} clients done`}
+                ${firmRuns.map((w) => html`<div class=${'thread-row wf' + (sw && sw.id === w.id ? ' on' : '')} role="button" tabindex="0"
+                    title=${w.clientId ? `${w.name} for ${w.clientName}: ${w.done} of ${w.total} steps done` : `${w.name}: ${w.done} of ${w.total} clients done`}
                     onClick=${() => this.pickWorkflow(w.id)} onKeyDown=${(e) => { if (e.key === 'Enter') this.pickWorkflow(w.id); }}>
-                    <${Icon} name="workflow" size=${12} /><span class="t">${w.name}</span><span class="thread-when">${w.done}/${w.total}</span>
+                    <${Icon} name="workflow" size=${12} /><span class="t">${w.name}${w.clientId && html`<span class="t-client"> · ${w.clientName}</span>`}</span><span class="thread-when">${w.done}/${w.total}</span>
                   </div>`)}
+                ${runs.length > RUNS_SHOWN && html`<button class="more-row" onClick=${() => this.setState((s) => ({ runsAll: !s.runsAll }))}>${st.runsAll ? 'Show fewer' : `Show ${runs.length - RUNS_SHOWN} more workflow${runs.length - RUNS_SHOWN === 1 ? '' : 's'}`}</button>`}
                 ${!firmThreads.length && !firmRuns.length && html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
               </div>
             </div>

@@ -148,6 +148,7 @@ img { display: block; }
   border-radius: 9999px; font-size: 12px; line-height: 16px; color: var(--charcoal-light); cursor: pointer; transition: background .15s;
 }
 .thread-row .t { flex: 1; min-width: 0; padding-left: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t-client { color: var(--charcoal-50); }
 .thread-when { flex: none; padding-right: 4px; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }
 .thread-actions { display: none; gap: 4px; }
 .thread-actions .ic { color: var(--charcoal); }

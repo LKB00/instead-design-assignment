@@ -99,9 +99,11 @@ composer. A calm week keeps Instead's greeting and shows nothing extra.
 between them?** A workflow lives where its work lives. Cross-client ones stay
 at the firm level; single-client ones open inside their client's panel. A run
 is a thread, so it lives where its threads live: cross-client runs in the
-rail's Threads (with progress, "3/5"), single-client runs in the client's
-Client threads (with a "2/3" badge on their row). "4 workflows running →" on
-the home lists them all in chat. Every workflow is a chat thread that opens with
+rail's Threads, single-client runs in the client's Client threads. So the
+whole book's work in progress is visible from the home, Threads also lists
+every running workflow with its progress — single-client ones with the
+client's name ("Review a tax return · Ashish Khoshya 1/3") — capped at five
+with "Show N more"; a "1/3" badge marks the client's row too. Every workflow is a chat thread that opens with
 Instead's checklist (open items first, finished ones folded into one line).
 Drilling from a workflow into a client puts a "‹ Request missing documents" link at
 the top of the client's panel, one tap back; × always goes home with the
@@ -143,8 +145,8 @@ groups the rest by what's blocking them ("6 waiting on documents →
 Request them all") so a group is one workflow, not six chats.
 
 **Tradeoffs made:** the rail no longer sorts who needs you to the top (the
-tray does that job; inside a thread they're amber dots in A–Z); single-client workflows appear in two places (tab and client panel) on
-purpose; Instead offers workflows instead of assuming, at the cost of one
+tray does that job; inside a thread they're amber dots in A–Z); single-client workflows appear in two places (the rail's Threads and the
+client's panel) on purpose, so running work is visible from the home; Instead offers workflows instead of assuming, at the cost of one
 click; the workflow tray takes the place of "Needs you" while it's open (one
 tray, one job at a time), so closing it brings today's list back.
 
