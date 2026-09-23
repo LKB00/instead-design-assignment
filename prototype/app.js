@@ -7,7 +7,6 @@ const html = htm.bind(h);
 const PATHS = {
   circle: html`<circle cx="12" cy="12" r="9" />`,
   circleCheck: html`<circle cx="12" cy="12" r="9" /><path d="m9 12 2 2 4-4" />`,
-  arrowLeft: html`<path d="m12 19-7-7 7-7" /><path d="M19 12H5" />`,
   userRound: html`<path d="M18 20a6 6 0 0 0-12 0" /><circle cx="12" cy="10" r="4" /><circle cx="12" cy="12" r="10" />`,
   building: html`<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /><path d="M10 6h4" /><path d="M10 10h4" /><path d="M10 14h4" /><path d="M10 18h4" />`,
   landmark: html`<path d="M3 22h18" /><path d="M6 18v-7" /><path d="M10 18v-7" /><path d="M14 18v-7" /><path d="M18 18v-7" /><path d="m12 2 8 5H4z" />`,
@@ -29,7 +28,6 @@ const PATHS = {
   users: html`<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />`,
   thumbsUp: html`<path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />`,
   thumbsDown: html`<path d="M17 14V2" /><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />`,
-  copy: html`<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
   filePen: html`<path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M13.378 15.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />`,
   chevronDown: html`<path d="m6 9 6 6 6-6" />`,
   moreVertical: html`<circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />`,
@@ -248,7 +246,6 @@ class App extends Component {
       openYears: { 2026: true, 2025: false },
       railW: 316,
       threadsH: 260,
-      selectedWorkflow: null,
     };
     this.scrollPos = { clients: 0, workflows: 0 };
     this.onKeyDown = (e) => {
@@ -418,10 +415,6 @@ class App extends Component {
         { from: 'assistant', blocks: [{ p: 'Which client is it for?' }, { choose: { tid } }] },
       ]) },
     }));
-  }
-
-  goBack() {
-    this.setState((s) => ({ scope: s.from, from: null, showTip: false, menu: false }));
   }
 
   clearScope() {
@@ -627,7 +620,7 @@ class App extends Component {
     return html`<div class="brief">
       ${ids.map((id) => clients.find((c) => c.id === id)).filter(Boolean).map((c) => html`
         <button class="brief-row" onClick=${() => this.pickClient(c.id)}>
-          <span class="dot" aria-hidden="true"></span>
+          <span class="pg-icon"><span class="dot" aria-hidden="true"></span></span>
           <span class="brief-text">
             <span class="brief-name">${fullName(c)}</span>
             <span class="brief-note">${c.note}. ${c.next}.</span>
@@ -690,38 +683,38 @@ class App extends Component {
     const loading = st.panelLoading === c.id;
     const cWf = WORKFLOWS.single.filter((w) => w.clientId === c.id);
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
-    const year = (y) => html`
+    const year = (y) => html`<div class="doc-year">
       <div class="doc-row" role="button" tabindex="0" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
         <span class="avatar sm"><span class="avatar-icon"><${Icon} name=${st.openYears[y] ? 'folderOpen' : 'folder'} size=${st.openYears[y] ? 15 : 16} /></span><span class="avatar-check"><${Icon} name="check" size=${8} /></span></span>
         <span class="doc-name">${y}</span>
         <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
       </div>
-      ${st.openYears[y] && html`<button class="upload-row"><${Icon} name="plus" />Upload files</button>`}`;
+      ${st.openYears[y] && html`<div class="doc-children"><button class="upload-row"><${Icon} name="plus" />Upload files</button></div>`}
+    </div>`;
     return html`
       <aside class="client-shell">
         <nav class="icon-col" aria-label="Workspace">
           <button class="logo-tile" aria-label="Back to firm" onClick=${() => this.clearScope()}><img src="./img/instead-lime.svg" alt="" /></button>
-          <div class="col-spacer"></div>
-          ${I('userPlus', 'Invite teammate', null, 'col-btn')}
-          ${I('settings2', 'Settings', null, 'col-btn')}
-          <div class="col-initials serif">LB</div>
+          <div class="col-bottom">
+            <div class="col-actions">${I('userPlus', 'Invite teammate', null, 'col-btn')}${I('settings2', 'Settings', null, 'col-btn')}</div>
+            <div class="col-initials serif">LB</div>
+          </div>
         </nav>
 
         <section class=${'client-panel' + (st.panelEntering === c.id ? ' entering' : '')} aria-label=${`${fullName(c)} workspace`}>
           <header class="cp-header">
             <h2 class="serif cp-name">${fullName(c)}</h2>
             <span class="pill-xxs lime">${c.entity}</span>
-            <div class="flex1"></div>
-            ${I('x', 'Close client', () => this.clearScope(), 'ic lg')}
+            <span class="cp-header-end">${I('x', 'Close client', () => this.clearScope(), 'ic lg')}</span>
           </header>
 
           <div class="cp-actions">
             <button class="nav-pill" onClick=${() => this.newClientThread(c.id)}>
-              <span class="nav-pill-icon"><${Icon} name="messagePlus" /></span><span class="flex1">New client thread</span><span class="nav-pill-go"><${Icon} name="moveRight" /></span>
+              <span class="nav-pill-icon"><${Icon} name="messagePlus" /></span><span class="nav-pill-label">New client thread</span><span class="nav-pill-go"><${Icon} name="moveRight" /></span>
             </button>
-            ${I('moreVertical', 'More', null, 'ic lg')}
-            ${I('timerReset', 'History', null, 'ic lg')}
-            ${I('panelLeftClose', 'Collapse panel', () => this.clearScope(), 'ic lg')}
+            <div class="cp-action-icons">
+              ${I('moreVertical', 'More', null, 'ic lg')}${I('timerReset', 'History', null, 'ic lg')}${I('panelLeftClose', 'Collapse panel', () => this.clearScope(), 'ic lg')}
+            </div>
           </div>
 
           <div class="cp-docs">
@@ -830,19 +823,29 @@ class App extends Component {
                         ? matches.length
                           ? matches.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))
                           : html`<div class="no-match">No client matches “${st.query}”</div>`
-                        : html`
-                          ${grouped && html`<div class="group-label">Needs you${attention.length > NEED_CAP ? ` · ${attention.length}` : ''}</div>`}
-                          ${needShown.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}
-                          ${attention.length > NEED_CAP && html`<button class="more-row" onClick=${() => this.setState((s) => ({ showAllNeeds: !s.showAllNeeds }))}>
-                            ${st.showAllNeeds ? 'Show fewer' : `Show ${attention.length - NEED_CAP} more`}</button>`}
-                          ${grouped && others.length > 0 && html`<div class="group-label spaced">Everyone else${clients.length > 20 ? ` · ${others.length}` : ''}</div>`}
-                          ${others.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}`}
+                        : grouped
+                          ? html`
+                            <div class="list-section needs-you">
+                              <div class="group-label">Needs you${attention.length > NEED_CAP ? ` · ${attention.length}` : ''}</div>
+                              ${needShown.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}
+                              ${attention.length > NEED_CAP && html`<button class="more-row" onClick=${() => this.setState((s) => ({ showAllNeeds: !s.showAllNeeds }))}>
+                                ${st.showAllNeeds ? 'Show fewer' : `Show ${attention.length - NEED_CAP} more`}</button>`}
+                            </div>
+                            ${others.length > 0 && html`<div class="list-section everyone-else">
+                              <div class="group-label">Everyone else${clients.length > 20 ? ` · ${others.length}` : ''}</div>
+                              ${others.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}
+                            </div>`}`
+                          : html`<div class="list-section">${attention.concat(others).map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}</div>`}
                       <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>`
                   : html`
-                      <div class="group-label">Across clients</div>
-                      ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
-                      <div class="group-label spaced">Single client</div>
-                      ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}`}
+                      <div class="list-section across-clients">
+                        <div class="group-label">Across clients</div>
+                        ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
+                      </div>
+                      <div class="list-section single-client">
+                        <div class="group-label">Single client</div>
+                        ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}
+                      </div>`}
               </div>
             </div>
 
@@ -914,7 +917,6 @@ class App extends Component {
                 </div>`}
 
               ${st.ctxOpen && this.renderContextPicker(clients, attention)}
-              <div class="tray">
                 <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
                   <textarea ref=${(el) => (this.inputEl = el)} rows="1"
                     placeholder=${sc ? (hasMessages ? 'Ask a follow up...' : `Ask about ${fullName(sc)}...`) : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
@@ -948,7 +950,6 @@ class App extends Component {
                     </div>
                   </div>
                 </form>
-              </div>
 
               ${!scoped && !hasMessages && attention.length > 0 && html`
                 <button class="brief-link" onClick=${() => this.brief(attention)}>
@@ -985,22 +986,32 @@ class App extends Component {
 }
 
 // Instead's hero: the logo flips (rotateX) into the heading, which types in 15ms per character.
+// Once typed, it settles into one plain text node (one layer when imported into Figma).
 class Hero extends Component {
   constructor(props) {
     super(props);
     this.state = { phase: props.intro ? 'logo' : 'text' };
   }
   componentDidMount() {
-    if (this.state.phase !== 'logo') return;
-    this.t1 = setTimeout(() => this.setState({ phase: 'flip' }), 1100);
-    this.t2 = setTimeout(() => { this.setState({ phase: 'text' }); this.props.onIntroDone && this.props.onIntroDone(); }, 1400);
+    if (this.state.phase === 'logo') {
+      this.t1 = setTimeout(() => this.setState({ phase: 'flip' }), 1100);
+      this.t2 = setTimeout(() => { this.setState({ phase: 'text' }); this.props.onIntroDone && this.props.onIntroDone(); }, 1400);
+    }
+    this.settle();
   }
-  componentWillUnmount() { clearTimeout(this.t1); clearTimeout(this.t2); }
+  componentDidUpdate(_, prev) { if (prev.phase !== this.state.phase) this.settle(); }
+  settle() {
+    if (this.state.phase !== 'text') return;
+    clearTimeout(this.t3);
+    this.t3 = setTimeout(() => this.setState({ phase: 'done' }), this.props.text.length * 15 + 350);
+  }
+  componentWillUnmount() { clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); }
   render({ text }, { phase }) {
-    if (phase !== 'text') return html`<img class=${'hero-logo' + (phase === 'flip' ? ' leaving' : '')} src="./img/instead-logo.svg" alt="instead" />`;
+    if (phase === 'logo' || phase === 'flip') return html`<img class=${'hero-logo' + (phase === 'flip' ? ' leaving' : '')} src="./img/instead-logo.svg" alt="instead" />`;
+    if (phase === 'done') return html`<h1 class="serif hero-title">${text}</h1>`;
     let n = 0;
     return html`<h1 class="serif hero-title entering" aria-label=${text}>
-      ${text.split(' ').map((word, wi) => html`${wi > 0 && html`<span class="tw-space"> </span>`}<span class="tw-word" aria-hidden="true">${[...word].map((ch) => html`<span class="tw-char" style=${{ animationDelay: `${(n++) * 15}ms` }}>${ch}</span>`)}</span>`)}
+      ${text.split(' ').map((word, wi) => html`${wi > 0 && ' '}<span class="tw-word" aria-hidden="true">${[...word].map((ch) => html`<span class="tw-char" style=${{ animationDelay: `${(n++) * 15}ms` }}>${ch}</span>`)}</span>`)}
     </h1>`;
   }
 }

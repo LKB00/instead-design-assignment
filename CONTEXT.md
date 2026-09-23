@@ -223,6 +223,30 @@ No build step. Preact 10 + htm loaded from esm.sh.
   is the source of truth.
 - `Screenshots/` — gitignored reference captures.
 
+### Bringing it into Figma
+
+The markup and CSS are built to import cleanly (e.g. with the html.to.design
+plugin, which maps flexbox to auto layout):
+
+- Every container is a **flex stack spaced with `gap` + `padding`**; there are
+  no margins between siblings and no negative margins, so each stack becomes
+  an auto-layout frame with the right spacing.
+- **Hover-only controls** (⋮ on rows, check ring on avatars, thread actions,
+  "Open →" in briefings, the nav-pill arrow, resize grips) are
+  `display`-toggled, not hidden overlays — an import contains only what's
+  visible, with no invisible stray layers.
+- Sections carry **readable class names** that become layer names
+  (`rail`, `clients-pane`, `list-section needs-you`, `everyone-else`,
+  `client-panel`, `cp-header`, `composer`, `ctx-pill`, `brief`, …).
+- The hero heading settles into **one text node** after typing, instead of
+  one span per character.
+- Icons are inline Lucide SVGs (import as vectors).
+- Import with **`?demo=0`** to leave out the prototype control. Useful
+  states: `/?demo=0` (firm home), `/?demo=0&scope=c1` (client + thread),
+  `/?demo=0&scenario=large` (200 clients), `/?demo=0&scenario=two`.
+- Only true overlays are absolutely positioned: popovers/menus, the tooltip,
+  and the invisible drag handles for resizing the rail and threads.
+
 ## 9. Known limitations
 
 - All data and replies are mocked; plain-language detection is keyword
