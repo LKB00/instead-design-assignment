@@ -5,10 +5,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const OUT = process.argv[2];
+const CLEAN = fs.readFileSync(new URL('./figma-clean.js', import.meta.url), 'utf8');
 const BASE = 'http://localhost:5173/';
 const W = 1440, H = 900;
-fs.mkdirSync(path.join(OUT, 'screens'), { recursive: true });
-fs.mkdirSync(path.join(OUT, 'components'), { recursive: true });
+// Start from empty folders so renamed files don't leave old ones behind.
+for (const dir of ['screens', 'components']) {
+  fs.mkdirSync(path.join(OUT, dir), { recursive: true });
+  for (const f of fs.readdirSync(path.join(OUT, dir))) if (f.endsWith('.svg')) fs.unlinkSync(path.join(OUT, dir, f));
+}
 
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -22,6 +26,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function open(query) {
   await page.goto(BASE + '?demo=0' + (query ? '&' + query : ''), { waitUntil: 'networkidle0' });
   await page.evaluate(() => document.fonts.ready);
+  await page.addScriptTag({ content: CLEAN });
   await sleep(2600); // let the hero intro finish and settle into plain text
 }
 
@@ -42,7 +47,7 @@ async function toSVG(selector, file, { fullPage = false } = {}) {
       return [t, d];
     });
     // List markers aren't exported either; stand in a real bullet character.
-    const bullets = [...document.querySelectorAll('li')].map((li) => {
+    const bullets = [...document.querySelectorAll('.answer ul > li')].map((li) => {
       const b = document.createElement('span');
       b.className = 'bullet';
       b.textContent = '•';
@@ -55,7 +60,7 @@ async function toSVG(selector, file, { fullPage = false } = {}) {
     await inlineResources(doc.documentElement);
     swaps.forEach(([t, d]) => { d.remove(); t.style.display = ''; });
     bullets.forEach(([li, b]) => { b.remove(); li.style.position = ''; li.style.listStyle = ''; });
-    return new XMLSerializer().serializeToString(doc);
+    return window.figmaClean(doc); // tools/figma-clean.js: meaningful groups, readable names
   }, selector, fullPage);
   if (!svg) { console.log('  skipped (not found):', file, selector); return; }
   fs.writeFileSync(path.join(OUT, file), svg);
@@ -68,19 +73,19 @@ const comp = (sel, name) => toSVG(sel, `components/${name}.svg`);
 console.log('screens');
 await open('');
 await screen('01-firm-home');
-await comp('.rail', 'rail-firm-12-clients');
+await comp('.rail', 'rail');
 await comp('.composer', 'composer-firm');
-await comp('.today-tray', 'today-tray-with-composer');
-await comp('.today-row', 'today-row');
-await comp('.row:has(.dot)', 'client-row-needs-you');
-await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'client-row-default');
-await comp('.row:has(.wf-count)', 'client-row-with-workflow');
-await comp('.user-card', 'user-card');
+await comp('.today-tray', 'tray-needs-you');
+await comp('.today-row', 'tray-client-row');
+await comp('.row:has(.dot)', 'rail-client-row-needs-you');
+await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'rail-client-row-default');
+await comp('.row:has(.wf-count)', 'rail-client-row-with-workflow');
+await comp('.user-card', 'rail-user-card');
 await comp('.toolbar', 'rail-toolbar');
 await page.click('[aria-label="Filter clients"]');
 await sleep(300);
 await screen('02-filter-menu');
-await comp('.filter-menu', 'filter-menu');
+await comp('.filter-menu', 'rail-filter-menu');
 await page.click('.filter-item');
 await sleep(300);
 await comp('.clients-pane', 'rail-filtered-needs-you');
@@ -88,22 +93,22 @@ await page.click('[aria-label="Clear filter"]');
 await sleep(200);
 await page.hover('.row:not(:has(.dot)):not(:has(.wf-count))');
 await sleep(200);
-await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'client-row-hover');
+await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'rail-client-row-hover');
 await page.mouse.move(W - 10, H - 10);
 
 // Workflows open in the composer tray: browse, staged with clients, build, and the expanded library.
 await page.click('[aria-label="Workflows"]');
 await sleep(400);
 await screen('03-workflow-tray');
-await comp('.wf-tray', 'workflow-tray-browse');
+await comp('.wf-tray', 'tray-workflows-browse');
 await page.click('.wf-row');
 await sleep(300);
-await comp('.wf-tray', 'workflow-tray-staged');
+await comp('.wf-tray', 'tray-workflows-picked');
 await page.click('.ctx-pill .ctx-btn');
 await sleep(300);
 await page.evaluate(() => [...document.querySelectorAll('.wf-set')].find((b) => /Needs you/.test(b.textContent)).click());
 await sleep(200);
-await comp('.wf-tray', 'workflow-tray-choose-clients');
+await comp('.wf-tray', 'tray-workflows-choose-clients');
 await page.keyboard.press('Escape');
 await sleep(200);
 await page.click('.wf-tray [aria-label="Close workflows"]');
@@ -113,31 +118,31 @@ await sleep(300);
 await page.click('[aria-label="Expand the library"]');
 await sleep(500);
 await screen('12-workflow-library');
-await comp('.wf-preview', 'workflow-library-preview');
+await comp('.wf-preview', 'library-preview');
 await page.evaluate(() => [...document.querySelectorAll('.wf-action')].find((b) => /Build a new/.test(b.textContent)).click());
 await sleep(300);
-await comp('.wf-tray', 'workflow-tray-build');
-await page.evaluate(() => [...document.querySelectorAll('.wf-action')].find((b) => /8879/.test(b.textContent)).click());
+await comp('.wf-tray', 'tray-workflows-build');
+await page.evaluate(() => [...document.querySelectorAll('.wf-action')].find((b) => /sign/.test(b.textContent)).click());
 await sleep(200);
 await page.click('.send');
 await sleep(1600);
 await page.mouse.move(W - 2, 2);
 await screen('13-workflow-draft');
-await comp('.draft-card', 'workflow-draft-card');
+await comp('.draft-card', 'chat-draft-workflow');
 
 await open('scope=c1');
 await screen('04-client-thread');
 await comp('.client-shell', 'client-panel');
 await comp('.composer', 'composer-client');
-await comp('.ctx-pill', 'context-pill-client');
-await comp('.answer', 'assistant-answer');
+await comp('.ctx-pill', 'composer-context-pill-client');
+await comp('.answer', 'chat-reply');
 
 // The context switcher lives at the firm level; inside a client the pill is a label.
 await open('');
 await page.click('.ctx-btn');
 await sleep(400);
 await screen('05-context-picker');
-await comp('.ctx-picker', 'context-picker');
+await comp('.ctx-picker', 'composer-context-picker');
 await page.keyboard.press('Escape');
 
 await open('scope=c1');
@@ -145,14 +150,14 @@ await page.type('textarea', 'Can we file an extension?');
 await page.keyboard.press('Enter');
 await sleep(1600);
 await screen('06-workflow-offer');
-await comp('.offer', 'workflow-offer-buttons');
+await comp('.offer', 'chat-buttons');
 
 await open('');
 await page.click('.threads-list .thread-row.wf');
 await sleep(600);
 await screen('07-workflow-checklist');
-await comp('.brief', 'workflow-checklist');
-await comp('.ctx-pill', 'context-pill-workflow');
+await comp('.brief', 'chat-client-checklist');
+await comp('.ctx-pill', 'composer-context-pill-workflow');
 // Drill from the workflow into a client: the panel carries the way back.
 await page.evaluate(() => [...document.querySelectorAll('.brief button, .brief [role=button]')].find((e) => /Meera/.test(e.textContent)).click());
 await sleep(900);
@@ -163,15 +168,15 @@ await screen('08-200-clients');
 await page.click('.today-more');
 await sleep(1600);
 await screen('09-200-clients-grouped-briefing');
-await comp('.brief', 'briefing-list');
-await comp('.brief:has(.count)', 'briefing-grouped-by-reason');
+await comp('.brief', 'chat-briefing-list');
+await comp('.brief:has(.count)', 'chat-briefing-groups');
 
 await open('scenario=two');
 await screen('10-two-clients');
 
 await open('scenario=calm');
 await screen('11-calm-week');
-await comp('.ctx-pill', 'context-pill-firm');
+await comp('.ctx-pill', 'composer-context-pill-firm');
 
 await browser.close();
 console.log('done');

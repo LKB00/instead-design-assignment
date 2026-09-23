@@ -125,15 +125,15 @@ instead.
 |---|---|
 | Workflows sit behind a separate "Workflows" button, disconnected from clients and from chat. | Instead's **Workflows** button stays at the top of the rail, but opens the library **above the chat box** instead of replacing the rail. No tabs: the rail is Clients A–Z and Threads, as in Instead. (An earlier version had a Clients \| Workflows toggle; it hid the client list behind a mode, and everything in it except cross-client runs was already shown elsewhere.) |
 | No distinction between cross-client and single-client work. | **A workflow lives where its work lives.** Cross-client workflows stay at the firm level; single-client workflows open **inside the client's panel** (listed first under Client threads with progress, e.g. 2/3). A run is a thread: cross-client runs sit in the rail's **Threads** with progress (3/5); single-client runs in the client's threads, with a 2/3 badge on their row. "4 workflows running →" on the home lists everything in progress in chat. |
-| A workflow's status isn't visible in conversation. | Every workflow **is a chat thread**: the request that started it as the heading, then Instead's **checklist** — open items first, anything needing you marked amber, finished items folded into one line ("Received from Alderwood LLC, Fern & Co. and Harbor & Pine LLP"). |
-| Moving from a workflow into a client loses your place. | Clicking a client inside a workflow opens their file with a **"‹ Collect missing K-1s"** link at the top of the panel, one tap back (it was first under Recent in the context picker, which hid the way back inside a menu). × always returns home with the rail's tab and scroll intact. A small workflow count on a client row ("2/3") jumps straight into it. |
+| A workflow's status isn't visible in conversation. | Every workflow **is a chat thread**: the request that started it as the heading, then Instead's **checklist** — open items first, anything needing you marked amber, finished items folded into one line ("Received from Alderwood LLC, Fern & Co. and Harbor & Pine"). |
+| Moving from a workflow into a client loses your place. | Clicking a client inside a workflow opens their file with a **"‹ Request missing documents"** link at the top of the panel, one tap back (it was first under Recent in the context picker, which hid the way back inside a menu). × always returns home with the rail's tab and scroll intact. A small workflow count on a client row ("2/3") jumps straight into it. |
 
 ### 5.3 Chat context and starting work (brief prompt 3)
 
 | Pain point | Improvement |
 |---|---|
 | Context (which client the chat is about) is implied by navigation only. An earlier version of this prototype added a chip above the composer, which repeated the panel header, couldn't be changed in place, and didn't scale (back chip + client chip + workflow chip). | A **context pill inside the composer**: `All clients ⌄` or a workflow's name at the firm level, where clicking it (or typing **`@`**) opens a picker with **search, All clients, Recent, Needs you**. **Inside a thread it's a label that says who the chat covers**: `Alderwood LLC ×` in a client, `12 clients ×` in a cross-client workflow (showing the workflow's name repeated the heading and looked like a workflow about to start again). No switcher there: a client thread belongs to that client, and "switch this chat to Meera" either moved you out of the file (the rail's job) or mixed two clients in one thread. The placeholder no longer repeats the name ("Ask a question or give a task…"), so it appears once in the panel header and once in the pill. The pill sits in the same place in every state. This is the model/context-picker pattern familiar from Claude, Cursor and ChatGPT. |
-| Starting a workflow isn't possible from chat or from a client row. | **Both, through one path — every start becomes a chat thread**, scoped by where you are: the composer's workflow button, typing **`/`**, **plain language** ("can we file an extension?" → Instead offers *Start "Prepare an extension"* or *Just answer in chat*), or a client row's **⋮ → Start a workflow…**. From the firm level with no clients chosen, Instead asks "Which client is it for?" in chat. |
+| Starting a workflow isn't possible from chat or from a client row. | **Both, through one path — every start becomes a chat thread**, scoped by where you are: the composer's workflow button, typing **`/`**, **plain language** ("can we file an extension?" → Instead offers *Start "File an extension"* or *Just answer in chat*), or a client row's **⋮ → Start a workflow…**. From the firm level with no clients chosen, Instead asks "Which client is it for?" in chat. |
 | Instead's workflow library opens as a separate panel that replaces the rail; a card's detail page showed only a title and Run; "Build workflow" opens a blank document; picking from the composer menu works but hides the library behind a submenu. The journey breaks between browsing, choosing clients (a full-screen grid modal) and running. | **The library opens in the composer tray**, the same sand tray as "Needs you", right above the chat box. Tabs All / Mine / Firm / Instead; typing in the composer searches it; inside a client, playbooks for their return type come first. **Pick → chip → send**: the workflow sits in the tray as a chip with one line on what you'll get, and the composer's context pill becomes **who it runs for** (the current client, or *5 clients ⌄* / *Choose clients* with quick sets from data Instead has: Needs you, each entity type). One "who" control, not two: an earlier version put a clients chip in the tray next to the pill, and inside a workflow thread the screen showed two workflows and two audiences at once; context is optional; nothing runs before send. One client → a single-client run in their panel; several → a cross-client run with a row per client. The **expand** icon grows the tray into the full library over the chat, with a real preview (what it does, what you'll get, the steps, who made it) and *Use this workflow*. **Build a new workflow** and **Upload a workflow** sit at the foot of the tray: building is a conversation (describe the work or pick a suggestion), uploading is the same with the file attached; Instead drafts the steps in the thread as an editable card, and you save it to *Mine* or *Firm*, then *Run it now*. "Workflows" means only the library. The rail's Workflows button is the obvious way in; the composer's workflow button and `/` are shortcuts. What you start shows up in Threads (or the client's threads). |
 | Nothing prevents duplicate work. | Starting a workflow that's already running for that client **opens the existing one** and says so. |
 
@@ -186,8 +186,8 @@ the book.**
 3. Read the headline and the three clients listed under it.
 4. Open a client from that list; see the client panel and the **context
    pill** in the composer (a label here; × goes home).
-5. Rail → **Threads** → "Collect missing K-1s": checklist in chat. Click
-   Meera Iyer → her file; "‹ Collect missing K-1s" at the top goes back.
+5. Rail → **Threads** → "Request missing documents": checklist in chat. Click
+   Meera Iyer → her file; "‹ Request missing documents" at the top goes back.
 6. In a client, type "can we file an extension?" → offer to start, or answer.
 7. Composer workflow button, or `/` — start from templates.
 8. Press **3** (200 clients): tray shows three + "Show 11 more", rail search →
@@ -302,3 +302,14 @@ plugin, which maps flexbox to auto layout):
     the pro mentions ("every Friday"). "Start one for other clients" leaves
     out everyone the running workflow already covers, and doesn't appear
     when that's the whole book.
+15. Plain content. Client notes, workflow names, steps and Instead's
+    replies use everyday words ("Signature pending for 6 days", "Missing a
+    tax form", "Send payment reminders") instead of form numbers and tax
+    jargon. The form badges (1040, 1065…) stay: Instead's own client list
+    shows them. Instead's library is shown as the kinds of work it covers
+    (prepare, review, plan, estimate, IRS letters), in plain words.
+16. Figma export cleaned up (tools/figma-clean.js): no empty or layout-only
+    groups, masks only where something is really clipped, hidden hover
+    controls left out, and every group named in one scheme ("Rail / Client
+    row", "Tray / Header", "Icon / workflow"). Component files are named
+    area-part-variant to match.

@@ -28,11 +28,35 @@ Each file becomes a frame; text layers stay text, icons are vectors.
 
 ## Components (`components/`)
 
-Rail (firm, workflows button, filtered to Needs you), filter menu, client rows (default, needs you,
-with workflow, hover), user card, composer (firm,
-client), context pill (firm, client, workflow), context picker, "Needs you" tray with composer, today row, briefing list, grouped briefing, workflow checklist, workflow tray (browse, staged, choose clients, build),
-workflow library preview, workflow draft card, workflow offer buttons, assistant answer, client panel, client panel back link
-(to the workflow you came from).
+File names are `area-part-variant`, matching the layer names inside.
+
+| Area | Files |
+|---|---|
+| Rail | `rail`, `rail-toolbar`, `rail-client-row-default`, `-needs-you`, `-with-workflow`, `-hover`, `rail-filter-menu`, `rail-filtered-needs-you`, `rail-user-card` |
+| Tray (above the composer) | `tray-needs-you`, `tray-client-row`, `tray-workflows-browse`, `-picked`, `-choose-clients`, `-build` |
+| Composer | `composer-firm`, `composer-client`, `composer-context-pill-firm`, `-client`, `-workflow`, `composer-context-picker` |
+| Chat | `chat-reply`, `chat-buttons`, `chat-client-checklist`, `chat-briefing-list`, `chat-briefing-groups`, `chat-draft-workflow` |
+| Library | `library-preview` |
+| Client panel | `client-panel`, `client-panel-back-link` |
+
+## Layers
+
+Every group means something and has a name; layout-only wrappers are
+flattened away. One naming scheme throughout:
+
+- **Area / Part** for the big pieces: `Rail / Clients`, `Rail / Threads`,
+  `Tray / Header`, `Tray / Client row`, `Chat / Reply`, `Library / Preview`,
+  `Client panel / Header`.
+- **A plain noun** for pieces used in many places: `Client row`,
+  `Thread row`, `Form badge`, `Needs-you dot`, `Tab`, `Icon button`,
+  `Primary button`, `Workflow chip`.
+- **Icon / name** for icons (`Icon / workflow`, `Icon / x`).
+- **Fill** and **Border** for a group's own background shapes.
+- Text layers are named by their text.
+
+Masks are kept only where something is really clipped (a scrolling list,
+truncated text) and are named `Clip`. Hover-only controls that aren't
+showing are left out. The rules live in `tools/figma-clean.js`.
 
 ## Regenerate
 
@@ -41,3 +65,5 @@ With the prototype running on :5173 and Chrome installed:
 ```bash
 cd tools && npm i puppeteer-core@23 && node export-svg.mjs ../figma-export
 ```
+
+(`export-svg.mjs` loads `figma-clean.js` from the same folder.)

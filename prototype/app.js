@@ -47,7 +47,7 @@ const PATHS = {
 };
 
 const Icon = ({ name, size = 14, stroke = 1.5 }) => html`
-  <svg width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg class=${`i-${name}`} width=${size} height=${size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width=${stroke} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name]}</svg>`;
 
 // ---------- Mock data ----------
@@ -56,19 +56,19 @@ const ENTITY = { '1040': 'Individual', '1120': 'C Corp', '1120S': 'S Corp', '106
 // A deterministic 188-client book so the 200-client state is the same on every load.
 const FIRSTS = ['Aarav', 'Beth', 'Carlos', 'Dana', 'Elena', 'Farid', 'Grace', 'Hiro', 'Isla', 'Jonah', 'Kavya', 'Liam', 'Maya', 'Noah', 'Olivia', 'Pedro', 'Quinn', 'Rhea', 'Sam', 'Tara', 'Uma', 'Victor', 'Wen', 'Yusuf', 'Zoe'];
 const LASTS = ['Abbott', 'Bose', 'Chen', 'Duarte', 'Ellis', 'Fischer', 'Gupta', 'Hale', 'Ibarra', 'Jansen', 'Kaur', 'Lindqvist', 'Mehta', 'Novak', 'Okafor', 'Park', 'Reyes', 'Sato', 'Tan', 'Varga', 'Walsh', 'Young'];
-const FIRMS = ['Bluebird Bakery LLC', 'Cedar Row Dental PC', 'Driftwood Studios', 'Eastline Logistics', 'Foxglove Farms', 'Granite Peak Partners', 'Hollis & Mercer LLP', 'Ironbark Holdings', 'Juniper Health PLLC', 'Kestrel Media Inc.', 'Lantern Coffee Co.', 'Marlow Trust'];
+const FIRMS = ['Bluebird Bakery', 'Cedar Row Dental', 'Driftwood Studios', 'Eastline Logistics', 'Foxglove Farms', 'Granite Peak', 'Hollis & Mercer', 'Ironbark Holdings', 'Juniper Health', 'Kestrel Media', 'Lantern Coffee', 'Marlow Trust'];
 const GEN_ISSUES = [
-  { cat: 'docs', note: 'W-2 missing, return due in 5 days', flag: 'Due in 5 days', urgency: 5, next: 'Request the W-2' },
-  { cat: 'docs', note: '1099-B missing for 9 days', flag: 'Docs 9d late', urgency: 4, next: 'Request the 1099-B' },
-  { cat: 'sign', note: '8879 unsigned for 3 days', flag: 'Unsigned 3d', urgency: 4, next: 'Nudge them to sign' },
-  { cat: 'deadline', note: 'Extension due next week, not started', flag: 'Due next wk', urgency: 6, next: 'Start the extension' },
+  { cat: 'docs', note: 'Missing documents, return due in 5 days', flag: 'Due in 5 days', urgency: 5 },
+  { cat: 'docs', note: 'Documents 9 days late', flag: '9 days late', urgency: 4 },
+  { cat: 'sign', note: 'Signature pending for 3 days', flag: 'Unsigned 3 days', urgency: 4 },
+  { cat: 'deadline', note: 'Extension due next week', flag: 'Due next week', urgency: 6 },
 ];
 function generatedBook(n) {
   const out = [];
   for (let i = 0; i < n; i++) {
     const isFirm = i % 9 === 4;
     const entity = isFirm ? ['1120S', '1065', '1120', '1041'][i % 4] : '1040';
-    const c = isFirm ? { id: `g${i}`, name: `${FIRMS[i % FIRMS.length].replace(/(LLC|PC|LLP|Inc\.|PLLC|Co\.)$/, '').trim()} ${['', 'II', 'East', 'West'][Math.floor(i / FIRMS.length) % 4]}`.trim(), entity }
+    const c = isFirm ? { id: `g${i}`, name: `${FIRMS[i % FIRMS.length]} ${['', 'II', 'East', 'West'][Math.floor(i / FIRMS.length) % 4]}`.trim(), entity }
       : { id: `g${i}`, first: FIRSTS[i % FIRSTS.length], last: LASTS[(i * 7) % LASTS.length], entity };
     const issue = i % 17 === 3 ? GEN_ISSUES[i % GEN_ISSUES.length] : null;
     out.push(issue ? { ...c, status: 'needs_attention', ...issue } : { ...c, status: i % 5 === 0 ? 'in_progress' : 'on_track' });
@@ -79,10 +79,10 @@ function generatedBook(n) {
 function clientsFor(scenario) {
   // Same data as the real app.instead.com/firm capture, for side-by-side comparison.
   if (scenario === 'reference') return [{ id: 'ref-ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'on_track' }];
-  const ashish = { id: 'ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'in_progress', note: 'Review 1040 draft' };
+  const ashish = { id: 'ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'in_progress', note: 'Return in review' };
   if (scenario === 'two') return [
     ashish,
-    { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', cat: 'sign', note: '8879 unsigned for 4 days', flag: '8879 unsigned', urgency: 1, next: 'Nudge Priya to sign' },
+    { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', cat: 'sign', note: 'Signature pending for 4 days', flag: 'Unsigned 4 days', urgency: 1 },
   ];
   if (scenario === 'large') return clientsFor('grouped').concat(generatedBook(188));
   if (scenario === 'calm') return [
@@ -92,48 +92,48 @@ function clientsFor(scenario) {
     { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
   ];
   return [
-    { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', cat: 'docs', note: 'K-1 missing, return due in 2 days', flag: 'Due in 2 days', urgency: 2, next: 'Chase the K-1 or file an extension' },
-    { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', cat: 'sign', note: 'E-sign request unsigned for 6 days', flag: 'Unsigned 6d', urgency: 1, next: 'Resend the e-sign request' },
-    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, prior-year 1041 missing', flag: 'Due Friday', urgency: 3, next: 'Upload the prior-year 1041' },
+    { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', cat: 'docs', note: 'Missing a tax form, return due in 2 days', flag: 'Due in 2 days', urgency: 2 },
+    { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', cat: 'sign', note: 'Signature pending for 6 days', flag: 'Unsigned 6 days', urgency: 1 },
+    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, needs last year’s return', flag: 'Due Friday', urgency: 3 },
     ashish,
-    { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1s' },
+    { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Collecting documents' },
     { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
     { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
     { id: 'c8', first: 'Sana', last: 'Kapoor', entity: '1040', status: 'on_track' },
     { id: 'c9', first: 'Owen', last: 'Brecker', entity: '1040', status: 'on_track' },
-    { id: 'c10', name: 'Northgate Dental PC', entity: '1120S', status: 'on_track' },
+    { id: 'c10', name: 'Northgate Dental', entity: '1120S', status: 'on_track' },
     { id: 'c11', first: 'Lena', last: 'Ortiz', entity: '1040', status: 'on_track' },
-    { id: 'c12', name: 'Harbor & Pine LLP', entity: '1065', status: 'on_track' },
+    { id: 'c12', name: 'Harbor & Pine', entity: '1065', status: 'on_track' },
   ];
 }
 
 // A workflow is a thread with a checklist. Cross-client items are clients; single-client items are steps.
 const WORKFLOWS = {
   across: [
-    { id: 'w1', tid: 't-docs', name: 'Collect missing K-1s', ask: 'Chase the missing K-1s', clients: 5, done: 3, total: 5, items: [
+    { id: 'w1', tid: 't-docs', name: 'Request missing documents', ask: 'Ask for the missing tax forms', clients: 5, done: 3, total: 5, items: [
       { clientId: 'c1', label: 'Meera Iyer', state: 'attn', note: 'No reply in 5 days, return due in 2' },
       { clientId: 'c9', label: 'Owen Brecker', state: 'open', note: 'Reminder sent yesterday' },
       { clientId: 'c5', label: 'Alderwood LLC', state: 'done', note: 'Received' },
       { clientId: 'c7', label: 'Fern & Co.', state: 'done', note: 'Received' },
-      { clientId: 'c12', label: 'Harbor & Pine LLP', state: 'done', note: 'Received' },
-    ], doneSummary: 'Received from Alderwood LLC, Fern & Co. and Harbor & Pine LLP' },
-    { id: 'w2', tid: 't-remind', name: 'Send Q3 estimate reminders', ask: 'Send the Q3 estimate reminders', clients: 12, done: 7, total: 12, items: [
+      { clientId: 'c12', label: 'Harbor & Pine', state: 'done', note: 'Received' },
+    ], doneSummary: 'Received from Alderwood LLC, Fern & Co. and Harbor & Pine' },
+    { id: 'w2', tid: 't-remind', name: 'Send payment reminders', ask: 'Remind clients about the September tax payment', clients: 12, done: 7, total: 12, items: [
       { clientId: 'c2', label: 'Sethi Holdings', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c6', label: 'Daniel Cho', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c8', label: 'Sana Kapoor', state: 'open', note: 'Scheduled for Monday' },
-      { clientId: 'c10', label: 'Northgate Dental PC', state: 'open', note: 'Scheduled for Monday' },
+      { clientId: 'c10', label: 'Northgate Dental', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c11', label: 'Lena Ortiz', state: 'open', note: 'Scheduled for Monday' },
     ], doneSummary: '7 reminders sent', doneIds: ['c1', 'c3', 'ashish', 'c5', 'c7', 'c9', 'c12'] },
   ],
   single: [
-    { id: 'w3', name: 'Review 1040 draft', ask: 'Review Ashish’s 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 1, total: 3, items: [
-      { label: 'Reconcile W-2 and 1099 income', state: 'done' },
-      { label: 'Check itemized deductions against receipts', state: 'open', note: 'Working on it now' },
-      { label: 'Final review with you', state: 'open', note: 'Once the deductions check is done' },
+    { id: 'w3', tid: 'i-review', name: 'Review a tax return', ask: 'Review Ashish’s return', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 1, total: 3, items: [
+      { label: 'Match his income to his documents', state: 'done' },
+      { label: 'Check deductions against receipts', state: 'open', note: 'Working on it now' },
+      { label: 'Final review with you', state: 'open', note: 'After the deductions check' },
     ] },
-    { id: 'w4', tid: 't-ext', name: 'Prepare an extension', ask: 'Prepare the Whitfield extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2, items: [
-      { label: 'Estimate the 2025 tax due', state: 'open', note: 'Needs the prior-year 1041' },
-      { label: 'Prepare and e-file Form 7004', state: 'open', note: 'Due Friday' },
+    { id: 'w4', tid: 't-ext', name: 'File an extension', ask: 'File the Whitfield extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2, items: [
+      { label: 'Estimate the tax owed', state: 'open', note: 'Needs last year’s return' },
+      { label: 'Prepare and file the extension', state: 'open', note: 'Due Friday' },
     ] },
   ],
 };
@@ -143,57 +143,48 @@ const wfKey = (id) => `wf:${id}`;
 
 // What a pro can start. Scope decides the shape: across clients (a checklist of clients) or for one (a checklist of steps).
 const TEMPLATES = [
-  { id: 't-remind', answer: 'Q3 estimates are due September 15. I can draft the reminder text for you to send yourself, if you’d rather not track it.', scope: 'across', name: 'Send estimate reminders', icon: 'users', match: /remind|estimate/i,
+  { id: 't-remind', answer: 'The next tax payment is due September 15. I can draft the reminder for you to send yourself, if you’d rather not track it.', scope: 'across', name: 'Send payment reminders', icon: 'users', match: /remind|payment|estimate/i,
     targets: (cs) => cs.filter((c) => c.entity === '1040').slice(0, 6), note: 'Scheduled for Monday' },
-  { id: 't-docs', answer: 'I can list what’s missing for each client from their uploaded documents and last year’s return, without sending anything yet.', scope: 'across', name: 'Request missing documents', icon: 'fileText', match: /missing|document|k-1|k1/i,
+  { id: 't-docs', answer: 'I can list what’s missing for each client from what they’ve uploaded and last year’s return, without sending anything yet.', scope: 'across', name: 'Request missing documents', icon: 'fileText', match: /missing|document|form/i,
     targets: (cs) => cs.filter((c) => c.status !== 'on_track'), note: 'Request drafted' },
-  { id: 't-ext', answer: 'Yes. An extension moves the filing deadline to October 15, but any tax owed is still due on the original date. Want me to estimate what’s owed?', scope: 'one', name: 'Prepare an extension', icon: 'timerReset', match: /extension|7004|4868/i,
-    steps: ['Estimate the tax due', 'Prepare the extension form', 'E-file and confirm acceptance'] },
-  { id: 't-gather', answer: 'I can compare what’s been uploaded against last year and tell you what’s still missing.', scope: 'one', name: 'Gather documents', icon: 'folder', match: /gather|collect|upload/i,
-    steps: ['Compare against last year’s documents', 'Send the client a request list', 'Check off documents as they arrive'] },
-  { id: 't-strategy', answer: 'I can take a quick look at the prior-year return and name the strategies worth a closer look.', scope: 'one', name: 'Run a strategy analysis', icon: 'library', match: /strateg|plan|save/i,
-    steps: ['Read the prior-year return', 'Screen for applicable strategies', 'Write up the estimated savings'] },
-  { id: 't-onboard', answer: 'I can draft the engagement letter and a first request list for you to send.', scope: 'one', name: 'Onboard client', icon: 'userPlus', match: /onboard|engagement/i,
-    steps: ['Send the engagement letter', 'Collect prior-year returns', 'Set up the client’s document folder'] },
+  { id: 't-ext', answer: 'Yes. An extension gives more time to file, but any tax owed is still due on the original date. Want me to estimate what’s owed?', scope: 'one', name: 'File an extension', icon: 'timerReset', match: /extension/i,
+    steps: ['Estimate the tax owed', 'Prepare the extension', 'File it and confirm it was accepted'] },
+  { id: 't-strategy', answer: 'I can look at last year’s return and point out savings worth a closer look.', scope: 'one', name: 'Find tax savings', icon: 'library', match: /\bsav(e|es|ing|ings)\b|strateg/i,
+    steps: ['Read last year’s return', 'Look for savings that apply', 'Write up what each is worth'] },
+  { id: 't-onboard', answer: 'I can draft the engagement letter and a first list of documents for you to send.', scope: 'one', name: 'Onboard a client', icon: 'userPlus', match: /onboard|engagement/i,
+    steps: ['Send the engagement letter', 'Collect last year’s return', 'Set up the client’s folders'] },
 ];
 // Bulk versions used by the at-scale briefing; not in the start menu.
 TEMPLATES.push(
-  { id: 't-sign', scope: 'across', hidden: true, name: 'Resend e-sign requests', icon: 'filePen', note: 'Resent today', answer: '' },
-  { id: 't-exts', scope: 'across', hidden: true, name: 'Prepare extensions', icon: 'timerReset', note: 'Estimating tax due', answer: '' },
+  { id: 't-sign', scope: 'across', hidden: true, name: 'Resend signature requests', icon: 'filePen', note: 'Resent today', answer: '' },
+  { id: 't-exts', scope: 'across', hidden: true, name: 'File extensions', icon: 'timerReset', note: 'Estimating tax owed', answer: '' },
 );
 // The library: everything a pro can run. A workflow is a playbook; whether a run covers one
 // client or many is decided when it's started, by who it's run for.
 const FIRM_META = {
-  't-remind': { cat: 'Client communication', desc: 'Drafts estimated-tax reminders and tracks who has paid.', output: 'A reminder per client and a paid / not-paid list', steps: ['Work out each client’s Q3 estimate', 'Draft the reminder for your review', 'Send it and track replies'] },
-  't-docs': { cat: 'Document collection', desc: 'Compares uploads with last year and asks each client for what’s missing.', output: 'One request per client, tracked until everything arrives', steps: ['Compare uploads with last year', 'Draft a request list per client', 'Send and check items off as they arrive'] },
-  't-ext': { cat: 'Tax preparation', desc: 'Estimates the tax due and prepares the extension for e-filing.', output: 'A filed extension and a payment estimate' },
-  't-gather': { cat: 'Document collection', desc: 'Checks a client’s uploads against last year and requests the rest.', output: 'A request list and a checked-off document folder' },
-  't-strategy': { cat: 'Tax planning', desc: 'Screens the prior-year return for strategies worth a closer look.', output: 'A short write-up of strategies and estimated savings' },
-  't-onboard': { cat: 'Client onboarding', desc: 'Sends the engagement letter and sets up a new client’s file.', output: 'A signed engagement letter and a ready document folder' },
+  't-remind': { cat: 'Reminders', desc: 'Reminds clients about their next tax payment and tracks who has paid.', output: 'A reminder for each client and a list of who has paid', steps: ['Work out what each client owes', 'Draft the reminder for your review', 'Send it and track replies'] },
+  't-docs': { cat: 'Documents', desc: 'Checks what each client has uploaded against last year and asks for the rest.', output: 'One request per client, tracked until everything arrives', steps: ['Compare uploads with last year', 'Draft a request for each client', 'Send it and check items off as they arrive'] },
+  't-ext': { cat: 'Filing', desc: 'Estimates the tax owed and files an extension.', output: 'A filed extension and an estimate of what’s owed' },
+  't-strategy': { cat: 'Planning', desc: 'Looks at last year’s return for ways to save.', output: 'A short list of savings and what each is worth' },
+  't-onboard': { cat: 'Onboarding', desc: 'Sends the engagement letter and sets up a new client.', output: 'A signed engagement letter and a client file ready to use' },
 };
 TEMPLATES.forEach((t) => Object.assign(t, { by: 'firm' }, FIRM_META[t.id] || {}));
-// Instead's own playbooks (from its library at app.instead.com).
+// Instead's own playbooks: the kinds of work its library covers (prepare, review, plan, estimate, notices), in plain words.
 TEMPLATES.push(...[
-  ['i-1040wp', 'Build a 1040 tax workpaper (TY25)', 'Tax preparation workpapers', 'Builds a full 1040 workpaper from source documents and last year’s return.', 'A 1040 workpaper with tie-outs and open points', ['Read the source documents', 'Pull in prior-year data', 'Build the workpaper schedules', 'Flag open points for your review'], 'fileText'],
-  ['i-1120swp', 'Build an 1120S tax workpaper (TY25)', 'Tax preparation workpapers', 'Builds an 1120S workpaper from source documents and prior-year data.', 'An 1120S workpaper with shareholder schedules', ['Read the source documents', 'Build the trial balance and M-1', 'Prepare shareholder allocations', 'Flag open points for your review'], 'fileText'],
-  ['i-1065wp', 'Build a 1065 tax workpaper (TY25)', 'Tax preparation workpapers', 'Builds a 1065 partnership workpaper from source documents.', 'A 1065 workpaper with partner allocations', ['Read the source documents', 'Build the trial balance', 'Prepare partner allocations and K-1s', 'Flag open points for your review'], 'fileText'],
-  ['i-1040rev', 'Review a 1040 tax return (TY25)', 'Tax return review', 'Checks a prepared 1040 against source documents, workpapers and tax law.', 'A review memo listing each issue and where it lives', ['Tie the return to the workpaper', 'Check each line against source documents', 'List issues by severity'], 'circleCheck'],
-  ['i-plan', 'Build a tax plan (TY26)', 'Tax planning', 'Analyses returns and financials to build a 2026 plan.', 'A tax plan with strategies and estimated savings', ['Read the last two returns', 'Project 2026 income', 'Model the strategies that apply', 'Write up the plan'], 'library'],
-  ['i-est', 'Build an Individual Tax Estimate (TY2026)', 'Tax estimates', 'Works out quarterly federal and state estimates, including QBI.', 'Quarterly estimates and payment vouchers', ['Project 2026 income', 'Calculate federal and state tax', 'Split into quarterly payments'], 'timerReset'],
-  ['i-scorp', 'Schedule C to S Corp Conversion Analysis', 'Tax planning', 'Models salary, payroll and QBI to show whether an S Corp saves tax.', 'A side-by-side comparison with a recommendation', ['Read the Schedule C', 'Model a reasonable salary', 'Compare total tax both ways'], 'building'],
-  ['i-augusta', 'Augusta Rule Implementation', 'Tax strategy', 'Prepares the rental agreement, meeting log and rent comparables.', 'An Augusta Rule document package', ['Confirm the client qualifies', 'Pull local rent comparables', 'Draft the agreement and meeting log'], 'fileText'],
-  ['i-accountable', 'Accountable Plan Implementation', 'Tax strategy', 'Creates an accountable plan for S Corp expense reimbursements.', 'A policy, an employee guide and an expense tracker', ['Confirm the entity and owners', 'Draft the plan policy', 'Build the reimbursement tracker'], 'fileText'],
-  ['i-penalty', 'Penalty Abatement', 'Tax resolution', 'Finds the right relief path and prepares the abatement request.', 'A penalty abatement request ready to send', ['Read the IRS notices and transcripts', 'Pick the relief path', 'Draft the request letter'], 'landmark'],
-  ['i-auditrecon', 'Audit Reconsideration', 'Tax resolution', 'Prepares a request to reopen a closed audit assessment.', 'A reconsideration request with supporting documents', ['Read the audit report', 'Match new evidence to each adjustment', 'Draft the request'], 'landmark'],
+  ['i-prep', 'Prepare a tax return', 'Filing', 'Prepares a return from the client’s documents and last year’s return.', 'A draft return with open questions flagged', ['Read the client’s documents', 'Bring in last year’s numbers', 'Prepare the return', 'Flag open questions for you'], 'fileText'],
+  ['i-review', 'Review a tax return', 'Review', 'Checks a prepared return against the client’s documents.', 'A list of issues and where each one is', ['Compare the return with the documents', 'Check each section', 'List issues by importance'], 'circleCheck'],
+  ['i-plan', 'Build a tax plan', 'Planning', 'Looks ahead at next year and suggests ways to pay less tax.', 'A plan with suggestions and estimated savings', ['Read the last two returns', 'Estimate next year’s income', 'Suggest what could change', 'Write up the plan'], 'library'],
+  ['i-est', 'Estimate quarterly taxes', 'Planning', 'Works out what the client should pay each quarter.', 'Four payment amounts with due dates', ['Estimate this year’s income', 'Work out the tax', 'Split it into four payments'], 'timerReset'],
+  ['i-notice', 'Respond to an IRS letter', 'Letters', 'Reads a letter from the IRS and drafts a reply.', 'A reply ready for your review', ['Read the letter', 'Work out what the IRS is asking for', 'Draft the reply'], 'landmark'],
 ].map(([id, name, cat, desc, output, steps, icon]) => ({ id, name, cat, desc, output, steps, icon, by: 'instead', scope: 'one' })));
 const LIB_TABS = [['all', 'All'], ['mine', 'Mine'], ['firm', 'Firm'], ['instead', 'Instead']];
 const BY_LINE = { instead: 'By Instead', firm: 'Shared with your firm', mine: 'Only you' };
-const BUILD_IDEAS = ['Chase unsigned 8879s after 3 days, then flag them to me', 'Send year-end organizers to every 1040 client'];
+const BUILD_IDEAS = ['Remind clients who haven’t signed after 3 days, then tell me', 'Send a year-end checklist to every individual client'];
 const library = () => TEMPLATES.filter((t) => !t.hidden).sort((a, b) => ['mine', 'firm', 'instead'].indexOf(a.by) - ['mine', 'firm', 'instead'].indexOf(b.by));
 // A rough first draft from what the pro typed or uploaded; the pro edits it before saving.
 const KNOWN_DRAFTS = [
-  [/8879|unsigned|e-?sign/i, 'Chase unsigned 8879s', ['Find 8879s unsigned for 3 days or more', 'Send the client a friendly reminder', 'Resend the e-sign request 2 days later', 'Flag anyone still unsigned to you']],
-  [/organi[sz]er/i, 'Send year-end organizers', ['Find every 1040 client', 'Prefill each organizer from last year’s return', 'Send it with a due date', 'Track what comes back and chase the rest']],
+  [/sign/i, 'Remind clients to sign', ['Find returns waiting on a signature for 3 days or more', 'Send the client a friendly reminder', 'Send another reminder 2 days later', 'Tell you who still hasn’t signed']],
+  [/checklist|year-end/i, 'Send year-end checklists', ['Find every individual client', 'Fill in what we already know from last year', 'Send it with a due date', 'Track what comes back and follow up']],
 ];
 function draftFrom(text, file) {
   const known = !file && KNOWN_DRAFTS.find(([re]) => re.test(text));
@@ -214,7 +205,7 @@ const templateFor = (text) => TEMPLATES.find((t) => t.match && t.match.test(text
 const CATS = {
   docs: { label: 'Waiting on documents', tid: 't-docs', action: 'Request them all' },
   sign: { label: 'Waiting on a signature', tid: 't-sign', action: 'Resend all' },
-  deadline: { label: 'Deadline coming, not started', tid: 't-exts', action: 'Start extensions' },
+  deadline: { label: 'Deadline coming up', tid: 't-exts', action: 'File extensions' },
 };
 const wfFromKey = (key) => key && key.startsWith('wf:') && ALL_WF.find((w) => wfKey(w.id) === key);
 // Every workflow thread opens with the ask that started it and Instead's live checklist.
@@ -233,18 +224,18 @@ const SCENARIOS = [
 ];
 const SHOW_DEMO_SWITCH = PARAMS.get('demo') !== '0';
 
-// Instead's own opening reply for a new client thread (verbatim from app.instead.com).
+// Instead's opening reply for a new client thread (its shape, in plain words).
 const greeting = (name) => ({
   from: 'assistant',
   blocks: [
     { p: `Hi Lokesh, good to be working with you on ${name}'s file.` },
     { p: 'What would you like to do today? A few things I can help with:' },
     { ul: [
-      'Prepare or review a 1040 return or workpaper',
-      'Build a tax plan or an individual tax estimate for 2026',
-      'Analyze and implement a specific tax strategy (Augusta Rule, Accountable Plan, S Corp conversion, etc.)',
-      'Answer a federal or state tax research question',
-      "Work with the client's documents (organize, extract, summarize)",
+      'Prepare or review a tax return',
+      'Build a tax plan or estimate quarterly taxes',
+      'Look for ways to save tax',
+      'Answer a tax question',
+      "Organize or summarize the client's documents",
     ] },
     { p: 'Just let me know what you need.' },
   ],
@@ -302,12 +293,12 @@ class App extends Component {
         'c1#1': [
           { from: 'user', text: "What's blocking Meera's return?" },
           { from: 'assistant', blocks: [
-            { p: 'Her K-1 from Brightline Capital Partners still hasn’t come in, and the return is due in 2 days.' },
+            { p: 'One tax form from her investments hasn’t come in, and her return is due in 2 days.' },
             { p: 'A few ways I can keep this on track:' },
             { ul: [
-              'Draft a reminder to Meera asking her to forward the K-1',
+              'Draft a reminder asking Meera to send the form',
               'File an extension so the deadline isn’t at risk',
-              'Prepare the rest of the return and leave the K-1 lines open',
+              'Prepare the rest of the return and leave that part open',
             ] },
             { p: 'Which would you like?' },
           ] },
@@ -321,7 +312,7 @@ class App extends Component {
         ...(PARAMS.get('thread') === 'hey' ? { 'ref-ashish': ['ref-ashish#1'] } : {}),
       },
       activeThread: {},
-      titles: { 'ashish#1': 'Friendly greeting exchange', 'c1#1': 'K-1 follow-up', 'ref-ashish#1': 'Friendly greeting exchange' },
+      titles: { 'ashish#1': 'Friendly greeting exchange', 'c1#1': 'Missing form follow-up', 'ref-ashish#1': 'Friendly greeting exchange' },
       openYears: { 2026: true, 2025: false },
       railW: 316,
       threadsH: 260,
@@ -605,7 +596,7 @@ class App extends Component {
     if (c) return {
       status: `Reading ${fullName(c)}'s documents`,
       msg: { from: 'assistant', blocks: [
-        { p: `On it. I'll work from ${fullName(c)}'s uploaded documents and prior-year return.` },
+        { p: `On it. I'll work from ${fullName(c)}'s uploaded documents and last year’s return.` },
         { p: 'I’ll flag anything missing before I make changes.' },
       ] },
     };
@@ -614,9 +605,9 @@ class App extends Component {
       msg: { from: 'assistant', blocks: [{ p: `Added to “${w.name}.” ${w.done} of ${w.total} done so far — I’ll update the checklist as I go.` }] },
     };
     return {
-      status: 'Searching authoritative tax guidance',
+      status: 'Looking it up',
       msg: { from: 'assistant', blocks: [
-        { p: 'Here’s what the IRS guidance says, with sources you can check. This is a general answer for your firm, not for one client.' },
+        { p: 'Here’s the answer, with sources you can check. It’s a general answer, not about one client.' },
         { p: 'If it’s about a specific client, type @ or pick them on the left and I’ll answer from their file.' },
       ] },
     };
@@ -884,11 +875,8 @@ class App extends Component {
       </div>`;
     const tabs = html`<div class="wf-tabs" role="tablist">${LIB_TABS.map(([id, label]) => html`
         <button role="tab" class="wf-tab" aria-selected=${st.wfTab === id} onClick=${() => this.setState({ wfTab: id, wfPreview: null })}>${label}</button>`)}</div>`;
-    // Inside a client, playbooks for their return type come first and other forms' go last.
-    const fits = (t) => (!sc || !/\b(1040|1041|1065|1120S?|990)\b/.test(t.name) ? 1 : new RegExp(`\\b${sc.entity}\\b`).test(t.name) ? 2 : 0);
     const q = (st.wfFull ? st.wfQuery : st.draft).trim().toLowerCase();
-    const list = library().filter((t) => (st.wfTab === 'all' || t.by === st.wfTab) && (!q || `${t.name} ${t.cat}`.toLowerCase().includes(q)))
-      .sort((a, b) => fits(b) - fits(a));
+    const list = library().filter((t) => (st.wfTab === 'all' || t.by === st.wfTab) && (!q || `${t.name} ${t.cat}`.toLowerCase().includes(q)));
     const empty = st.wfTab === 'mine' && !q
       ? html`<div class="wf-empty">Nothing here yet. Describe the work you repeat and Instead drafts it, or upload the checklist you already use.</div>`
       : q && html`<button class="today-row wf-row" onClick=${() => this.startBuild(st.wfFull ? st.wfQuery : st.draft)}>
@@ -1223,7 +1211,7 @@ class App extends Component {
     const composerEl = html`<div class="composer-anchor">
         ${st.showTip && sc && html`
           <div class="popover tooltip" role="status">
-            Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. The × in the chat box takes you back to all clients.
+            This chat is now about <b>${fullName(sc)}</b>. Answers use only their documents and history. The × in the chat box takes you back to all clients.
             <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
           </div>`}
 

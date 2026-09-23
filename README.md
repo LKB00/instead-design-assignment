@@ -27,7 +27,7 @@ Things to try:
 
 - Read the home: the headline and the "Needs you" tray answer who needs you
   today; click a client to open their file.
-- Open "Collect missing K-1s" under **Threads** in the rail: a cross-client
+- Open "Request missing documents" under **Threads** in the rail: a cross-client
   workflow is a firm thread with a checklist. "4 workflows running →" in the
   home tray lists everything in progress.
 - Click the **All clients ⌄** pill in the composer (or type `@`) to choose who
@@ -82,7 +82,8 @@ user-made client groups) and the full reasoning behind each are in
 - `figma-export/` — editable SVGs of the main screens and components for
   Figma, with a README listing each file.
 - `tools/export-svg.mjs` — regenerates `figma-export/` from the running
-  prototype (Chrome + puppeteer-core).
+  prototype (Chrome + puppeteer-core); `tools/figma-clean.js` removes
+  layout-only groups and names every layer.
 - `project/` — the earlier Claude Artifact canvas (Workspace, Decisions,
   StatusKey artboards). Superseded by `prototype/`; kept for design history.
 
@@ -102,7 +103,7 @@ rail's Threads (with progress, "3/5"), single-client runs in the client's
 Client threads (with a "2/3" badge on their row). "4 workflows running →" on
 the home lists them all in chat. Every workflow is a chat thread that opens with
 Instead's checklist (open items first, finished ones folded into one line).
-Drilling from a workflow into a client puts a "‹ Collect missing K-1s" link at
+Drilling from a workflow into a client puts a "‹ Request missing documents" link at
 the top of the client's panel, one tap back; × always goes home with the
 rail's scroll intact.
 
