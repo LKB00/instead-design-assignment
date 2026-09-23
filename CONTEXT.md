@@ -320,3 +320,7 @@ plugin, which maps flexbox to auto layout):
     "who is this for?" looks the same everywhere. Selected rows are marked
     the same way in both (sand background and a check); no empty circles,
     which read as "pick one".
+18. @ works inline, as in other chat tools: the @ stays in the text, what
+    you type after it filters the picker (no second search box, the cursor
+    stays in the composer), ↑ ↓ move, Enter picks and removes the "@name"
+    while keeping the rest of the message, Esc keeps typing.

@@ -273,6 +273,7 @@ img { display: block; }
 @keyframes popIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .tooltip { max-width: 320px; padding: 10px 12px; border-radius: 12px; background: var(--charcoal); color: #fff; font-size: 12px; line-height: 18px; box-shadow: 0 8px 24px rgba(36, 40, 44, 0.2); }
 .tooltip b { font-weight: 700; }
+.tooltip-text { margin: 0; }
 .tooltip { display: flex; flex-direction: column; gap: 8px; }
 .tooltip-actions { display: flex; }
 .tooltip-btn { height: 24px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 9999px; background: var(--lime); color: var(--charcoal); font-size: 11px; font-weight: 600; }
@@ -364,7 +365,9 @@ button.wf-count:hover { background: var(--sand-dark); color: var(--charcoal); }
 .ctx-pill .chip-x:hover { background: rgba(36, 40, 44, 0.08); }
 .ctx-picker { width: 320px; max-height: 420px; overflow-y: auto; }
 .ctx-search { flex: none; height: 30px; padding: 0 10px; }
-.ctx-item[aria-selected="true"] { background: var(--sand); }
+.ctx-item[aria-selected="true"], .ctx-item.active { background: var(--sand); }
+/* Typing @: only the keyboard row is highlighted; the check still marks the current choice. */
+.ctx-picker.inline .ctx-item[aria-selected="true"]:not(.active) { background: none; }
 .ctx-item .dot { width: 5px; height: 5px; }
 
 /* ---------- Today: who needs you, in Instead's composer tray ---------- */

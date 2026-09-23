@@ -276,7 +276,7 @@ class App extends Component {
       menu: false,
       rowMenu: null,
       filter: null, filterOpen: false, // rail filter: 'needs' | 'workflow' | an entity code
-      ctxOpen: false, ctxQuery: '', recent: [], // the context picker in the composer
+      ctxOpen: false, ctxQuery: '', ctxInline: false, ctxIndex: 0, recent: [], // the context picker; ctxInline = opened by typing @
       query: null, // null = search closed; '' = open // client id whose ⋮ menu is open
       // The workflow tray above the composer: 'browse' | 'build' | null. wfPick is a staged workflow,
       // wfTargets who it will run for, wfFull the expanded library.
@@ -384,7 +384,9 @@ class App extends Component {
 
   // One control for "who is this chat about": firm, a client, or a workflow.
   setContext(item) {
-    this.setState({ ctxOpen: false, ctxQuery: '' });
+    // Picked from an inline @mention: the "@ash" in the text has done its job, the rest stays.
+    const draft = this.state.ctxInline ? this.state.draft.replace(/(^|\s)@[^\s@]*$/, '$1') : this.state.draft;
+    this.setState({ ctxOpen: false, ctxQuery: '', ctxInline: false, ctxIndex: 0, draft });
     const cur = this.state.scope;
     if (!item) return this.clearScope();
     if (item.type === 'client') return this.pickClient(item.id, { from: cur && cur.type === 'workflow' ? cur : null });
@@ -854,28 +856,33 @@ class App extends Component {
       sections = [['Recent', recent], ['Needs you', needs]];
     }
     const check = html`<span class="proto-check"><${Icon} name="check" size=${12} /></span>`;
+    const all = { type: 'all', name: 'All clients' };
+    this.ctxFlat = (q ? [] : [all]).concat(...sections.map(([, items]) => items));
+    const active = (it) => st.ctxInline && this.ctxFlat[st.ctxIndex] === it;
     const row = (it) => html`
-      <button class="menu-item ctx-item" role="option" aria-selected=${!!same(it, cur)} onClick=${() => this.setContext(it)}>
+      <button class=${'menu-item ctx-item' + (active(it) ? ' active' : '')} role="option" aria-selected=${!!same(it, cur)} onClick=${() => this.setContext(it)}>
         <span class="menu-icon"><${Icon} name=${it.icon} /></span>
         <span class="row-text"><span class="row-name">${it.name}</span><span class="row-note">${it.sub}</span></span>
         ${it.attn && html`<span class="dot"></span>`}
         ${same(it, cur) && check}
       </button>`;
     return html`
-      <div class="popover menu ctx-picker" role="listbox" aria-label="Chat context" onClick=${(e) => e.stopPropagation()}>
-        <label class="search-field ctx-search"><${Icon} name="search" size=${12} />
+      <div class=${'popover menu ctx-picker' + (st.ctxInline ? ' inline' : '')} role="listbox" aria-label="Chat context" onClick=${(e) => e.stopPropagation()}>
+        ${!st.ctxInline && html`<label class="search-field ctx-search"><${Icon} name="search" size=${12} />
           <input ref=${(el) => el && !el.dataset.f && (el.dataset.f = '1', el.focus())} placeholder=${`Search ${clients.length} clients and workflows`}
             value=${st.ctxQuery} onInput=${(e) => this.setState({ ctxQuery: e.target.value })} />
-        </label>
+        </label>`}
         ${!q && html`
-          <button class="menu-item ctx-item" role="option" aria-selected=${!cur} onClick=${() => this.setContext(null)}>
+          <button class=${'menu-item ctx-item' + (active(all) ? ' active' : '')} role="option" aria-selected=${!cur} onClick=${() => this.setContext(null)}>
             <span class="menu-icon"><${Icon} name="users" /></span>
             <span class="row-text"><span class="row-name">All clients</span><span class="row-note">Your whole firm</span></span>
             ${!cur && check}
           </button>`}
         ${sections.filter(([, items]) => items.length).map(([title, items]) => html`<span class="label">${title}</span>${items.map(row)}`)}
         ${q && sections.every(([, items]) => !items.length) && html`<div class="no-match">Nothing matches “${st.ctxQuery}”</div>`}
-        <div class="menu-foot">Tip: type <kbd>@</kbd> in chat to switch who this is about</div>
+        <div class="menu-foot">${st.ctxInline
+          ? html`<kbd>↑</kbd> <kbd>↓</kbd> to move, <kbd>Enter</kbd> to pick, <kbd>Esc</kbd> to keep typing`
+          : html`Tip: type <kbd>@</kbd> in chat to switch who this is about`}</div>
       </div>`;
   }
 
@@ -1223,7 +1230,7 @@ class App extends Component {
     const composerEl = html`<div class="composer-anchor">
         ${st.showTip && sc && html`
           <div class="popover tooltip" role="status">
-            This chat is now about <b>${fullName(sc)}</b>. Answers use only their documents and history. The × in the chat box takes you back to all clients.
+            <p class="tooltip-text">This chat is now about <b>${fullName(sc)}</b>. Answers use only their documents and history. The × in the chat box takes you back to all clients.</p>
             <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
           </div>`}
 
@@ -1239,10 +1246,25 @@ class App extends Component {
           onInput=${(e) => {
             const v = e.target.value;
             if (v === '/' && !st.wfTray) return this.openWf();
-            if (!scoped && (v === '@' || v.endsWith(' @'))) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
+            // @ works inline, as in other chat tools: it stays in the text and what follows filters the picker.
+            const at = !scoped && !st.wfTray && v.match(/(^|\s)@([^\s@]*)$/);
+            if (at) return this.setState({ draft: v, ctxOpen: true, ctxInline: true, ctxQuery: at[2], ctxIndex: 0, menu: false, showTip: false });
+            if (st.ctxInline) return this.setState({ draft: v, ctxOpen: false, ctxInline: false, ctxQuery: '' });
             this.setState({ draft: v });
           }}
-          onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
+          onKeyDown=${(e) => {
+            if (st.ctxOpen && st.ctxInline) {
+              const items = this.ctxFlat || [];
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length) this.setState({ ctxIndex: (st.ctxIndex + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length });
+                return;
+              }
+              if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); const it = items[st.ctxIndex]; if (it) this.setContext(it.type === 'all' ? null : it); return; }
+              if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.setState({ ctxOpen: false, ctxInline: false }); return; }
+            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); }
+          }}></textarea>
         <div class="composer-controls">
           <div class="controls-group">
             ${audience ? html`<div class=${'ctx-pill' + (audience.n ? ' scoped' : ' pick') + (st.wfChoosing ? ' open' : '')}>
@@ -1268,7 +1290,7 @@ class App extends Component {
                     <span class="ctx-name">${sw.clients} clients</span>
                   </span>`
                 : html`<button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label="Chat context: All clients. Change"
-                onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxQuery: '', menu: false, showTip: false })); }}>
+                onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxInline: false, ctxQuery: '', menu: false, showTip: false })); }}>
                 <${Icon} name="users" size=${13} />
                 <span class="ctx-name">All clients</span>
                 <${Icon} name="chevronDown" size=${12} />
