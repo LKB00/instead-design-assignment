@@ -1,5 +1,7 @@
 # Instead Design Assignment — Client List Status Signal
 
+[![Open in Claude](https://img.shields.io/badge/Open%20in-Claude%20Artifact-C2EF72?style=flat-square&labelColor=24282C)](https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE)
+
 Adds a live status indicator to each client row in the left-rail client list,
 so a Pro can tell at a glance which clients need attention — without opening
 anything.
@@ -7,7 +9,7 @@ anything.
 ## Live artifact
 
 Interactive design (Claude Artifact — Design canvas):
-https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE
+**https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE**
 
 ## What's here
 
