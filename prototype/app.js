@@ -689,6 +689,19 @@ class App extends Component {
     </div>`;
   }
 
+  // A client in chat looks like a client in the rail: entity icon, name, form badge. What's
+  // happening with them sits on the right, amber only when it needs you.
+  clientLine({ c, label, state = 'open', note, action = 'Open', onClick }) {
+    const status = note && html`<span class=${'cl-status' + (state === 'attn' ? ' attn' : state === 'done' ? ' done' : '')}>
+      ${state === 'attn' ? html`<span class="dot" aria-hidden="true"></span>` : state === 'done' ? html`<${Icon} name="check" size=${12} />` : null}${note}</span>`;
+    const body = html`
+      <span class="pg-icon cl-icon"><${Icon} name=${c ? iconFor(c.entity) : 'userRound'} /></span>
+      <span class="cl-who"><span class="pg-label">${c ? fullName(c) : label}</span>${c && html`<span class="pill-xxs lime">${c.entity}</span>`}</span>
+      ${status}
+      ${onClick && html`<span class="brief-open">${action}<${Icon} name="moveRight" size=${12} /></span>`}`;
+    return onClick ? html`<button class="brief-row cl-row" onClick=${onClick}>${body}</button>` : html`<div class="brief-row cl-row">${body}</div>`;
+  }
+
   renderProgress(id, clients) {
     const w = ALL_WF.find((x) => x.id === id);
     const here = this.state.scope;
@@ -699,6 +712,7 @@ class App extends Component {
     const done = w.items.filter((it) => it.state === 'done');
     const row = (it) => {
       const c = it.clientId && clients.find((x) => x.id === it.clientId);
+      if (it.clientId) return this.clientLine({ c, label: it.label, state: it.state, note: it.note, onClick: c && (() => this.pickClient(c.id, { from: here })) });
       const body = html`${icon(it.state)}
         <span class="brief-text"><span class=${'pg-label' + (it.state === 'done' ? ' muted' : '')}>${it.label}</span>${it.note && html`<span class="brief-note">${it.note}</span>`}</span>
         ${c && html`<span class="brief-open">Open<${Icon} name="moveRight" size=${12} /></span>`}`;
@@ -708,7 +722,7 @@ class App extends Component {
     };
     return html`<div class="brief">
       ${open.map(row)}
-      ${w.doneSummary ? html`<div class="brief-row pg-row">${icon('done')}<span class="brief-text"><span class="pg-label muted">${w.doneSummary}</span></span></div>` : done.map(row)}
+      ${w.doneSummary ? html`<div class="brief-row pg-row cl-summary">${icon('done')}<span class="brief-text"><span class="pg-label muted">${w.doneSummary}</span></span></div>` : done.map(row)}
     </div>`;
   }
 
@@ -723,11 +737,7 @@ class App extends Component {
   renderChoose({ tid }, clients) {
     const picks = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency).concat(clients.filter((c) => c.status !== 'needs_attention')).slice(0, 4);
     return html`<div class="brief">
-      ${picks.map((c) => html`<button class="brief-row pg-row" onClick=${() => this.startWorkflow(tid, c.id, clients)}>
-        <span class="pg-icon"><${Icon} name=${iconFor(c.entity)} /></span>
-        <span class="brief-text"><span class="pg-label">${fullName(c)}</span>${c.note && html`<span class="brief-note">${c.note}</span>`}</span>
-        <span class="brief-open">Start<${Icon} name="moveRight" size=${12} /></span>
-      </button>`)}
+      ${picks.map((c) => this.clientLine({ c, state: c.status === 'needs_attention' ? 'attn' : 'open', note: c.note, action: 'Start', onClick: () => this.startWorkflow(tid, c.id, clients) }))}
     </div>`;
   }
 
@@ -1002,15 +1012,7 @@ class App extends Component {
 
   renderBrief(ids, clients) {
     return html`<div class="brief">
-      ${ids.map((id) => clients.find((c) => c.id === id)).filter(Boolean).map((c) => html`
-        <button class="brief-row" onClick=${() => this.pickClient(c.id)}>
-          <span class="pg-icon"><span class="dot" aria-hidden="true"></span></span>
-          <span class="brief-text">
-            <span class="brief-name">${fullName(c)}</span>
-            <span class="brief-note">${c.note}</span>
-          </span>
-          <span class="brief-open">Open<${Icon} name="moveRight" size=${12} /></span>
-        </button>`)}
+      ${ids.map((id) => clients.find((c) => c.id === id)).filter(Boolean).map((c) => this.clientLine({ c, state: 'attn', note: c.note, onClick: () => this.pickClient(c.id) }))}
     </div>`;
   }
 

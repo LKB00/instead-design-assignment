@@ -483,3 +483,16 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .toolbar .wf-nav { flex: 1; min-width: 0; }
 .wf-nav.on { background: var(--sand-dark); }
 .threads-list .thread-row.wf > svg { flex: none; }
+
+/* A client in chat: the rail's client pattern (entity icon, name, form badge), status on the right. */
+.cl-row { height: 44px; flex: none; align-items: center; gap: 10px; padding: 0 4px; }
+.cl-row:is(button):hover { background: var(--sand-light); }
+.cl-icon { color: var(--charcoal); }
+.cl-who { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.cl-who .pg-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-status { flex: none; max-width: 55%; display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; color: var(--charcoal-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-status.attn { color: var(--charcoal); }
+.cl-status.done { color: var(--charcoal-light); }
+.cl-status .dot { width: 5px; height: 5px; }
+.cl-row:hover .cl-status { display: none; }
+.cl-summary { height: 44px; padding: 0 4px; }

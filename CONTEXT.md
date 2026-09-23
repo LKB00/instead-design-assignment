@@ -288,3 +288,7 @@ plugin, which maps flexbox to auto layout):
     client's panel; "N workflows running →" lists everything in chat.
 12. Made the pill in a workflow thread say who it covers ("12 clients")
     instead of repeating the workflow's name.
+13. Clients listed in chat (a cross-client checklist, the briefing, "which
+    client?") now look like the rail's clients (entity icon, name, form
+    badge, status on the right); the empty circles read as radio buttons.
+    Steps in a single-client checklist keep the to-do circles.
