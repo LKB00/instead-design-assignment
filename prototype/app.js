@@ -60,10 +60,10 @@ const FIRSTS = ['Aarav', 'Beth', 'Carlos', 'Dana', 'Elena', 'Farid', 'Grace', 'H
 const LASTS = ['Abbott', 'Bose', 'Chen', 'Duarte', 'Ellis', 'Fischer', 'Gupta', 'Hale', 'Ibarra', 'Jansen', 'Kaur', 'Lindqvist', 'Mehta', 'Novak', 'Okafor', 'Park', 'Reyes', 'Sato', 'Tan', 'Varga', 'Walsh', 'Young'];
 const FIRMS = ['Bluebird Bakery', 'Cedar Row Dental', 'Driftwood Studios', 'Eastline Logistics', 'Foxglove Farms', 'Granite Peak', 'Hollis & Mercer', 'Ironbark Holdings', 'Juniper Health', 'Kestrel Media', 'Lantern Coffee', 'Marlow Trust'];
 const GEN_ISSUES = [
-  { cat: 'docs', note: 'Missing documents, return due in 5 days', flag: 'Due in 5 days', urgency: 5 },
-  { cat: 'docs', note: 'Documents 9 days late', flag: '9 days late', urgency: 4 },
-  { cat: 'sign', note: 'Signature pending for 3 days', flag: 'Unsigned 3 days', urgency: 4 },
-  { cat: 'deadline', note: 'Extension due next week', flag: 'Due next week', urgency: 6 },
+  { cat: 'docs', note: 'Missing documents, return due in 5 days', flag: 'Missing documents', urgency: 5 },
+  { cat: 'docs', note: 'Documents 9 days late', flag: 'Documents late', urgency: 4 },
+  { cat: 'sign', note: 'Signature pending for 3 days', flag: 'Signature pending', urgency: 4 },
+  { cat: 'deadline', note: 'Extension due next week', flag: 'Extension due', urgency: 6 },
 ];
 function generatedBook(n) {
   const out = [];
@@ -84,7 +84,7 @@ function clientsFor(scenario) {
   const ashish = { id: 'ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'in_progress', note: 'Return in review' };
   if (scenario === 'two') return [
     ashish,
-    { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', cat: 'sign', note: 'Signature pending for 4 days', flag: 'Unsigned 4 days', urgency: 1 },
+    { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', cat: 'sign', note: 'Signature pending for 4 days', flag: 'Signature pending', urgency: 1 },
   ];
   if (scenario === 'large') return clientsFor('grouped').concat(generatedBook(188));
   if (scenario === 'calm') return [
@@ -94,9 +94,9 @@ function clientsFor(scenario) {
     { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
   ];
   return [
-    { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', cat: 'docs', note: 'Missing a tax form, return due in 2 days', flag: 'Due in 2 days', urgency: 2 },
-    { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', cat: 'sign', note: 'Signature pending for 6 days', flag: 'Unsigned 6 days', urgency: 1 },
-    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, needs last year’s return', flag: 'Due Friday', urgency: 3 },
+    { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', cat: 'docs', note: 'Missing a tax form, return due in 2 days', flag: 'Missing a tax form', urgency: 2 },
+    { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', cat: 'sign', note: 'Signature pending for 6 days', flag: 'Signature pending', urgency: 1 },
+    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, needs last year’s return', flag: 'Extension due Friday', urgency: 3 },
     ashish,
     { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Collecting documents' },
     { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
@@ -129,7 +129,7 @@ const WORKFLOWS = {
   ],
   single: [
     { id: 'w3', tid: 'i-review', name: 'Review a tax return', ask: 'Review Ashish’s return', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 1, total: 3, items: [
-      { label: 'Match his income to his documents', state: 'done' },
+      { label: 'Match income to documents', state: 'done' },
       { label: 'Check deductions against receipts', state: 'open', note: 'Working on it now' },
       { label: 'Final review with you', state: 'open', note: 'After the deductions check' },
     ] },
@@ -142,6 +142,8 @@ const WORKFLOWS = {
 const ALL_WF = WORKFLOWS.across.concat(WORKFLOWS.single);
 const coveredBy = (w) => new Set(w.items.map((it) => it.clientId).filter(Boolean).concat(w.doneIds || []));
 const wfKey = (id) => `wf:${id}`;
+// The example threads the prototype starts with; anything else was just created.
+const SEEDED_THREADS = new Set(['ashish#1', 'c1#1', 'ref-ashish#1']);
 
 // What a pro can start. Scope decides the shape: across clients (a checklist of clients) or for one (a checklist of steps).
 const TEMPLATES = [
@@ -230,14 +232,14 @@ const SHOW_DEMO_SWITCH = PARAMS.get('demo') !== '0';
 const greeting = (name) => ({
   from: 'assistant',
   blocks: [
-    { p: `Hi Lokesh, good to be working with you on ${name}'s file.` },
+    { p: `Hi Lokesh, good to be working with you on ${name}’s file.` },
     { p: 'What would you like to do today? A few things I can help with:' },
     { ul: [
       'Prepare or review a tax return',
       'Build a tax plan or estimate quarterly taxes',
       'Look for ways to save tax',
       'Answer a tax question',
-      "Organize or summarize the client's documents",
+      'Organize or summarize the client’s documents',
     ] },
     { p: 'Just let me know what you need.' },
   ],
@@ -293,7 +295,7 @@ class App extends Component {
         ...WF_THREADS,
         'ashish#1': [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')],
         'c1#1': [
-          { from: 'user', text: "What's blocking Meera's return?" },
+          { from: 'user', text: 'What’s blocking Meera’s return?' },
           { from: 'assistant', blocks: [
             { p: 'One tax form from her investments hasn’t come in, and her return is due in 2 days.' },
             { p: 'A few ways I can keep this on track:' },
@@ -333,6 +335,9 @@ class App extends Component {
   }
 
   componentDidMount() {
+    // A shared ?scope= link to a client who isn't in this book falls back to the firm home.
+    const s0 = this.state.scope;
+    if (s0 && s0.type === 'client' && !clientsFor(this.state.scenario).some((c) => c.id === s0.id)) this.setState({ scope: null });
     document.addEventListener('keydown', this.onKeyDown);
     this.onDocClick = () => { if (this.state.rowMenu || this.state.ctxOpen || this.state.filterOpen || this.state.wfChoosing) this.setState({ rowMenu: null, ctxOpen: false, filterOpen: false, wfChoosing: false }); };
     document.addEventListener('click', this.onDocClick);
@@ -465,7 +470,7 @@ class App extends Component {
     setTimeout(() => this.setState((st) => ({
       typing: false,
       threads: { ...st.threads, [key]: st.threads[key].concat([{ from: 'assistant', blocks: [
-        { p: c ? `Started. I’ll work through this for ${fullName(c)} and check in when I need you.` : `Started for ${w.total} clients. I’ll keep this list current as replies come in.` },
+        { p: c ? `Started. I’ll work through this for ${fullName(c)} and check in when I need you.` : `Started for ${w.total} clients. I’ll keep this list current as each one moves.` },
         { progress: id },
       ] }]) },
     })), 1100);
@@ -477,7 +482,13 @@ class App extends Component {
   }
 
   setScenario(id) {
-    this.setState({ scenario: id, scope: null, from: null, showTip: false, query: null, protoOpen: false, filter: null, filterOpen: false });
+    this.closeWf();
+    this.setState((st) => ({
+      scenario: id, scope: null, from: null, showTip: false, query: null, protoOpen: false, filter: null, filterOpen: false,
+      ctxOpen: false, ctxInline: false, runsAll: false, draft: '', gk: 'general',
+      // Firm threads belong to the book they were asked in; client and workflow threads stay.
+      threads: Object.fromEntries(Object.entries(st.threads).filter(([k]) => !(k === 'general' || k.startsWith('general#')))),
+    }));
   }
 
   // ---------- The workflow tray ----------
@@ -528,8 +539,9 @@ class App extends Component {
 
   saveDraft(id, where) {
     const d = this.state.drafts[id];
+    if (!d.name.trim() || !d.steps.some((x) => x.trim())) return;
     const tid = `m-${id}`;
-    TEMPLATES.push({ id: tid, name: d.name, cat: 'Built by you', desc: d.source ? `Drafted from ${d.source}.` : 'Built in chat.', output: 'A checklist Instead works through and keeps current', steps: d.steps.filter(Boolean), icon: 'workflow', by: where, scope: 'one' });
+    TEMPLATES.push({ id: tid, name: d.name.trim(), cat: 'Built by you', desc: d.source ? `Drafted from ${d.source}.` : 'Built in chat.', output: 'A checklist Instead works through and keeps current', steps: d.steps.map((x) => x.trim()).filter(Boolean), icon: 'workflow', by: where, scope: 'one' });
     this.setState((st) => ({ drafts: { ...st.drafts, [id]: { ...d, saved: where, tid } } }));
   }
 
@@ -584,7 +596,7 @@ class App extends Component {
     if (t && (here || t.scope === 'across')) return {
       status: 'Reading your request',
       msg: { from: 'assistant', blocks: [
-        { p: here ? `I can run this as a workflow for ${fullName(here)}, so each step is tracked and you’ll see it in their panel.` : 'I can run this as a workflow across your clients, so every reply is tracked in one place.' },
+        { p: here ? `I can run this as a workflow for ${fullName(here)}, so each step is tracked and you’ll see it in their panel.` : 'I can run this as a workflow across your clients, so each one’s progress is tracked in one place.' },
         { offer: { tid: t.id, clientId: here && here.id } },
       ] },
     };
@@ -596,22 +608,26 @@ class App extends Component {
       ] },
     };
     const c = !w && scope && scope.type === 'client' ? clients.find((x) => x.id === scope.id) : null;
-    if (c && isFirst) return { status: `Opening ${fullName(c)}'s file`, msg: greeting(fullName(c)) };
+    if (c && isFirst) return { status: `Opening ${fullName(c)}’s file`, msg: greeting(fullName(c)) };
     if (c) return {
-      status: `Reading ${fullName(c)}'s documents`,
+      status: `Reading ${fullName(c)}’s documents`,
       msg: { from: 'assistant', blocks: [
-        { p: `On it. I'll work from ${fullName(c)}'s uploaded documents and last year’s return.` },
+        { p: `On it. I’ll work from ${fullName(c)}’s uploaded documents and last year’s return.` },
         { p: 'I’ll flag anything missing before I make changes.' },
       ] },
     };
     if (w) return {
-      status: 'Updating workflow',
-      msg: { from: 'assistant', blocks: [{ p: `Added to “${w.name}.” ${w.done} of ${w.total} done so far — I’ll update the checklist as I go.` }] },
+      status: 'Checking the workflow',
+      msg: { from: 'assistant', blocks: [{ p: (() => {
+        const open = w.items.filter((it) => it.state !== 'done').map((it) => it.label);
+        const who = open.length <= 3 ? open.join(', ') : `${open.slice(0, 3).join(', ')} and ${open.length - 3} more`;
+        return open.length ? `${w.total - w.done} still open: ${who}. I’ll keep the checklist above current.` : 'Everything here is done.';
+      })() }] },
     };
     return {
       status: 'Looking it up',
       msg: { from: 'assistant', blocks: [
-        { p: 'Here’s the answer, with sources you can check. It’s a general answer, not about one client.' },
+        { p: 'I’ll answer from IRS guidance and link the sources so you can check them. It’ll be a general answer, not about one client.' },
         { p: 'If it’s about a specific client, type @ or pick them on the left and I’ll answer from their file.' },
       ] },
     };
@@ -977,7 +993,7 @@ class App extends Component {
                 <button class="offer-go" onClick=${() => this.stageWorkflow(prev.id, clients)}><${Icon} name="workflow" size=${12} />Use this workflow</button>
               </div>
             </article>`
-            : html`<article class="wf-preview wf-preview-empty">${actions}</article>`}
+            : null}
         </div>
         ${actions}`);
     }
@@ -1039,6 +1055,7 @@ class App extends Component {
     const d = this.state.drafts[id];
     if (!d) return null;
     const locked = !!d.saved;
+    const ready = d.name.trim() && d.steps.some((x) => x.trim());
     return html`<div class="draft-card">
       <span class="label">${locked ? `Saved to ${d.saved === 'firm' ? 'Firm' : 'My'} workflows` : d.source ? `Draft · from ${d.source}` : 'Draft workflow'}</span>
       <input class="serif draft-name" aria-label="Workflow name" value=${d.name} disabled=${locked} onInput=${(e) => this.editDraft(id, { name: e.target.value })} />
@@ -1055,8 +1072,9 @@ class App extends Component {
         ${locked
           ? html`<button class="offer-go" onClick=${() => this.stageWorkflow(d.tid, [])}><${Icon} name="workflow" size=${12} />Run it now</button>
               <button class="offer-alt" onClick=${() => this.setState({ wfTray: 'browse', wfFull: true, wfTab: d.saved, wfQuery: '', wfPreview: d.tid, wfPick: null })}>View in library</button>`
-          : html`<button class="offer-go" onClick=${() => this.saveDraft(id, 'mine')}>Save to My workflows</button>
-              <button class="offer-alt" onClick=${() => this.saveDraft(id, 'firm')}>Share with firm</button>`}
+          : html`<button class="offer-go" disabled=${!ready} onClick=${() => this.saveDraft(id, 'mine')}>Save to My workflows</button>
+              <button class="offer-alt" disabled=${!ready} onClick=${() => this.saveDraft(id, 'firm')}>Share with firm</button>
+              ${!ready && html`<span class="draft-hint">Give it a name and at least one step</span>`}`}
       </div>
     </div>`;
   }
@@ -1169,7 +1187,7 @@ class App extends Component {
                       <span class="thread-when">${w.done}/${w.total}</span>
                     </div>`)}${list.map((k) => html`<div class=${'thread-row' + (k === activeKey ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.openClientThread(c.id, k)}>
                       <span class="t">${st.titles[k] || 'New thread'}</span>
-                      <span class="thread-when">${k.endsWith('#1') ? '1h' : 'Now'}</span>
+                      <span class="thread-when">${SEEDED_THREADS.has(k) ? '1h' : 'Now'}</span>
                       <span class="thread-actions"><button class="ic sm" aria-label="Bookmark" onClick=${(e) => e.stopPropagation()}><${Icon} name="bookmark" /></button><button class="ic sm" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button></span>
                     </div>`)}`
                   : html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}

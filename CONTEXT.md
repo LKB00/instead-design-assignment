@@ -332,3 +332,13 @@ plugin, which maps flexbox to auto layout):
     single-client" was only half met (single-client runs were just "1/3"
     badges). Threads now lists every running workflow, single-client ones
     with the client's name, capped at five with "Show N more".
+21. Granular copy and edge-case pass. Copy: one apostrophe style; short
+    notes carry the reason ("Missing a tax form", "Signature pending") and
+    match the long ones; no reply promises an answer it doesn't give; run
+    messages fit any workflow; no gendered step text. Edge cases: switching
+    book size clears a half-picked workflow and that book's firm threads; a
+    ?scope= link to a client not in the book lands on the home; a draft
+    can't be saved without a name and a step; new threads say "Now", not
+    "1h"; a question inside a workflow gets what's still open; no duplicate
+    actions when a library search finds nothing; buttons don't wrap at
+    1024px.

@@ -444,13 +444,12 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .wf-tray.full > .wf { flex: 1; min-height: 0; gap: 10px; }
 .wf-tray.full .wf-head { height: 28px; }
 .wf-lib { flex: 1; min-height: 0; display: flex; gap: 12px; }
-.wf-lib-list { width: 300px; flex: none; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
+.wf-lib-list { width: 40%; min-width: 200px; max-width: 300px; flex: none; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
 .wf-lib-group { display: flex; flex-direction: column; gap: 2px; }
 .wf-lib-row { height: 30px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 8px; border-radius: 9999px; text-align: left; transition: background .15s; }
 .wf-lib-row:hover, .wf-lib-row.on { background: var(--sand-dark); }
 .wf-lib-row .row-name { min-width: 0; }
 .wf-preview { flex: 1; align-self: flex-start; min-width: 0; max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px 24px; background: #fff; border: 0.5px solid var(--control-border); border-radius: 16px; }
-.wf-preview-empty { align-items: center; justify-content: center; }
 .wf-preview-top, .wf-preview-block { display: flex; flex-direction: column; gap: 6px; }
 .wf-preview-title { margin: 0; font-size: 20px; line-height: 30px; font-weight: 400; color: var(--charcoal); }
 .wf-preview-desc { margin: 0; font-size: 13px; line-height: 20px; color: var(--charcoal-light); }
@@ -490,3 +489,10 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 
 /* Run-for picker: the context picker in multi-select mode. */
 .ctx-item[aria-selected="true"] .pick-note { padding: 2px 8px 4px; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }
+
+.offer-go:disabled, .offer-alt:disabled { opacity: .4; cursor: default; }
+.draft-hint { font-size: 11px; line-height: 16px; color: var(--charcoal-50); }
+
+/* Buttons never wrap their label; footers wrap instead on narrow screens. */
+.offer-go, .offer-alt, .wf-action, .wf-chip { white-space: nowrap; flex: none; }
+.wf-preview-foot, .offer { flex-wrap: wrap; }
