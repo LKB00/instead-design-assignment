@@ -23,6 +23,7 @@ const PATHS = {
   mic: html`<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><path d="M12 19v3" />`,
   arrowUp: html`<path d="m5 12 7-7 7 7" /><path d="M12 19V5" />`,
   x: html`<path d="M18 6 6 18" /><path d="m6 6 12 12" />`,
+  users: html`<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />`,
   thumbsUp: html`<path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />`,
   thumbsDown: html`<path d="M17 14V2" /><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />`,
   copy: html`<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
@@ -169,18 +170,18 @@ class App extends Component {
     const showDot = attn || c.status === 'in_progress';
     return html`
       ${divider && html`<div class="divider"></div>`}
-      <button class=${'row' + (selected ? ' on' : '')} onClick=${() => this.pickClient(c.id)}
+      <button class=${'row' + (selected ? ' on' : '') + (attn ? ' tall' : '')} onClick=${() => this.pickClient(c.id)}
         aria-label=${`${fullName(c)}, ${ENTITY[c.entity] || c.entity}${attn ? ', needs attention' : ''}`}>
         <div class="row-inner">
           <div class="row-icon">
-            <${Icon} name=${iconFor(c.entity)} size=${18} stroke=${1.6} />
+            <${Icon} name=${iconFor(c.entity)} size=${18} stroke=${1.5} />
             ${showDot && html`<span class="status-dot" style=${{ background: attn ? 'var(--amber)' : 'rgba(36,40,44,0.5)' }}></span>`}
           </div>
           <div class="row-text">
             <div class="row-name">${railName(c)}</div>
             ${attn && html`<div class="row-note">${c.note}</div>`}
           </div>
-          ${wf && html`<span class="outline-pill" title=${`${wf.name} running`}><${Icon} name="workflow" size=${10} stroke=${2.2} />${wf.done}/${wf.total}</span>`}
+          ${wf && html`<span class="meta-pill" title=${`${wf.name} — ${wf.done} of ${wf.total} done`}><${Icon} name="workflow" size=${11} stroke=${2} />${wf.done}/${wf.total}</span>`}
           <span class="badge">${c.entity}</span>
         </div>
       </button>`;
@@ -190,15 +191,15 @@ class App extends Component {
     const s = this.state.scope;
     const selected = s && s.type === 'workflow' && s.id === w.id;
     return html`
-      <button class=${'row' + (selected ? ' on' : '')} onClick=${() => this.pickWorkflow(w.id)}
+      <button class=${'row tall' + (selected ? ' on' : '')} onClick=${() => this.pickWorkflow(w.id)}
         aria-label=${`${w.name}, ${w.done} of ${w.total} done`}>
         <div class="row-inner">
-          <${Icon} name="workflow" size=${17} stroke=${1.6} />
+          <div class="row-icon"><${Icon} name="workflow" size=${18} stroke=${1.5} /></div>
           <div class="row-text">
             <div class="row-name">${w.name}</div>
             <div class="row-note">${sub}</div>
           </div>
-          <span class="outline-pill" style=${{ fontSize: '11px', padding: '1px 8px' }}>${w.done} of ${w.total}</span>
+          <span class="meta-pill">${w.done} of ${w.total}</span>
         </div>
       </button>`;
   }
@@ -243,66 +244,70 @@ class App extends Component {
 
             <div class="toolbar">
               <div class="toggle" role="tablist">
-                <button role="tab" aria-pressed=${isClients} aria-selected=${isClients} onClick=${() => this.setTab('clients')}>Clients</button>
-                <button role="tab" aria-pressed=${!isClients} aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}>Workflows</button>
+                <button role="tab" aria-selected=${isClients} onClick=${() => this.setTab('clients')}><${Icon} name="users" size=${16} stroke=${1.6} />Clients</button>
+                <button role="tab" aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}><${Icon} name="workflow" size=${16} stroke=${1.6} />Workflows</button>
               </div>
-              <button class="round-btn" aria-label="Library"><${Icon} name="library" size=${16} /></button>
-              <button class="round-btn" aria-label="New thread" onClick=${() => this.clearScope()}><${Icon} name="messagePlus" size=${16} /></button>
+              <button class="round-btn" aria-label="Library"><${Icon} name="library" size=${16} stroke=${1.6} /></button>
+              <button class="round-btn" aria-label="New thread" onClick=${() => this.clearScope()}><${Icon} name="messagePlus" size=${16} stroke=${1.6} /></button>
             </div>
 
+            <div class="clients-pane">
             <div class="section-head">
               ${isClients
                 ? html`<span class="label">Clients</span>
                     <div class="head-icons">
-                      <button class="ic" aria-label="Search clients"><${Icon} name="search" /></button>
-                      <button class="ic" aria-label="Archived"><${Icon} name="archiveX" /></button>
-                      <button class="ic" aria-label="Sort"><${Icon} name="arrowUpDown" /></button>
-                      <button class="ic" aria-label="Filter"><${Icon} name="listFilter" /></button>
-                      <button class="ic" aria-label="Add client"><${Icon} name="plus" /></button>
+                      <button class="ic" aria-label="Search clients"><${Icon} name="search" size=${16} stroke=${1.6} /></button>
+                      <button class="ic" aria-label="Archived"><${Icon} name="archiveX" size=${16} stroke=${1.6} /></button>
+                      <button class="ic" aria-label="Sort"><${Icon} name="arrowUpDown" size=${16} stroke=${1.6} /></button>
+                      <button class="ic" aria-label="Filter"><${Icon} name="listFilter" size=${16} stroke=${1.6} /></button>
+                      <button class="ic" aria-label="Add client"><${Icon} name="plus" size=${16} stroke=${1.6} /></button>
                     </div>`
                 : html`<span class="label">Workflows</span>
                     <div class="head-icons">
-                      <button class="ic" aria-label="Search workflows"><${Icon} name="search" /></button>
-                      <button class="ic" aria-label="Start a workflow" onClick=${() => this.setState((s) => ({ menu: !s.menu }))}><${Icon} name="plus" /></button>
+                      <button class="ic" aria-label="Search workflows"><${Icon} name="search" size=${16} stroke=${1.6} /></button>
+                      <button class="ic" aria-label="Start a workflow" onClick=${() => this.setState((s) => ({ menu: !s.menu }))}><${Icon} name="plus" size=${16} stroke=${1.6} /></button>
                     </div>`}
             </div>
 
             <div class="list" ref=${(el) => (this.listEl = el)}>
               ${isClients
                 ? html`
-                    ${grouped && html`<div class="group-label"><span class="dot"></span>Needs you · ${attention.length}</div>`}
+                    ${grouped && html`<div class="group-label"><span class="dot"></span><b>Needs you</b> · ${attention.length}</div>`}
                     ${ordered.map((c, i) => this.renderClientRow(c, {
                       selected: sc && sc.id === c.id,
                       divider: grouped && i === attention.length,
                       wf: wfByClient[c.id],
                     }))}
-                    <button class="add-row"><${Icon} name="plus" />Add new client</button>`
+                    <button class="add-row"><${Icon} name="plus" size=${16} stroke=${1.6} />Add new client</button>`
                 : html`
                     <div class="group-label">Across clients</div>
                     ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
                     <div class="group-label spaced">Single client</div>
                     ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}`}
             </div>
+            </div>
 
-            <div class="threads">
-              <div class="threads-head">
+            <div class="threads-pane">
+              <div class="section-head">
                 <span class="label">Threads</span>
-                <button class="ic" aria-label="New thread" onClick=${() => this.clearScope()}><${Icon} name="plus" /></button>
+                <div class="head-icons"><button class="ic" aria-label="New thread" onClick=${() => this.clearScope()}><${Icon} name="plus" size=${16} stroke=${1.6} /></button></div>
               </div>
-              ${firstGeneral
-                ? html`<button class=${'row' + (!scoped ? ' on' : '')} onClick=${() => this.clearScope()}>
-                    <div class="thread-row"><span class="row-name">${firstGeneral.text}</span><span class="thread-when">Now</span></div>
-                  </button>`
-                : html`<div class="empty-threads"><${Icon} name="messages" size=${17} stroke=${1.6} />Start your first thread</div>`}
+              <div class="threads-list">
+                ${firstGeneral
+                  ? html`<button class=${'row' + (!scoped ? ' on' : '')} onClick=${() => this.clearScope()}>
+                      <div class="thread-row"><span class="row-name">${firstGeneral.text}</span><span class="thread-when">Now</span></div>
+                    </button>`
+                  : html`<div class="empty-threads"><${Icon} name="messages" size=${17} stroke=${1.5} />Start your first thread</div>`}
+              </div>
             </div>
 
             <div class="user-card">
-              <div class="serif" style=${{ fontSize: '15px' }}>Lokesh Kumar Bhatia</div>
+              <div class="serif name">Lokesh Kumar Bhatia</div>
               <div class="user-card-row">
                 <div class="initials serif">LB</div>
-                <div class="head-icons" style=${{ gap: '14px' }}>
-                  <button class="ic" aria-label="Invite teammate"><${Icon} name="userPlus" /></button>
-                  <button class="ic" aria-label="Settings"><${Icon} name="settings2" /></button>
+                <div class="head-icons" style=${{ gap: '18px', paddingRight: '2px' }}>
+                  <button class="ic" aria-label="Invite teammate"><${Icon} name="userPlus" size=${16} stroke=${1.6} /></button>
+                  <button class="ic" aria-label="Settings"><${Icon} name="settings2" size=${16} stroke=${1.6} /></button>
                 </div>
               </div>
             </div>
@@ -310,21 +315,21 @@ class App extends Component {
 
           <!-- MAIN -->
           <main class="main">
-            ${!hasMessages && html`<div class="spacer"></div><h1 class="serif hero" style=${{ margin: 0, fontWeight: 400 }}>${heroText}</h1>`}
+            ${!hasMessages && html`<div class="spacer"></div><h1 class="serif hero">${heroText}</h1>`}
 
             ${hasMessages && html`
               <div class="chat-scroll" ref=${(el) => (this.chatEl = el)}>
                 <div class="chat-col">
-                  <div class="serif thread-heading">${sc ? fullName(sc) : sw ? sw.name : 'Your firm'}</div>
+                  <h2 class="serif thread-heading">${sc ? fullName(sc) : sw ? sw.name : 'Your firm'}</h2>
                   ${messages.map((m) => (m.from === 'user'
                     ? html`<div class="msg-user"><div class="serif">${m.text}</div></div>`
                     : html`<div class="msg-ai">${m.text}</div>
                         <div class="msg-actions">
-                          <button class="ic" aria-label="Good response"><${Icon} name="thumbsUp" /></button>
-                          <button class="ic" aria-label="Bad response"><${Icon} name="thumbsDown" /></button>
-                          <button class="ic" aria-label="Copy"><${Icon} name="copy" /></button>
+                          <button class="ic" aria-label="Good response"><${Icon} name="thumbsUp" size=${16} stroke=${1.6} /></button>
+                          <button class="ic" aria-label="Bad response"><${Icon} name="thumbsDown" size=${16} stroke=${1.6} /></button>
+                          <button class="ic" aria-label="Copy"><${Icon} name="copy" size=${16} stroke=${1.6} /></button>
                         </div>`))}
-                  ${st.typing && html`<div class="thinking">Thinking…</div>`}
+                  ${st.typing && html`<div class="thinking"><i></i><i></i><i></i></div>`}
                 </div>
               </div>`}
 
@@ -332,17 +337,17 @@ class App extends Component {
               ${st.showTip && sc && html`
                 <div class="popover tooltip" role="status">
                   Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Tap × on the chip to go back to your whole firm.
-                  <div><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
+                  <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
                 </div>`}
 
               ${st.menu && html`
                 <div class="popover menu" role="menu">
                   <span class="label">Start a workflow</span>
-                  ${ALL_WF.map((w) => html`
+                  ${ALL_WF.map((w, i) => html`
                     <button class="menu-item" role="menuitem" onClick=${() => this.pickWorkflow(w.id)}>
-                      <${Icon} name="workflow" />
+                      <span class="menu-num">${i + 1}</span>
                       <div class="row-text">
-                        <div class="row-name" style=${{ fontSize: '13.5px' }}>${w.name}</div>
+                        <div class="row-name">${w.name}</div>
                         <div class="row-note">${w.clients ? `${w.clients} clients` : w.clientName} · ${w.done} of ${w.total}</div>
                       </div>
                     </button>`)}
@@ -352,10 +357,10 @@ class App extends Component {
                 ${scoped && html`
                   <div class="tray-chip-row">
                     <div class="scope-chip">
-                      <${Icon} name=${sc ? 'userRound' : 'workflow'} size=${15} />
+                      <${Icon} name=${sc ? 'userRound' : 'workflow'} size=${16} stroke=${1.6} />
                       <span>${sc ? fullName(sc) : sw.name}</span>
                       <span class="badge">${sc ? sc.entity : `${sw.done} of ${sw.total}`}</span>
-                      <button class="chip-x" aria-label="Clear scope, back to whole firm" onClick=${() => this.clearScope()}><${Icon} name="x" size=${11} stroke=${2.4} /></button>
+                      <button class="chip-x" aria-label="Clear scope, back to whole firm" onClick=${() => this.clearScope()}><${Icon} name="x" size=${13} stroke=${2} /></button>
                     </div>
                   </div>`}
 
@@ -367,14 +372,14 @@ class App extends Component {
                     onKeyDown=${(e) => { if (e.key === 'Enter') { e.preventDefault(); this.send(clients); } }} />
                   <div class="composer-controls">
                     <div class="controls-group">
-                      <button class="circ" aria-label="Attach files"><${Icon} name="paperclip" size=${16} /></button>
-                      <button class="circ" aria-label="Settings"><${Icon} name="settings2" size=${16} /></button>
+                      <button class="circ" aria-label="Attach files"><${Icon} name="paperclip" size=${16} stroke=${1.6} /></button>
+                      <button class="circ" aria-label="Settings"><${Icon} name="settings2" size=${16} stroke=${1.6} /></button>
                       <button class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
-                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" size=${16} /></button>
+                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" size=${16} stroke=${1.6} /></button>
                     </div>
                     <div class="controls-group">
-                      <button class="circ" aria-label="Dictate"><${Icon} name="mic" size=${16} /></button>
-                      <button class=${'send' + (canSend ? ' ready' : '')} aria-label="Send" onClick=${() => this.send(clients)}><${Icon} name="arrowUp" size=${16} stroke=${2} /></button>
+                      <button class="circ" aria-label="Dictate"><${Icon} name="mic" size=${16} stroke=${1.6} /></button>
+                      <button class=${'send' + (canSend ? ' ready' : '')} aria-label="Send" onClick=${() => this.send(clients)}><${Icon} name="arrowUp" size=${16} stroke=${1.8} /></button>
                     </div>
                   </div>
                 </div>
@@ -397,7 +402,7 @@ class App extends Component {
         <div class="scenario" aria-label="Prototype data scenario">
           <span>Data</span>
           ${[['grouped', '12 clients'], ['few-attention', '5 clients'], ['calm', 'Calm']].map(([id, label]) => html`
-            <button aria-pressed=${st.scenario === id} onClick=${() => this.setState({ scenario: id, scope: null, showTip: false })}>${label}</button>`)}
+            <button aria-pressed=${String(st.scenario === id)} onClick=${() => this.setState({ scenario: id, scope: null, showTip: false })}>${label}</button>`)}
         </div>
       </div>`;
   }
