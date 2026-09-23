@@ -162,6 +162,66 @@ svg { display: block; flex: none; }
 }
 .user-card .head-icons { gap: 9px; padding-right: 0; margin-right: -6.5px; }
 
+/* ---------- Client panel (replaces the rail while a client is open) ---------- */
+.client-shell { width: 545px; flex: none; display: flex; min-height: 0; padding: 11.3px 5.5px 9.1px 0; }
+.icon-col { width: 85px; flex: none; display: flex; flex-direction: column; align-items: flex-start; padding: 13.7px 0 0 23.8px; }
+.icon-col .ic { width: 40px; height: 40px; }
+.col-initials { width: 34.4px; height: 34.4px; }
+.icon-col .ic + .ic { margin-top: 10px; }
+.logo-tile {
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+  background: var(--lime); border-radius: 8px; font: 900 24px/1 Lato, sans-serif; color: var(--charcoal);
+}
+.col-spacer { flex: 1; }
+.col-initials { margin: 15px 0 10.7px 2.4px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--sand); font-size: 16px; color: var(--charcoal-light); }
+
+.client-panel {
+  width: 454.5px; flex: none; display: flex; flex-direction: column; min-height: 0;
+  padding: 21px 27px 0 28.1px;
+  background: var(--sand); border: 0.5px solid var(--control-border); border-radius: 22px;
+}
+.cp-header { height: 28px; display: flex; align-items: center; gap: 8px; }
+.cp-name { margin: 0; font-size: 20px; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-badge { height: 24px; padding: 0 8px; background: #E8EFD7; }
+.cp-header-spacer { flex: 1; }
+.cp-header .ic { margin-right: 5px; }
+
+.cp-actions { display: flex; align-items: center; margin-top: 19.6px; }
+.cp-actions .ic { flex: none; margin-left: 8.5px; }
+.cp-actions .cp-new + .ic { margin-left: 9.7px; }
+.cp-new {
+  width: 294.4px; height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 8px;
+  background: #fff; border: 0.5px solid var(--control-border); border-radius: 9999px; font-size: 15px;
+}
+.cp-new svg { color: var(--charcoal); }
+.cp-new:hover { background: var(--sand-light); }
+
+.cp-docs { flex: 1 1 0; min-height: 120px; display: flex; flex-direction: column; }
+.cp-head { margin-top: 18.6px; }
+.cp-head .head-icons { padding-right: 3.3px; }
+.cp-doc-list { flex: 1; min-height: 0; overflow-y: auto; margin: 14.6px -6px 0; padding: 0 6px; scrollbar-width: none; }
+.folder-row {
+  width: 100%; height: 36px; display: flex; align-items: center; gap: 11.6px; padding: 0 9px;
+  border-radius: 9999px; font-size: 15px; color: var(--charcoal);
+}
+.folder-row svg { color: var(--charcoal-light); }
+.folder-row:hover { background: var(--sand-dark); }
+.upload-row {
+  width: calc(100% - 10px); height: 35.6px; display: flex; align-items: center; gap: 8.1px; margin: 7.4px 0 7.1px 10px; padding: 0 11px;
+  border: 0.5px dashed var(--gray-300); border-radius: 9999px; font-size: 15px; color: var(--gray-600);
+}
+.upload-row:hover { background: var(--sand-dark); }
+.folder-row + .folder-row { margin-top: 7px; }
+
+.cp-threads { flex: 0 0 303.7px; min-height: 150px; display: flex; flex-direction: column; }
+.cp-thread-list { margin-top: 15.6px; }
+.cp-thread-list .empty-threads { padding-top: 59.4px; }
+.cp-thread { height: 34.4px; padding: 0 8.7px 0 9.5px; color: var(--charcoal-light); }
+.cp-thread .thread-when { font-size: 12.4px; }
+.cp-thread + .cp-thread { margin-top: 4px; }
+
+.main.client { padding-left: 26px; }
+
 /* ---------- Main ---------- */
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 0 32px; }
 .main.scoped-empty { padding-top: 5px; }

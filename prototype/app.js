@@ -29,6 +29,11 @@ const PATHS = {
   copy: html`<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
   filePen: html`<path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M13.378 15.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />`,
   chevronDown: html`<path d="m6 9 6 6 6-6" />`,
+  moreVertical: html`<circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />`,
+  timerReset: html`<path d="M10 2h4" /><path d="M12 14v-4" /><path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-5.3 14L4 17.6" /><path d="M9 17H4v5" />`,
+  panelLeftClose: html`<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="m16 15-3-3 3-3" />`,
+  folderOpen: html`<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />`,
+  folder: html`<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />`,
 };
 
 const Icon = ({ name, size = 18, stroke = 1.5 }) => html`
@@ -121,8 +126,8 @@ class App extends Component {
       draft: '',
       typing: false,
       threads: {
-        ashish: [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')],
-        c1: [
+        'ashish#1': [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')],
+        'c1#1': [
           { from: 'user', text: "What's blocking Meera's return?" },
           { from: 'assistant', blocks: [
             { p: 'Her K-1 from Alderwood Partners still hasn’t come in, and the return is due in 2 days.' },
@@ -135,8 +140,17 @@ class App extends Component {
             { p: 'Which would you like?' },
           ] },
         ],
-        ...(PARAMS.get('thread') === 'hey' ? { 'ref-ashish': [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')] } : {}),
+        ...(PARAMS.get('thread') === 'hey' ? { 'ref-ashish#1': [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')] } : {}),
       },
+      // per-client thread lists (most recent first) and which one is open
+      clientThreads: {
+        ashish: ['ashish#1'],
+        c1: ['c1#1'],
+        ...(PARAMS.get('thread') === 'hey' ? { 'ref-ashish': ['ref-ashish#1'] } : {}),
+      },
+      activeThread: {},
+      titles: { 'ashish#1': 'Friendly greeting exchange', 'c1#1': 'K-1 follow-up', 'ref-ashish#1': 'Friendly greeting exchange' },
+      openYears: { 2026: true, 2025: false },
       selectedWorkflow: null,
     };
     this.scrollPos = { clients: 0, workflows: 0 };
@@ -146,10 +160,30 @@ class App extends Component {
   componentDidMount() { document.addEventListener('keydown', this.onKeyDown); }
   componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); }
 
+  threadKey(scope = this.state.scope) {
+    if (!scope) return 'general';
+    if (scope.type === 'workflow') return `wf:${scope.id}`;
+    const list = this.state.clientThreads[scope.id] || [];
+    return this.state.activeThread[scope.id] || list[0] || `${scope.id}#1`;
+  }
+
+  newClientThread(clientId) {
+    const n = (this.state.clientThreads[clientId] || []).length + 1;
+    this.setState((s) => ({ activeThread: { ...s.activeThread, [clientId]: `${clientId}#${n}` }, draft: '', menu: false }));
+  }
+
+  openClientThread(clientId, key) {
+    this.setState((s) => ({ activeThread: { ...s.activeThread, [clientId]: key } }));
+  }
+
   componentDidUpdate(prevProps, prevState) {
     if (prevState.tab !== this.state.tab && this.listEl) {
       this.listEl.scrollTop = this.scrollPos[this.state.tab] || 0;
     }
+    // Leaving a client: the firm rail remounts — put it back exactly where it was.
+    const wasClient = prevState.scope && prevState.scope.type === 'client';
+    const isClient = this.state.scope && this.state.scope.type === 'client';
+    if (wasClient && !isClient && this.listEl) this.listEl.scrollTop = this.scrollPos[this.state.tab] || 0;
     if (this.chatEl) this.chatEl.scrollTop = this.chatEl.scrollHeight;
     const scopeChanged = prevState.scope !== this.state.scope;
     if (scopeChanged && this.inputEl) this.inputEl.focus();
@@ -162,6 +196,7 @@ class App extends Component {
   }
 
   pickClient(id) {
+    if (this.listEl && !(this.state.scope && this.state.scope.type === 'client')) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
     this.setState((s) => ({ scope: { type: 'client', id }, seenTip: true, showTip: !s.seenTip, menu: false }));
   }
 
@@ -201,12 +236,19 @@ class App extends Component {
     const text = this.state.draft.trim();
     if (!text) return;
     const s = this.state.scope;
-    const key = s ? (s.type === 'client' ? s.id : `wf:${s.id}`) : 'general';
-    const { status, msg } = this.replyFor(s, clients, !(this.state.threads[key] || []).length);
-    this.setState((st) => ({
-      threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'user', text }]) },
-      draft: '', typing: status, menu: false, showTip: false,
-    }));
+    const key = this.threadKey(s);
+    const isFirst = !(this.state.threads[key] || []).length;
+    const { status, msg } = this.replyFor(s, clients, isFirst);
+    this.setState((st) => {
+      const next = { threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'user', text }]) }, draft: '', typing: status, menu: false, showTip: false };
+      if (s && s.type === 'client' && isFirst) {
+        const list = st.clientThreads[s.id] || [];
+        next.clientThreads = { ...st.clientThreads, [s.id]: [key, ...list.filter((k) => k !== key)] };
+        next.activeThread = { ...st.activeThread, [s.id]: key };
+        next.titles = { ...st.titles, [key]: text.length > 38 ? text.slice(0, 36).trimEnd() + '…' : text };
+      }
+      return next;
+    });
     setTimeout(() => {
       this.setState((st) => ({
         typing: false,
@@ -255,6 +297,65 @@ class App extends Component {
       </button>`;
   }
 
+  renderClientShell(c, activeKey) {
+    const st = this.state;
+    const list = st.clientThreads[c.id] || [];
+    const I = (name, label, onClick, size = 18) => html`<button class="ic" aria-label=${label} onClick=${onClick}><${Icon} name=${name} size=${size} stroke=${1.5} /></button>`;
+    const year = (y) => html`
+      <button class="folder-row" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
+        <${Icon} name=${st.openYears[y] ? 'folderOpen' : 'folder'} size=${20} stroke=${1.5} /><span>${y}</span>
+      </button>
+      ${st.openYears[y] && html`<button class="upload-row"><${Icon} name="plus" size=${18} stroke=${1.5} />Upload files</button>`}`;
+    return html`
+      <aside class="client-shell">
+        <nav class="icon-col" aria-label="Workspace">
+          <button class="logo-tile" aria-label="Back to firm" onClick=${() => this.clearScope()}>i</button>
+          <div class="col-spacer"></div>
+          ${I('userPlus', 'Invite teammate')}
+          ${I('settings2', 'Settings')}
+          <div class="col-initials serif">LB</div>
+        </nav>
+
+        <section class="client-panel" aria-label=${`${fullName(c)} workspace`}>
+          <header class="cp-header">
+            <h2 class="serif cp-name">${fullName(c)}</h2>
+            <span class="badge cp-badge">${c.entity}</span>
+            <div class="cp-header-spacer"></div>
+            ${I('x', 'Close client', () => this.clearScope())}
+          </header>
+
+          <div class="cp-actions">
+            <button class="cp-new" onClick=${() => this.newClientThread(c.id)}><${Icon} name="messagePlus" size=${18} stroke=${1.5} />New client thread</button>
+            ${I('moreVertical', 'More')}
+            ${I('timerReset', 'History')}
+            ${I('panelLeftClose', 'Collapse panel', () => this.clearScope())}
+          </div>
+
+          <div class="cp-docs">
+            <div class="section-head cp-head">
+              <span class="label">Tax docs</span>
+              <div class="head-icons">${I('search', 'Search documents')}${I('archiveX', 'Archived')}${I('plus', 'Add document')}</div>
+            </div>
+            <div class="cp-doc-list">${year(2026)}${year(2025)}</div>
+          </div>
+
+          <div class="cp-threads">
+            <div class="section-head cp-head">
+              <span class="label">Client threads</span>
+              <div class="head-icons">${I('plus', 'New client thread', () => this.newClientThread(c.id))}</div>
+            </div>
+            <div class="threads-list cp-thread-list">
+              ${list.length
+                ? list.map((k) => html`<button class=${'thread-row cp-thread' + (k === activeKey ? ' on' : '')} onClick=${() => this.openClientThread(c.id, k)}>
+                    <span class="t">${st.titles[k] || 'New thread'}</span><span class="thread-when">Now</span>
+                  </button>`)
+                : html`<div class="empty-threads"><${Icon} name="messages" size=${18} stroke=${1.5} />Start your first thread</div>`}
+            </div>
+          </div>
+        </section>
+      </aside>`;
+  }
+
   render() {
     const st = this.state;
     const clients = clientsFor(st.scenario);
@@ -267,7 +368,7 @@ class App extends Component {
     const sc = scope && scope.type === 'client' ? clients.find((c) => c.id === scope.id) : null;
     const sw = scope && scope.type === 'workflow' ? ALL_WF.find((w) => w.id === scope.id) : null;
     const scoped = !!(sc || sw);
-    const key = sc ? sc.id : sw ? `wf:${sw.id}` : 'general';
+    const key = this.threadKey(sc ? { type: 'client', id: sc.id } : scope);
     const messages = st.threads[key] || [];
     const hasMessages = messages.length > 0;
     const firstGeneral = (st.threads.general || []).find((m) => m.from === 'user');
@@ -289,8 +390,8 @@ class App extends Component {
         </div>
 
         <div class="body">
-          <!-- RAIL -->
-          <aside class="rail">
+          <!-- RAIL: firm view, or Instead's client panel while a client is open -->
+          ${sc ? this.renderClientShell(sc, key) : html`<aside class="rail">
             <img class="wordmark" src="./img/instead-logo.svg" alt="instead" />
 
             <div class="toolbar">
@@ -362,10 +463,10 @@ class App extends Component {
                 </div>
               </div>
             </div>
-          </aside>
+          </aside>`}
 
           <!-- MAIN -->
-          <main class=${'main' + (scoped && !hasMessages ? ' scoped-empty' : '')}>
+          <main class=${'main' + (sc ? ' client' : '') + (scoped && !hasMessages ? ' scoped-empty' : '')}>
             ${!hasMessages && html`<div class="spacer"></div><h1 class="serif hero">${heroText}</h1>`}
 
             ${hasMessages && html`
