@@ -12,8 +12,9 @@ rather than placing a client list and a chat box side by side.
 Interactive canvas (Claude Artifact — Design, clickable prototype):
 **https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE**
 
-Open it, then use Play on the `Workspace` artboard. Click an avatar chip
-in the top strip, open "Book," start a workflow from the composer's `+`.
+Open it, then use Play on the `Workspace` artboard. Click a client (or a
+"Needs you today" chip), send a message, switch Clients | Workflows, and
+start a workflow from the composer's workflow button.
 
 ## The approach
 
@@ -44,7 +45,7 @@ left unresolved, is written out on the `Decisions` artboard on the canvas
   banner, rail, chat, composer. A `scenario` tweak switches mock data between `grouped`
   (3+ clients need attention → grouped under a label),
   `few-attention` (1 client needs attention → no grouping), and `calm`
-  (mostly on-track, pulse strip goes quiet).
+  (mostly on-track, no "Needs you" signal at all).
 - `project/Decisions.dc.html` — the design reasoning, written for a reviewer
   reading the canvas without a walkthrough.
 - `project/StatusKey.dc.html` — the three client-status states and the one
@@ -54,24 +55,19 @@ left unresolved, is written out on the `Decisions` artboard on the canvas
 ## End-to-end behavior implemented
 
 - **Status at a glance**: needs-attention / in-progress / on-track per
-  client, surfaced two ways — the pulse strip (macro, always visible) and a
-  corner dot + note in the drawer's rows (detail, one tap away).
-- **Client-scoped chat**: click a chip or a drawer row → chat scopes to that
-  client, with a pinned, clearable pill above the composer and a persistent
-  per-client message thread. A one-time tooltip explains scoping the first
-  time it happens.
-- **Workflow-scoped chat**: the composer's `+` opens a "Start a workflow"
-  menu (cross-client and single-client workflows both listed) — answers the
-  brief's question of whether a workflow can start from chat, from a client,
-  or both, with "both."
-- **Cross-client vs. single-client workflows**: split into two groups in the
-  Book drawer; a client row also shows a small progress pill when a
-  single-client workflow is running on them, so that's visible without
-  switching tabs.
-- **Scale (2 vs. 200 clients)**: the pulse strip is bounded by height, not
-  client count — chips scroll horizontally instead of the layout growing.
-  The drawer's "needs attention" grouping is the second-level answer once
-  the book is actually open.
+  client — amber dot + one-line reason for clients who need you, a muted
+  dot for work in progress, nothing for calm clients.
+- **Client-scoped chat**: click a client row or a "Needs you today" chip →
+  chip pinned above the composer with ×, heading and thread switch to that
+  client, and each client keeps its own history. One-time tooltip on the
+  first selection.
+- **Workflows**: Clients | Workflows toggle in the rail (per-tab scroll and
+  selection memory), cross-client vs. single-client groups, a progress pill
+  on client rows with a running single-client workflow, and workflows
+  startable from the composer too.
+- **Scale (2 vs. 200 clients)**: "Needs you" grouping only appears at 3+;
+  the top of the rail is always the short list that matters, and the chat
+  chips cap at three.
 
 ## Design system
 
