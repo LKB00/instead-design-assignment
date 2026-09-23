@@ -94,7 +94,7 @@ function clientsFor(scenario) {
   return [
     { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', cat: 'docs', note: 'K-1 missing, return due in 2 days', flag: 'Due in 2 days', urgency: 2, next: 'Chase the K-1 or file an extension' },
     { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', cat: 'sign', note: 'E-sign request unsigned for 6 days', flag: 'Unsigned 6d', urgency: 1, next: 'Resend the e-sign request' },
-    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, not started', flag: 'Due Friday', urgency: 3, next: 'Start the extension' },
+    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, prior-year 1041 missing', flag: 'Due Friday', urgency: 3, next: 'Upload the prior-year 1041' },
     ashish,
     { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1s' },
     { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
@@ -110,15 +110,15 @@ function clientsFor(scenario) {
 // A workflow is a thread with a checklist. Cross-client items are clients; single-client items are steps.
 const WORKFLOWS = {
   across: [
-    { id: 'w1', name: 'Collect missing K-1s', ask: 'Chase the missing K-1s', clients: 5, done: 3, total: 5, items: [
+    { id: 'w1', tid: 't-docs', name: 'Collect missing K-1s', ask: 'Chase the missing K-1s', clients: 5, done: 3, total: 5, items: [
       { clientId: 'c1', label: 'Meera Iyer', state: 'attn', note: 'No reply in 5 days, return due in 2' },
       { clientId: 'c9', label: 'Owen Brecker', state: 'open', note: 'Reminder sent yesterday' },
       { clientId: 'c5', label: 'Alderwood LLC', state: 'done', note: 'Received' },
       { clientId: 'c7', label: 'Fern & Co.', state: 'done', note: 'Received' },
       { clientId: 'c12', label: 'Harbor & Pine LLP', state: 'done', note: 'Received' },
     ], doneSummary: 'Received from Alderwood LLC, Fern & Co. and Harbor & Pine LLP' },
-    { id: 'w2', name: 'Send Q3 estimate reminders', ask: 'Send the Q3 estimate reminders', clients: 12, done: 7, total: 12, items: [
-      { clientId: 'c2', label: 'Sethi Holdings', state: 'attn', note: 'Bounced, check the email on file' },
+    { id: 'w2', tid: 't-remind', name: 'Send Q3 estimate reminders', ask: 'Send the Q3 estimate reminders', clients: 12, done: 7, total: 12, items: [
+      { clientId: 'c2', label: 'Sethi Holdings', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c6', label: 'Daniel Cho', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c8', label: 'Sana Kapoor', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c10', label: 'Northgate Dental PC', state: 'open', note: 'Scheduled for Monday' },
@@ -126,12 +126,12 @@ const WORKFLOWS = {
     ], doneSummary: '7 reminders sent' },
   ],
   single: [
-    { id: 'w3', name: 'Review 1040 draft', ask: 'Review Ashish’s 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 2, total: 3, items: [
+    { id: 'w3', name: 'Review 1040 draft', ask: 'Review Ashish’s 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 1, total: 3, items: [
       { label: 'Reconcile W-2 and 1099 income', state: 'done' },
-      { label: 'Check itemized deductions against receipts', state: 'done' },
-      { label: 'Final review with you', state: 'attn', note: '2 questions waiting' },
+      { label: 'Check itemized deductions against receipts', state: 'open', note: 'Working on it now' },
+      { label: 'Final review with you', state: 'open', note: 'Once the deductions check is done' },
     ] },
-    { id: 'w4', tid: 't-ext', name: 'File extension', ask: 'File the Whitfield extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2, items: [
+    { id: 'w4', tid: 't-ext', name: 'Prepare an extension', ask: 'Prepare the Whitfield extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2, items: [
       { label: 'Estimate the 2025 tax due', state: 'open', note: 'Needs the prior-year 1041' },
       { label: 'Prepare and e-file Form 7004', state: 'open', note: 'Due Friday' },
     ] },
@@ -196,7 +196,9 @@ const KNOWN_DRAFTS = [
 ];
 function draftFrom(text, file) {
   const known = !file && KNOWN_DRAFTS.find(([re]) => re.test(text));
-  if (known) return { name: known[1], steps: known[2].slice() };
+  const raw = !file && (text.match(/\bevery\s+(day|week|month|quarter|monday|tuesday|wednesday|thursday|friday)\b/i) || [])[1];
+  const when = raw && (/day$/i.test(raw) && raw.length > 3 ? raw[0].toUpperCase() + raw.slice(1).toLowerCase() : raw.toLowerCase());
+  if (known) return { name: when ? `${known[1]} every ${when}` : known[1], steps: (when ? [`Run every ${when}`] : []).concat(known[2]) };
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const name = file
     ? cap(file.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').trim())
@@ -254,7 +256,7 @@ const fullName = (c) => c.name || `${c.first} ${c.last}`;
 // missing documents" is 1 workflow, not 6.
 function activeWorkflows(clients) {
   const inBook = (it) => clients.some((c) => c.id === it.clientId && fullName(c) === it.label);
-  return ALL_WF.filter((w) => w.done < w.total && (w.clientId ? clients.some((c) => c.id === w.clientId) : w.items.some(inBook)));
+  return ALL_WF.filter((w) => w.done < w.total && (w.clientId ? clients.some((c) => c.id === w.clientId) : w.items.every(inBook)));
 }
 function homeStatus(clients) {
   const attention = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency);
@@ -289,6 +291,7 @@ class App extends Component {
       wfTray: null, wfTab: 'all', wfFull: false, wfQuery: '', wfPreview: null,
       wfPick: null, wfTargets: [], wfChoosing: false, wfClientQ: '', wfFile: null,
       drafts: {},
+      gk: 'general', // the open firm-level thread; New thread starts another
       draft: '',
       typing: false,
       from: null, // the scope to go back to after drilling from a workflow into a client
@@ -298,7 +301,7 @@ class App extends Component {
         'c1#1': [
           { from: 'user', text: "What's blocking Meera's return?" },
           { from: 'assistant', blocks: [
-            { p: 'Her K-1 from Alderwood Partners still hasn’t come in, and the return is due in 2 days.' },
+            { p: 'Her K-1 from Brightline Capital Partners still hasn’t come in, and the return is due in 2 days.' },
             { p: 'A few ways I can keep this on track:' },
             { ul: [
               'Draft a reminder to Meera asking her to forward the K-1',
@@ -343,7 +346,7 @@ class App extends Component {
   componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); document.removeEventListener('click', this.onDocClick); }
 
   threadKey(scope = this.state.scope) {
-    if (!scope) return 'general';
+    if (!scope) return this.state.gk;
     if (scope.type === 'workflow') return `wf:${scope.id}`;
     const list = this.state.clientThreads[scope.id] || [];
     return this.state.activeThread[scope.id] || list[0] || `${scope.id}#1`;
@@ -543,11 +546,25 @@ class App extends Component {
     this.closeWf();
     this.setState((st) => ({
       menu: false, scope: null, from: null,
-      threads: { ...st.threads, general: (st.threads.general || []).concat([
+      threads: { ...st.threads, [st.gk]: (st.threads[st.gk] || []).concat([
         { from: 'user', text: t.name },
         { from: 'assistant', blocks: [{ p: 'Which client is it for?' }, { choose: { tid } }] },
       ]) },
     }));
+  }
+
+  // Firm-level threads: 'general', 'general#2', ... New thread opens an empty one; old ones stay in Threads.
+  newFirmThread() {
+    const used = (this.state.threads[this.state.gk] || []).length;
+    const n = (this.firmSeq = (this.firmSeq || 1) + 1);
+    this.setState({ gk: used ? `general#${n}` : this.state.gk, draft: '' });
+    this.clearScope();
+    this.closeWf();
+  }
+
+  openFirmThread(key) {
+    this.setState({ gk: key });
+    this.clearScope();
   }
 
   clearScope() {
@@ -558,6 +575,16 @@ class App extends Component {
     const w = wfFromKey(key);
     const t = !w && templateFor(text);
     const here = scope && scope.type === 'client' ? clients.find((x) => x.id === scope.id) : null;
+    // Already running? Say so first instead of offering to start a second one.
+    const running = t && (here ? WORKFLOWS.single.find((x) => x.clientId === here.id && x.tid === t.id && x.done < x.total)
+      : t.scope === 'across' && activeWorkflows(clients).find((x) => !x.clientId && x.tid === t.id));
+    if (running) return {
+      status: 'Reading your request',
+      msg: { from: 'assistant', blocks: [
+        { p: `“${running.name}” is already running${here ? ` for ${fullName(here)}` : ` for ${running.clients} clients`}: ${running.done} of ${running.total} done.` },
+        { offer: { tid: t.id, clientId: here && here.id, existing: running.id } },
+      ] },
+    };
     if (t && (here || t.scope === 'across')) return {
       status: 'Reading your request',
       msg: { from: 'assistant', blocks: [
@@ -588,8 +615,8 @@ class App extends Component {
     return {
       status: 'Searching authoritative tax guidance',
       msg: { from: 'assistant', blocks: [
-        { p: 'Happy to help. Should I run this across your whole book, or for a specific client?' },
-        { p: 'You can also pick a client on the left to keep the answer scoped to their file.' },
+        { p: 'Here’s what the IRS guidance says, with sources you can check. This is a general answer for your firm, not for one client.' },
+        { p: 'If it’s about a specific client, type @ or pick them on the left and I’ll answer from their file.' },
       ] },
     };
   }
@@ -640,11 +667,11 @@ class App extends Component {
   // The briefing: one list of the clients who need you, most urgent first; workflows as one sentence.
   brief({ attention, workflows }) {
     const text = attention.length ? 'Who needs me today?' : 'What’s moving today?';
-    this.setState((st) => ({ threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'user', text }]) }, typing: 'Checking deadlines and open requests', menu: false }));
+    this.setState((st) => ({ threads: { ...st.threads, [st.gk]: (st.threads[st.gk] || []).concat([{ from: 'user', text }]) }, typing: 'Checking deadlines and open requests', menu: false }));
     setTimeout(() => {
       const n = attention.length;
       const k = workflows.length;
-      const wfLine = k ? `${k} workflow${k === 1 ? ' is' : 's are'} also running. You’ll find ${k === 1 ? 'it' : 'them'} under Workflows.` : '';
+      const wfLine = k ? `${k} workflow${k === 1 ? ' is' : 's are'} also running, in your threads and your clients’ files.` : '';
       const blocks = n === 0
         ? [{ p: `No clients need you today.${k ? ` ${k} workflow${k === 1 ? ' is' : 's are'} running.` : ''}` }]
         : n <= 5
@@ -658,7 +685,7 @@ class App extends Component {
           ];
       this.setState((st) => ({
         typing: false,
-        threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'assistant', blocks }]) },
+        threads: { ...st.threads, [st.gk]: (st.threads[st.gk] || []).concat([{ from: 'assistant', blocks }]) },
       }));
     }, 1100);
   }
@@ -666,13 +693,13 @@ class App extends Component {
   // Everything in progress, on demand: the overview a separate tab used to hold, one click from home.
   briefRunning(clients) {
     const runs = activeWorkflows(clients);
-    this.setState((st) => ({ scope: null, from: null, threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'user', text: 'What’s running?' }]) }, typing: 'Checking workflows', menu: false }));
+    this.setState((st) => ({ scope: null, from: null, threads: { ...st.threads, [st.gk]: (st.threads[st.gk] || []).concat([{ from: 'user', text: 'What’s running?' }]) }, typing: 'Checking workflows', menu: false }));
     setTimeout(() => {
       const across = runs.filter((w) => !w.clientId), one = runs.filter((w) => w.clientId);
       const blocks = [{ p: `${runs.length} workflow${runs.length === 1 ? ' is' : 's are'} running.` }];
       if (across.length) blocks.push({ p: 'Across clients (in your threads):' }, { runs: across.map((w) => w.id) });
       if (one.length) blocks.push({ p: 'For one client (in their files):' }, { runs: one.map((w) => w.id) });
-      this.setState((st) => ({ typing: false, threads: { ...st.threads, general: st.threads.general.concat([{ from: 'assistant', blocks }]) } }));
+      this.setState((st) => ({ typing: false, threads: { ...st.threads, [st.gk]: st.threads[st.gk].concat([{ from: 'assistant', blocks }]) } }));
     }, 900);
   }
 
@@ -726,8 +753,14 @@ class App extends Component {
     </div>`;
   }
 
-  renderOffer({ tid, clientId }, clients) {
+  renderOffer({ tid, clientId, existing }, clients) {
     const t = TEMPLATES.find((x) => x.id === tid);
+    const w = existing && ALL_WF.find((x) => x.id === existing);
+    if (w) return html`<div class="offer">
+      <button class="offer-go" onClick=${() => this.pickWorkflow(w.id)}><${Icon} name="workflow" size=${12} />Open “${w.name}”</button>
+      ${!clientId && html`<button class="offer-alt" onClick=${() => { this.stageWorkflow(tid, clients); this.setState({ wfTargets: [], wfChoosing: true, wfClientQ: '' }); }}>Start one for other clients</button>`}
+      <button class="offer-alt" onClick=${() => this.answerInstead(t)}>Just answer in chat</button>
+    </div>`;
     return html`<div class="offer">
       <button class="offer-go" onClick=${() => this.startWorkflow(tid, clientId, clients)}><${Icon} name="workflow" size=${12} />Start “${t.name}”</button>
       <button class="offer-alt" onClick=${() => this.answerInstead(t)}>Just answer in chat</button>
@@ -737,7 +770,12 @@ class App extends Component {
   renderChoose({ tid }, clients) {
     const picks = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency).concat(clients.filter((c) => c.status !== 'needs_attention')).slice(0, 4);
     return html`<div class="brief">
-      ${picks.map((c) => this.clientLine({ c, state: c.status === 'needs_attention' ? 'attn' : 'open', note: c.note, action: 'Start', onClick: () => this.startWorkflow(tid, c.id, clients) }))}
+      ${picks.map((c) => {
+        const running = WORKFLOWS.single.find((x) => x.clientId === c.id && x.tid === tid && x.done < x.total);
+        return running
+          ? this.clientLine({ c, state: 'done', note: 'Already running', onClick: () => this.pickWorkflow(running.id) })
+          : this.clientLine({ c, state: c.status === 'needs_attention' ? 'attn' : 'open', note: c.note, action: 'Start', onClick: () => this.startWorkflow(tid, c.id, clients) });
+      })}
     </div>`;
   }
 
@@ -1154,7 +1192,10 @@ class App extends Component {
     const key = this.threadKey(sc ? { type: 'client', id: sc.id } : scope);
     const messages = st.threads[key] || [];
     const hasMessages = messages.length > 0;
-    const firstGeneral = (st.threads.general || []).find((m) => m.from === 'user');
+    // Firm threads with messages, newest first.
+    const firmThreads = Object.keys(st.threads).filter((k) => (k === 'general' || k.startsWith('general#')) && (st.threads[k] || []).length)
+      .sort((a, b) => (+(b.split('#')[1] || 1)) - (+(a.split('#')[1] || 1)));
+    const titleOf = (k) => { const m = st.threads[k].find((x) => x.from === 'user'); return m ? m.text : 'New thread'; };
     // A run is a thread: cross-client runs are firm threads, single-client runs sit in their client's panel.
     const firmRuns = status.workflows.filter((w) => !w.clientId);
 
@@ -1255,7 +1296,7 @@ class App extends Component {
                 <span class="nav-pill-icon"><${Icon} name="workflow" /></span><span class="nav-pill-label">Workflows</span><span class="nav-pill-go"><${Icon} name="moveRight" /></span>
               </button>
               ${I('library', 'Library', null, 'round-btn')}
-              ${I('messagePlus', 'New thread', () => this.clearScope(), 'round-btn')}
+              ${I('messagePlus', 'New thread', () => this.newFirmThread(), 'round-btn')}
             </div>
 
             <div class="clients-pane">
@@ -1306,17 +1347,18 @@ class App extends Component {
               <div class="threads-resize" aria-hidden="true" onMouseDown=${(e) => this.startResize(e, 'row')}></div>
               <div class="section-head">
                 <span class="label">Threads</span>
-                <div class="head-icons">${I('plus', 'New thread', () => this.clearScope())}</div>
+                <div class="head-icons">${I('plus', 'New thread', () => this.newFirmThread())}</div>
               </div>
               <div class="threads-list">
-                ${firstGeneral && html`<div class=${'thread-row' + (!scoped ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.clearScope()}>
-                    <span class="t">${firstGeneral.text}</span><span class="thread-when">Now</span>
-                  </div>`}
+                ${firmThreads.map((k, i) => html`<div class=${'thread-row' + (!scoped && k === st.gk ? ' on' : '')} role="button" tabindex="0"
+                    onClick=${() => this.openFirmThread(k)} onKeyDown=${(e) => { if (e.key === 'Enter') this.openFirmThread(k); }}>
+                    <span class="t">${titleOf(k)}</span><span class="thread-when">${i === 0 ? 'Now' : 'Today'}</span>
+                  </div>`)}
                 ${firmRuns.map((w) => html`<div class=${'thread-row wf' + (sw && sw.id === w.id ? ' on' : '')} role="button" tabindex="0" title=${`${w.name}: ${w.done} of ${w.total} clients done`}
                     onClick=${() => this.pickWorkflow(w.id)} onKeyDown=${(e) => { if (e.key === 'Enter') this.pickWorkflow(w.id); }}>
                     <${Icon} name="workflow" size=${12} /><span class="t">${w.name}</span><span class="thread-when">${w.done}/${w.total}</span>
                   </div>`)}
-                ${!firstGeneral && !firmRuns.length && html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
+                ${!firmThreads.length && !firmRuns.length && html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
               </div>
             </div>
 

@@ -292,3 +292,11 @@ plugin, which maps flexbox to auto layout):
     client?") now look like the rail's clients (entity icon, name, form
     badge, status on the right); the empty circles read as radio buttons.
     Steps in a single-client checklist keep the to-do circles.
+14. End-to-end audit. Mock data now agrees everywhere: only runs whose
+    clients are all in the book show (the calm week had 12-client runs in a
+    4-client book); "needs you" inside runs matches the home list; one name
+    per workflow. Instead says a workflow is already running before offering
+    to start it (client and cross-client, and in "which client?"). New
+    thread starts an empty firm thread; old ones stay in Threads. Research
+    questions get an answer, not a scoping question. Drafts keep a schedule
+    the pro mentions ("every Friday").
