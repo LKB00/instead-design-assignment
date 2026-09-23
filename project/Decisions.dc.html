@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decisions &amp; tradeoffs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap">
+<style>
+  body{margin:0}
+  .d *{box-sizing:border-box}
+  .d{font-family:'Lato',-apple-system,sans-serif}
+  .d .heading{font-family:'Libre Baskerville',Georgia,serif}
+</style>
+</helmet>
+
+<div class="d" style="width: 620px; height: 800px; background: #F7F6F0; padding: 36px; display: flex; flex-direction: column; gap: 20px; border: 0.5px solid rgba(36,40,44,0.22); overflow-y: auto;">
+
+  <div>
+    <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(36,40,44,0.5);">Decisions &amp; tradeoffs</div>
+    <div class="heading" style="font-size: 22px; font-weight: 400; color: #24282C; margin-top: 6px;">Why the home screen is chat-first, not rail-first</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 14px; font-weight: 700; color: #24282C;">The bet</div>
+    <div style="font-size: 13.5px; line-height: 1.6; color: rgba(36,40,44,0.75);">The brief says chat is the room, not a feature inside it. A permanent 380px client rail next to chat reads as an inbox with a chat panel bolted on — the opposite of that. So the client list isn't a column here; it's two things instead: a thin "pulse strip" across the top (avatar + first-name chips for anyone who needs attention, nothing else) and a "Book" drawer that opens on demand and closes itself the moment you act on something in it. Chat gets the whole canvas by default.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 14px; font-weight: 700; color: #24282C;">What this gives up</div>
+    <div style="font-size: 13.5px; line-height: 1.6; color: rgba(36,40,44,0.75);">Permanent visibility of the full roster. A Pro can't see all 8 (or 200) clients without opening the drawer. I think that's the right trade: the brief asks "enough info to know who needs attention <i>without digging</i>" — not "the whole book, always." The pulse strip answers the first at zero cost; the drawer is one tap away for the second.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 14px; font-weight: 700; color: #24282C;">Why this holds at 2 clients and at 200</div>
+    <div style="font-size: 13.5px; line-height: 1.6; color: rgba(36,40,44,0.75);">The strip is bounded by <i>height</i>, not count — chips scroll horizontally instead of the layout growing vertically. At 2 clients with nothing urgent, the strip goes quiet ("Book's quiet right now"). At 200 clients with 40 needing attention, the strip is identical in height — it just scrolls further. The drawer's own "Needs attention" grouping (added earlier) is the second-level answer once you do open the book: group when there are enough to lose track of, don't when there aren't.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 14px; font-weight: 700; color: #24282C;">Chat &harr; client list &harr; workflows</div>
+    <div style="font-size: 13.5px; line-height: 1.6; color: rgba(36,40,44,0.75);">Selecting a client (chip or drawer row) scopes chat — a pinned pill shows what's active, with its own remembered thread. A workflow can be started the same way from either direction: from the drawer's Workflows tab, or straight from chat via the "+" in the composer — because the brief asks whether a Pro can start one from chat, from a client, or both, and the honest answer is both, so the UI shouldn't force a single path.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 14px; font-weight: 700; color: #24282C;">What I'd flag as unresolved</div>
+    <div style="font-size: 13.5px; line-height: 1.6; color: rgba(36,40,44,0.75);">Two scope types (client, workflow) share one pill for now — clean, but a Pro doing both at once (a workflow, for a client) has no way to say so yet. I'd rather ship the simpler version and name the gap than build a compound-scope system nobody asked to see.</div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":620,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
