@@ -16,6 +16,17 @@ Open it, then use Play on the `Workspace` artboard. Click a client (or a
 "Needs you today" chip), send a message, switch Clients | Workflows, and
 start a workflow from the composer's workflow button.
 
+## Run it locally
+
+```bash
+python3 -m http.server 5173 --directory prototype
+```
+
+Then open http://localhost:5173. The standalone prototype in `prototype/`
+(Preact + htm from a CDN, no build step) mirrors the `Workspace` artboard;
+the "Data" switch in the top-right swaps between the 12-client, 5-client and
+calm scenarios.
+
 ## The approach
 
 Built inside Instead's real shell (trial banner, narrow rail, centered
