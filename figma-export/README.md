@@ -33,8 +33,8 @@ File names are `area-part-variant`, matching the layer names inside.
 | Area | Files |
 |---|---|
 | Rail | `rail`, `rail-toolbar`, `rail-client-row-default`, `-needs-you`, `-with-workflow`, `-hover`, `rail-filter-menu`, `rail-filtered-needs-you`, `rail-user-card` |
-| Tray (above the composer) | `tray-needs-you`, `tray-client-row`, `tray-workflows-browse`, `-picked`, `-choose-clients`, `-build` |
-| Composer | `composer-firm`, `composer-client`, `composer-context-pill-firm`, `-client`, `-workflow`, `composer-context-picker` |
+| Tray (above the composer) | `tray-needs-you`, `tray-client-row`, `tray-workflows-browse`, `-picked`, `-build` |
+| Composer | `composer-firm`, `composer-client`, `composer-context-pill-firm`, `-client`, `-workflow`, `composer-context-picker`, `composer-client-picker` |
 | Chat | `chat-reply`, `chat-buttons`, `chat-client-checklist`, `chat-briefing-list`, `chat-briefing-groups`, `chat-draft-workflow` |
 | Library | `library-preview` |
 | Client panel | `client-panel`, `client-panel-back-link` |
