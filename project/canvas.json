@@ -2,8 +2,9 @@
   "v": 3,
   "attachments": {},
   "boards": {
-    "ClientList.dc.html": { "h": 760, "is_interactive": true, "w": 380, "x": 0, "y": 0 },
-    "StatusKey.dc.html": { "h": 420, "w": 460, "x": 460, "y": 0 }
+    "Artboard-874g.dc.html": { "h": 600, "w": 800, "x": 1000, "y": 0 },
+    "Workspace.dc.html": { "h": 780, "is_interactive": true, "w": 1040, "x": 0, "y": 0 },
+    "StatusKey.dc.html": { "h": 420, "w": 380, "x": 0, "y": 860 }
   },
   "createdOnFiles": { "at": "2026-09-23T00:00:00Z", "v": 1 },
   "designSystems": [],
@@ -11,15 +12,15 @@
   "notes": {
     "n1": {
       "kind": "title1",
-      "maxW": 700,
+      "maxW": 900,
       "size": 14,
-      "text": "Toggle \"scenario\" in Tweaks: grouped (3 attention) / few-attention (1, ungrouped) / calm",
+      "text": "Toggle \"scenario\" in Tweaks: grouped (3 attention) / few-attention (1, ungrouped) / calm. Click a client row to scope chat.",
       "w": 240,
       "x": 0,
       "y": -70
     }
   },
-  "order": ["ClientList.dc.html", "StatusKey.dc.html"],
+  "order": ["Workspace.dc.html", "StatusKey.dc.html", "Artboard-874g.dc.html"],
   "pages": [],
   "title": "Client List — Status Signal"
 }
