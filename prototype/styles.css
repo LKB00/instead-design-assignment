@@ -243,7 +243,8 @@ img { display: block; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
 .composer-wrap { flex: none; position: relative; width: 100%; max-width: 742px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 8px; }
-.composer-wrap > .composer { align-self: stretch; }
+.composer-wrap > .composer-anchor { align-self: stretch; }
+.composer-anchor { position: relative; display: flex; flex-direction: column; }
 .main.docked .composer-wrap { max-width: 646px; padding-bottom: 8px; }
 .chip-x { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; color: var(--charcoal-50); }
 .chip-x:hover { background: var(--sand-dark); color: var(--charcoal); }
@@ -300,18 +301,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .proto-key { width: 20px; height: 20px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 9999px; border: 0.5px solid var(--control-border); font-size: 10px; color: var(--charcoal-50); }
 .proto-check { color: var(--charcoal); }
 
-/* ---------- Who needs you: rail flag + chat briefing ---------- */
-.flag { display: flex; align-items: center; gap: 5px; font-size: 10px; line-height: 16px; color: var(--charcoal-light); white-space: nowrap; }
-.flag .dot { width: 5px; height: 5px; }
-
-.brief-link {
-  height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 9999px;
-  font-size: 12px; line-height: 16px; color: var(--charcoal-light); white-space: nowrap; transition: background .15s, color .15s;
-}
-.brief-link .dot { width: 5px; height: 5px; }
-.brief-link svg { color: var(--charcoal-50); transition: transform .15s; }
-.brief-link:hover { background: var(--sand-dark); color: var(--charcoal); }
-.brief-link:hover svg { transform: translateX(2px); }
+/* ---------- Who needs you: chat briefing ---------- */
 
 .brief { display: flex; flex-direction: column; border-top: 0.5px solid var(--control-border); }
 .brief-row {
@@ -370,3 +360,37 @@ button.wf-count:hover { background: var(--sand-dark); color: var(--charcoal); }
 .ctx-search { flex: none; height: 30px; padding: 0 10px; }
 .ctx-item[aria-selected="true"] { background: var(--sand); }
 .ctx-item .dot { width: 5px; height: 5px; }
+
+/* ---------- Today: who needs you, in Instead's composer tray ---------- */
+.main.has-today { gap: 24px; }
+.main.has-today .hero-wrap { height: 72px; }
+.today-tray { align-self: stretch; display: flex; flex-direction: column; gap: 8px; padding: 12px 8px 8px; background: var(--sand); border-radius: 24px; }
+.today { display: flex; flex-direction: column; gap: 6px; padding: 0 8px; }
+.today-head { padding: 0 0 0 4px; }
+.today-rows { display: flex; flex-direction: column; gap: 2px; }
+.today-row {
+  height: 32px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 4px 0 10px; border-radius: 9999px;
+  font-size: 12px; line-height: 16px; text-align: left; transition: background .15s;
+}
+.today-row:hover { background: var(--sand-dark); }
+.today-row .dot { width: 5px; height: 5px; }
+.today-name { flex: none; color: var(--charcoal); }
+.today-note { flex: 1; min-width: 0; color: var(--charcoal-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.today-open { flex: none; height: 24px; display: none; align-items: center; gap: 4px; padding: 0 10px; border-radius: 9999px; background: #fff; border: 0.5px solid var(--control-border); color: var(--charcoal); }
+.today-row:hover .today-open { display: flex; }
+.today-link { height: 22px; display: flex; align-items: center; gap: 6px; padding: 0 8px; border-radius: 9999px; font-size: 12px; line-height: 16px; color: var(--charcoal-light); transition: background .15s, color .15s; }
+.today-link svg { color: var(--charcoal-50); }
+.today-link:hover { background: var(--sand-dark); color: var(--charcoal); }
+.today-more { padding-left: 23px; }
+
+/* ---------- Rail filter: data Instead already has, no folders ---------- */
+.filter-anchor { position: relative; display: flex; }
+.ic.on { background: var(--sand-dark); color: var(--charcoal); }
+.filter-menu { position: absolute; z-index: 8; right: -4px; top: calc(100% + 6px); width: 232px; animation: popIn .18s var(--ease); cursor: default; }
+.filter-item { padding: 6px 8px; }
+.filter-item .dot { width: 5px; height: 5px; }
+.filter-item[aria-checked="true"] { background: var(--sand); }
+.filter-count { flex: none; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }
+.filter-bar { flex: none; display: flex; padding: 0 4px; }
+.filter-chip { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 3px 0 10px; border-radius: 9999px; background: var(--sand-dark); font-size: 11px; line-height: 16px; color: var(--charcoal); }
+.filter-chip .chip-x:hover { background: rgba(36, 40, 44, 0.08); }

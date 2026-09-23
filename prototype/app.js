@@ -196,6 +196,25 @@ const greeting = (name) => ({
 });
 
 const fullName = (c) => c.name || `${c.first} ${c.last}`;
+// One source for the home's status: the hero headline, the list under it and the briefing all
+// read homeStatus(), so they never disagree.
+// A workflow counts once however many clients it covers, so at 200 clients a bulk "Request
+// missing documents" is 1 workflow, not 6.
+function activeWorkflows(clients) {
+  const inBook = (it) => clients.some((c) => c.id === it.clientId && fullName(c) === it.label);
+  return ALL_WF.filter((w) => w.done < w.total && (w.clientId ? clients.some((c) => c.id === w.clientId) : w.items.some(inBook)));
+}
+function homeStatus(clients) {
+  const attention = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency);
+  const workflows = activeWorkflows(clients);
+  const who = attention.length === 1 ? fullName(attention[0]) : `${attention.length} clients`;
+  const needs = attention.length ? `${who} ${attention.length === 1 ? 'needs' : 'need'} you` : '';
+  return {
+    attention, workflows,
+    // The headline carries only what to act on; a calm week keeps Instead's greeting.
+    headline: needs ? `${needs} today. Where should we start?` : 'How can I support your firm today?',
+  };
+}
 const railName = (c) => c.name || `${c.last}, ${c.first}`;
 const iconFor = (entity) => (entity === '1040' ? 'userRound' : entity === '1041' ? 'landmark' : 'building');
 
@@ -211,8 +230,8 @@ class App extends Component {
       showTip: false,
       menu: false,
       rowMenu: null,
+      filter: null, filterOpen: false, // rail filter: 'needs' | 'workflow' | an entity code
       ctxOpen: false, ctxQuery: '', recent: [], // the context picker in the composer
-      showAllNeeds: false,
       query: null, // null = search closed; '' = open // client id whose ⋮ menu is open
       draft: '',
       typing: false,
@@ -257,7 +276,7 @@ class App extends Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKeyDown);
-    this.onDocClick = () => { if (this.state.rowMenu || this.state.ctxOpen) this.setState({ rowMenu: null, ctxOpen: false }); };
+    this.onDocClick = () => { if (this.state.rowMenu || this.state.ctxOpen || this.state.filterOpen) this.setState({ rowMenu: null, ctxOpen: false, filterOpen: false }); };
     document.addEventListener('click', this.onDocClick);
   }
   componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); document.removeEventListener('click', this.onDocClick); }
@@ -403,7 +422,7 @@ class App extends Component {
   }
 
   setScenario(id) {
-    this.setState({ scenario: id, scope: null, from: null, showTip: false, showAllNeeds: false, query: null, protoOpen: false });
+    this.setState({ scenario: id, scope: null, from: null, showTip: false, query: null, protoOpen: false, filter: null, filterOpen: false });
   }
 
   askWhichClient(tid) {
@@ -487,26 +506,28 @@ class App extends Component {
   }
 
   // The at-a-glance answer lives in chat: one tap asks Instead for today's briefing.
-  brief(attention) {
-    const text = 'Who needs me today?';
+  // The briefing: one list of the clients who need you, most urgent first; workflows as one sentence.
+  brief({ attention, workflows }) {
+    const text = attention.length ? 'Who needs me today?' : 'What’s moving today?';
     this.setState((st) => ({ threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'user', text }]) }, typing: 'Checking deadlines and open requests', menu: false }));
     setTimeout(() => {
       const n = attention.length;
-      this.setState((st) => ({
-        typing: false,
-        threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'assistant', blocks: [
-          ...(n <= 5 ? [
-            { p: n === 1 ? 'One client needs you today:' : `${n} clients need you today, most urgent first:` },
-            { brief: attention.map((c) => c.id) },
-            { p: 'Open a client to work on their file, or tell me to handle the next step for all of them.' },
-          ] : [
+      const k = workflows.length;
+      const wfLine = k ? `${k} workflow${k === 1 ? ' is' : 's are'} also running. You’ll find ${k === 1 ? 'it' : 'them'} under Workflows.` : '';
+      const blocks = n === 0
+        ? [{ p: `No clients need you today.${k ? ` ${k} workflow${k === 1 ? ' is' : 's are'} running.` : ''}` }]
+        : n <= 5
+          ? [{ p: `${n} clients need you today, most urgent first:` }, { brief: attention.map((c) => c.id) }, ...(wfLine ? [{ p: wfLine }] : [])]
+          : [
             { p: `${n} clients need you today. The three most urgent:` },
             { brief: attention.slice(0, 3).map((c) => c.id) },
             { p: `The other ${n - 3}, by what’s blocking them:` },
             { groups: Object.keys(CATS).map((cat) => ({ cat, ids: attention.slice(3).filter((c) => c.cat === cat).map((c) => c.id) })).filter((g) => g.ids.length) },
-            { p: 'Each of those can run as one workflow, so you handle a group in one step instead of client by client.' },
-          ]),
-        ] }]) },
+            ...(wfLine ? [{ p: wfLine }] : []),
+          ];
+      this.setState((st) => ({
+        typing: false,
+        threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'assistant', blocks }]) },
       }));
     }, 1100);
   }
@@ -616,6 +637,31 @@ class App extends Component {
       </div>`;
   }
 
+  // Who needs you, in Instead's own composer tray: a section header (label + link, like the rail's),
+  // one-line pill rows, then the composer — all on one edge, one width.
+  renderToday({ attention, workflows }, clients, composerEl) {
+    const n = attention.length, k = workflows.length;
+    return html`<div class="today-tray">
+      <section class="today" aria-label="Clients who need you today">
+        <div class="section-head today-head">
+          <span class="label">Needs you</span>
+          ${k > 0 && html`<button class="today-link" onClick=${() => this.setTab('workflows')}>${k} workflow${k === 1 ? '' : 's'} running<${Icon} name="moveRight" size=${12} /></button>`}
+        </div>
+        <div class="today-rows">
+          ${attention.slice(0, 3).map((c) => html`
+            <button class="today-row" onClick=${() => this.pickClient(c.id)}>
+              <span class="dot" aria-hidden="true"></span>
+              <span class="today-name">${fullName(c)}</span>
+              <span class="today-note">${c.note}</span>
+              <span class="today-open">Open<${Icon} name="moveRight" size=${12} /></span>
+            </button>`)}
+          ${n > 3 && html`<button class="more-row today-more" onClick=${() => this.brief({ attention, workflows })}>Show ${n - 3} more</button>`}
+        </div>
+      </section>
+      ${composerEl}
+    </div>`;
+  }
+
   renderBrief(ids, clients) {
     return html`<div class="brief">
       ${ids.map((id) => clients.find((c) => c.id === id)).filter(Boolean).map((c) => html`
@@ -623,7 +669,7 @@ class App extends Component {
           <span class="pg-icon"><span class="dot" aria-hidden="true"></span></span>
           <span class="brief-text">
             <span class="brief-name">${fullName(c)}</span>
-            <span class="brief-note">${c.note}. ${c.next}.</span>
+            <span class="brief-note">${c.note}</span>
           </span>
           <span class="brief-open">Open<${Icon} name="moveRight" size=${12} /></span>
         </button>`)}
@@ -643,12 +689,10 @@ class App extends Component {
         </span>
         <span class="row-text"><span class="row-name">${railName(c)}</span></span>
         <span class="row-meta">
-          ${attn
-            ? html`<span class="flag"><span class="dot" aria-hidden="true"></span>${c.flag}</span>`
-            : html`
-              ${wf && html`<button class="wf-count" title=${`${wf.name}: ${wf.done} of ${wf.total} done`} aria-label=${`Open ${wf.name}`}
-                onClick=${(e) => { e.stopPropagation(); this.pickWorkflow(wf.id); }}><${Icon} name="workflow" size=${10} />${wf.done}/${wf.total}</button>`}
-              <span class="pill-xxs lime">${c.entity}</span>`}
+          ${wf && html`<button class="wf-count" title=${`${wf.name}: ${wf.done} of ${wf.total} done`} aria-label=${`Open ${wf.name}`}
+            onClick=${(e) => { e.stopPropagation(); this.pickWorkflow(wf.id); }}><${Icon} name="workflow" size=${10} />${wf.done}/${wf.total}</button>`}
+          ${attn && html`<span class="dot" aria-hidden="true"></span>`}
+          <span class="pill-xxs lime">${c.entity}</span>
         </span>
         <button class="ic row-more" aria-label="More" aria-expanded=${this.state.rowMenu === c.id}
           onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ rowMenu: s.rowMenu === c.id ? null : c.id })); }}><${Icon} name="moreVertical" /></button>
@@ -757,15 +801,20 @@ class App extends Component {
   render() {
     const st = this.state;
     const clients = clientsFor(st.scenario);
-    // Whoever needs the pro floats to the top, most urgent first; a label only once there's a group worth naming.
-    const attention = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency);
-    const grouped = attention.length >= 3;
-    const others = clients.filter((c) => c.status !== 'needs_attention').sort((a, b) => railName(a).localeCompare(railName(b)));
-    // At scale the short list stays short: the five most urgent, the rest one tap away.
-    const NEED_CAP = 5;
-    const needShown = st.showAllNeeds ? attention : attention.slice(0, NEED_CAP);
+    const status = homeStatus(clients);
+    const { attention } = status;
+    // The rail is the book, not the to-do list: every client A–Z, like Instead's. "Who needs you" lives
+    // in the home tray; here it's only an amber dot, so it isn't said twice on one screen.
+    // Filters use what Instead already knows (status, workflows, entity) — no folders to keep up.
+    const inWorkflow = new Set(status.workflows.flatMap((w) => (w.clientId ? [w.clientId] : w.items.filter((it) => it.state !== 'done').map((it) => it.clientId))));
+    const FILTERS = [
+      ['Status', [['needs', 'Needs you', (c) => c.status === 'needs_attention'], ['workflow', 'In a workflow', (c) => inWorkflow.has(c.id)]]],
+      ['Entity', Object.keys(ENTITY).filter((e) => clients.some((c) => c.entity === e)).map((e) => [e, `${ENTITY[e]} (${e})`, (c) => c.entity === e])],
+    ].map(([title, opts]) => [title, opts.map(([id, label, test]) => ({ id, label, test, count: clients.filter(test).length })).filter((o) => o.count)]);
+    const activeFilter = st.filter && FILTERS.flatMap(([, o]) => o).find((o) => o.id === st.filter);
+    const book = clients.filter((c) => !activeFilter || activeFilter.test(c)).sort((a, b) => railName(a).localeCompare(railName(b)));
     const q = (st.query || '').trim().toLowerCase();
-    const matches = q ? clients.filter((c) => fullName(c).toLowerCase().includes(q) || railName(c).toLowerCase().includes(q)) : null;
+    const matches = q ? book.filter((c) => fullName(c).toLowerCase().includes(q) || railName(c).toLowerCase().includes(q)) : null;
     const wfByClient = Object.fromEntries(WORKFLOWS.single.map((w) => [w.clientId, w]));
 
     const scope = st.scope;
@@ -777,13 +826,72 @@ class App extends Component {
     const hasMessages = messages.length > 0;
     const firstGeneral = (st.threads.general || []).find((m) => m.from === 'user');
 
-    let heroText = 'How can I support your firm today?';
+    // A calm week keeps Instead's greeting; otherwise the home leads with who needs you.
+    let heroText = status.headline;
+    // The home answers its own headline: who needs you is on the page, not behind a click.
+    const showToday = !scoped && !hasMessages && attention.length > 0;
     if (sc) heroText = `How can I support ${fullName(sc)}?`;
     if (sw) heroText = `Let’s keep “${sw.name}” moving.`;
 
     const canSend = st.draft.trim().length > 0;
     const isClients = st.tab === 'clients';
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
+
+    // Pop-ups anchor to the composer itself, so they open just above it wherever it sits.
+    const composerEl = html`<div class="composer-anchor">
+        ${st.showTip && sc && html`
+          <div class="popover tooltip" role="status">
+            Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Switch or clear it from the pill in the chat box.
+            <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
+          </div>`}
+
+        ${st.menu && html`
+          <div class="popover menu" role="menu">
+            ${(sc ? [['one', `For ${fullName(sc)}`]] : [['across', 'Across clients'], ['one', 'For one client']]).map(([grp, title]) => html`
+              <span class="label">${title}</span>
+              ${TEMPLATES.filter((t) => t.scope === grp && !t.hidden).map((t) => html`
+                <button class="menu-item" role="menuitem" onClick=${() => (sc || grp === 'across' ? this.startWorkflow(t.id, sc && sc.id, clients) : this.askWhichClient(t.id))}>
+                  <span class="menu-icon"><${Icon} name=${t.icon} /></span>
+                  <span class="row-text"><span class="row-name">${t.name}</span></span>
+                </button>`)}`)}
+            <div class="menu-foot">Tip: type <kbd>/</kbd> in chat, or just describe the work</div>
+          </div>`}
+
+        ${st.ctxOpen && this.renderContextPicker(clients, attention)}
+      <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
+        <textarea ref=${(el) => (this.inputEl = el)} rows="1"
+          placeholder=${sc ? (hasMessages ? 'Ask a follow up...' : `Ask about ${fullName(sc)}...`) : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
+          value=${st.draft}
+          onInput=${(e) => {
+            const v = e.target.value;
+            if (v === '/') return this.setState({ draft: '', menu: true, showTip: false, ctxOpen: false });
+            if (v === '@' || v.endsWith(' @')) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
+            this.setState({ draft: v });
+          }}
+          onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
+        <div class="composer-controls">
+          <div class="controls-group">
+            <div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
+              <button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label=${`Chat context: ${sc ? fullName(sc) : sw ? sw.name : 'All clients'}. Change`}
+                onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxQuery: '', menu: false, showTip: false })); }}>
+                <${Icon} name=${sc ? iconFor(sc.entity) : sw ? 'workflow' : 'users'} size=${13} />
+                <span class="ctx-name">${sc ? fullName(sc) : sw ? sw.name : 'All clients'}</span>
+                <${Icon} name="chevronDown" size=${12} />
+              </button>
+              ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
+            </div>
+            ${I('paperclip', 'Attach files', null, 'circ')}
+            ${I('settings2', 'Settings', null, 'circ')}
+            <button type="button" class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
+              onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false, ctxOpen: false }))}><${Icon} name="workflow" /></button>
+          </div>
+          <div class="controls-group">
+            ${I('mic', 'Dictate', null, 'circ')}
+            <button type="submit" class=${'send' + (canSend ? ' ready' : '')} aria-label="Send"><${Icon} name="arrowUp" /></button>
+          </div>
+        </div>
+      </form>
+    </div>`;
 
     return html`
       <div class="app">
@@ -812,30 +920,41 @@ class App extends Component {
                         <button class="chip-x" aria-label="Close search" onClick=${() => this.setState({ query: null })}><${Icon} name="x" size=${10} stroke=${2} /></button>
                       </label>`
                     : html`<span class="label">Clients</span>
-                      <div class="head-icons">${I('search', 'Search clients', () => this.setState({ query: '' }))}${I('archiveX', 'Archived')}${I('arrowUpDown', 'Sort')}${I('listFilter', 'Filter')}${I('plus', 'Add client')}</div>`
+                      <div class="head-icons">${I('search', 'Search clients', () => this.setState({ query: '' }))}${I('archiveX', 'Archived')}${I('arrowUpDown', 'Sort')}
+                        <span class="filter-anchor">
+                          <button class=${'ic' + (st.filter || st.filterOpen ? ' on' : '')} aria-label="Filter clients" aria-haspopup="menu" aria-expanded=${st.filterOpen}
+                            onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ filterOpen: !s.filterOpen, rowMenu: null })); }}><${Icon} name="listFilter" /></button>
+                          ${st.filterOpen && html`
+                            <div class="menu filter-menu" role="menu" onClick=${(e) => e.stopPropagation()}>
+                              ${FILTERS.filter(([, opts]) => opts.length).map(([title, opts]) => html`
+                                <span class="label">${title}</span>
+                                ${opts.map((o) => html`
+                                  <button class="menu-item filter-item" role="menuitemradio" aria-checked=${st.filter === o.id}
+                                    onClick=${() => this.setState((s) => ({ filter: s.filter === o.id ? null : o.id, filterOpen: false }))}>
+                                    ${o.id === 'needs' && html`<span class="dot" aria-hidden="true"></span>`}
+                                    <span class="row-text"><span class="row-name">${o.label}</span></span>
+                                    <span class="filter-count">${o.count}</span>
+                                    ${st.filter === o.id && html`<span class="proto-check"><${Icon} name="check" size=${12} /></span>`}
+                                  </button>`)}`)}
+                            </div>`}
+                        </span>${I('plus', 'Add client')}</div>`
                   : html`<span class="label">Workflows</span>
                       <div class="head-icons">${I('search', 'Search workflows')}${I('plus', 'Start a workflow', () => this.setState((s) => ({ menu: !s.menu })))}</div>`}
               </div>
+              ${isClients && activeFilter && html`
+                <div class="filter-bar">
+                  <span class="filter-chip">${activeFilter.label} · ${book.length}
+                    <button class="chip-x" aria-label="Clear filter" onClick=${() => this.setState({ filter: null })}><${Icon} name="x" size=${10} stroke=${2} /></button>
+                  </span>
+                </div>`}
               <div class="list" ref=${(el) => (this.listEl = el)}>
                 ${isClients
                   ? html`
                       ${matches
                         ? matches.length
                           ? matches.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))
-                          : html`<div class="no-match">No client matches “${st.query}”</div>`
-                        : grouped
-                          ? html`
-                            <div class="list-section needs-you">
-                              <div class="group-label">Needs you${attention.length > NEED_CAP ? ` · ${attention.length}` : ''}</div>
-                              ${needShown.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}
-                              ${attention.length > NEED_CAP && html`<button class="more-row" onClick=${() => this.setState((s) => ({ showAllNeeds: !s.showAllNeeds }))}>
-                                ${st.showAllNeeds ? 'Show fewer' : `Show ${attention.length - NEED_CAP} more`}</button>`}
-                            </div>
-                            ${others.length > 0 && html`<div class="list-section everyone-else">
-                              <div class="group-label">Everyone else${clients.length > 20 ? ` · ${others.length}` : ''}</div>
-                              ${others.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}
-                            </div>`}`
-                          : html`<div class="list-section">${attention.concat(others).map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}</div>`}
+                          : html`<div class="no-match">No client matches “${st.query}”${activeFilter ? ` in ${activeFilter.label}` : ''}</div>`
+                        : html`<div class="list-section">${book.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}</div>`}
                       <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>`
                   : html`
                       <div class="list-section across-clients">
@@ -875,12 +994,11 @@ class App extends Component {
             </div>
           </aside>`}
 
-          <main class=${'main' + (sc ? ' client' : '') + (hasMessages ? ' docked' : '')}>
+          <main class=${'main' + (sc ? ' client' : '') + (hasMessages ? ' docked' : '') + (showToday ? ' has-today' : '')}>
             ${!hasMessages && html`
               <div class="hero-wrap">
                 <${Hero} text=${heroText} intro=${!this.introPlayed && !scoped} onIntroDone=${() => { this.introPlayed = true; }} key=${heroText} />
               </div>`}
-
             ${hasMessages && html`
               <div class="chat-scroll" ref=${(el) => (this.chatEl = el)}>
                 <div class="chat-col">
@@ -898,65 +1016,8 @@ class App extends Component {
               </div>`}
 
             <div class="composer-wrap">
-              ${st.showTip && sc && html`
-                <div class="popover tooltip" role="status">
-                  Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Switch or clear it from the pill in the chat box.
-                  <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
-                </div>`}
+                ${showToday ? this.renderToday(status, clients, composerEl) : composerEl}
 
-              ${st.menu && html`
-                <div class="popover menu" role="menu">
-                  ${(sc ? [['one', `For ${fullName(sc)}`]] : [['across', 'Across clients'], ['one', 'For one client']]).map(([grp, title]) => html`
-                    <span class="label">${title}</span>
-                    ${TEMPLATES.filter((t) => t.scope === grp && !t.hidden).map((t) => html`
-                      <button class="menu-item" role="menuitem" onClick=${() => (sc || grp === 'across' ? this.startWorkflow(t.id, sc && sc.id, clients) : this.askWhichClient(t.id))}>
-                        <span class="menu-icon"><${Icon} name=${t.icon} /></span>
-                        <span class="row-text"><span class="row-name">${t.name}</span></span>
-                      </button>`)}`)}
-                  <div class="menu-foot">Tip: type <kbd>/</kbd> in chat, or just describe the work</div>
-                </div>`}
-
-              ${st.ctxOpen && this.renderContextPicker(clients, attention)}
-                <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
-                  <textarea ref=${(el) => (this.inputEl = el)} rows="1"
-                    placeholder=${sc ? (hasMessages ? 'Ask a follow up...' : `Ask about ${fullName(sc)}...`) : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
-                    value=${st.draft}
-                    onInput=${(e) => {
-                      const v = e.target.value;
-                      if (v === '/') return this.setState({ draft: '', menu: true, showTip: false, ctxOpen: false });
-                      if (v === '@' || v.endsWith(' @')) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
-                      this.setState({ draft: v });
-                    }}
-                    onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
-                  <div class="composer-controls">
-                    <div class="controls-group">
-                      <div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
-                        <button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label=${`Chat context: ${sc ? fullName(sc) : sw ? sw.name : 'All clients'}. Change`}
-                          onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxQuery: '', menu: false, showTip: false })); }}>
-                          <${Icon} name=${sc ? iconFor(sc.entity) : sw ? 'workflow' : 'users'} size=${13} />
-                          <span class="ctx-name">${sc ? fullName(sc) : sw ? sw.name : 'All clients'}</span>
-                          <${Icon} name="chevronDown" size=${12} />
-                        </button>
-                        ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
-                      </div>
-                      ${I('paperclip', 'Attach files', null, 'circ')}
-                      ${I('settings2', 'Settings', null, 'circ')}
-                      <button type="button" class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
-                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false, ctxOpen: false }))}><${Icon} name="workflow" /></button>
-                    </div>
-                    <div class="controls-group">
-                      ${I('mic', 'Dictate', null, 'circ')}
-                      <button type="submit" class=${'send' + (canSend ? ' ready' : '')} aria-label="Send"><${Icon} name="arrowUp" /></button>
-                    </div>
-                  </div>
-                </form>
-
-              ${!scoped && !hasMessages && attention.length > 0 && html`
-                <button class="brief-link" onClick=${() => this.brief(attention)}>
-                  <span class="dot" aria-hidden="true"></span>
-                  ${attention.length === 1 ? `${fullName(attention[0])} needs you today` : `${attention.length} clients need you today`}
-                  <${Icon} name="moveRight" size=${12} />
-                </button>`}
             </div>
           </main>
         </div>

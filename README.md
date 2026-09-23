@@ -1,7 +1,5 @@
 # Instead Pro — Chat-First Home (Design Exercise)
 
-[![Open in Claude](https://img.shields.io/badge/Open%20in-Claude%20Artifact-C2EF72?style=flat-square&labelColor=24282C)](https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE)
-
 Instead's product design exercise: re-imagine how a Pro lands and orients
 when they open Instead Pro. The brief is explicit that **chat is the room,
 not a feature inside the room** — this reworks the home screen around that,
@@ -11,71 +9,78 @@ rather than placing a client list and a chat box side by side.
 product's pain points, every improvement and tradeoff, and the code map —
 readable on its own without any other history.
 
-## Live artifact
+## View the design
 
-Interactive canvas (Claude Artifact — Design, clickable prototype):
-**https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE**
-
-Open it, then use Play on the `Workspace` artboard. Click a client (or a
-"Needs you today" chip), send a message, switch Clients | Workflows, and
-start a workflow from the composer's workflow button.
-
-## Run it locally
+The clickable prototype in `prototype/` is the current design and the source
+of truth. Run it locally:
 
 ```bash
 python3 -m http.server 5173 --directory prototype
 ```
 
-Then open http://localhost:5173. The standalone prototype in `prototype/`
-(Preact + htm from a CDN, no build step) mirrors the `Workspace` artboard;
-the dashed "Prototype" button in the bottom-right (or keys 1–4) previews the
-home at 2, 12 and 200 clients and a calm week where nobody needs attention (or use `?scenario=two|grouped|large|calm`).
+Then open http://localhost:5173 (Preact + htm from a CDN, no build step).
+Things to try:
+
+- Read the home: the headline and the "Needs you" tray answer who needs you
+  today; click a client to open their file.
+- Switch the rail to **Workflows** and open "Collect missing K-1s".
+- Click the **All clients ⌄** pill in the composer (or type `@`) to change who
+  the chat is about; type `/` to start a workflow.
+- Use the rail's **Filter** icon (Needs you, In a workflow, entity type).
+- The dashed button bottom-right (or keys 1–4) previews the home at 2, 12
+  and 200 clients and a calm week (or use `?scenario=two|grouped|large|calm`).
+
+Static, editable SVGs of the main screens and components for Figma are in
+[`figma-export/`](figma-export/).
+
+> **Earlier iteration (superseded):** a first version was built as a Claude
+> Artifact canvas (`project/*.dc.html`,
+> [claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE](https://claude.ai/artifact/Adsgt9fgeTK3Fx6WBWRNiE)).
+> It's kept for design history only and does not reflect the current design;
+> the prototype above replaces it.
 
 ## The approach
 
-Built inside Instead's real shell (trial banner, narrow rail, centered
-question, one composer) so it reads as the actual product. The real app is
+Built inside Instead's real shell (narrow rail, centered question, one
+composer) so it reads as the actual product. The real app is
 already chat-first; the work is in what the rail and the empty chat tell a
 Pro in the first three seconds:
 
-- **"Needs you", quietly** — clients needing attention float to the top of
-  the rail under a small label, marked only by an amber dot; the reason
-  shows on hover. Rows stay one line, exactly like Instead's.
+- **One job per surface** — the home's tray says who needs you today and
+  why; the rail stays Instead's A–Z book of clients, marking those clients
+  with only an amber dot, so nothing is said twice on one screen.
 - **Clients | Workflows** as one toggle in the rail, each tab keeping its
   own scroll and selection.
-- **Selecting is scoping** — clicking a client pins a chip above the
-  composer (Instead's existing pattern, now with ×) and opens their own
-  thread; sending a message gets a mock reply.
+- **Selecting is scoping** — clicking a client opens their panel and sets
+  the composer's context pill ("Meera Iyer ⌄ ×"); sending a message gets a
+  mock reply.
 
-An earlier iteration replaced the rail with a top strip + drawer; it's
-described on the `Decisions` artboard as a direction tried and dropped.
-
-Full reasoning, including the tradeoff this makes and what's deliberately
-left unresolved, is written out on the `Decisions` artboard on the canvas
-(and summarized below).
+Directions tried and dropped (a top strip + drawer instead of the rail;
+sorting "Needs you" to the top of the rail; a decision-first briefing card;
+user-made client groups) and the full reasoning behind each are in
+[CONTEXT.md](CONTEXT.md), summarized below.
 
 ## What's here
 
-- `project/Workspace.dc.html` — the interactive firm home (1440×900):
-  banner, rail, chat, composer. A `scenario` tweak switches mock data between `grouped`
-  (3+ clients need attention → grouped under a label),
-  `few-attention` (1 client needs attention → no grouping), and `calm`
-  (mostly on-track, no "Needs you" signal at all).
-- `project/Decisions.dc.html` — the design reasoning, written for a reviewer
-  reading the canvas without a walkthrough.
-- `project/StatusKey.dc.html` — the three client-status states and the one
-  new colour, documented.
-- `project/canvas.json` — layout index for the artboards above.
+- `prototype/` — the current design: a clickable prototype of the firm home
+  (`index.html`, `app.js`, `styles.css`, `img/`). Mock books of 2, 12 and 200
+  clients plus a calm week.
+- `CONTEXT.md` — standalone context: the brief, the live product's pain
+  points, every improvement and tradeoff, a demo script and the code map.
+- `figma-export/` — editable SVGs of the main screens and components for
+  Figma, with a README listing each file.
+- `tools/export-svg.mjs` — regenerates `figma-export/` from the running
+  prototype (Chrome + puppeteer-core).
+- `project/` — the earlier Claude Artifact canvas (Workspace, Decisions,
+  StatusKey artboards). Superseded by `prototype/`; kept for design history.
 
 ## The brief's four questions
 
 **1. Who needs something from me right now?**
-Clients who need you float to the top of the rail, most urgent first, with a
-two-word reason ("Unsigned 6d", "Due Friday") and an amber dot in place of the
-form badge. Rows stay one line. Under the empty composer, one quiet line —
-"3 clients need you today →" — asks Instead for the briefing: who, what's
-wrong, and the next step, each one tap from their file. Nothing shows when
-nobody needs you.
+The home leads with it: "3 clients need you
+today. Where should we start?" — and answers its own headline right below,
+listing those clients (what's wrong, one tap from their file) above the
+composer. A calm week keeps Instead's greeting and shows nothing extra.
 
 **2. Where do cross-client vs. single-client workflows live, and how do I move
 between them?** A workflow lives where its work lives. Cross-client ones stay
@@ -99,16 +104,18 @@ single-client workflow started from the firm asks "which client?" in chat.
 Starting one that's already running opens the existing one instead.
 
 **4. What earns a spot on the home screen, and does it hold at 2 and 200?**
-On the home screen: the composer, one line of "who needs you", and a rail
-sorted by need. One level deeper: documents, per-client threads, workflow
+On the home screen: a headline and a short list of who needs you, the
+composer, and the rail as Instead's A–Z book with amber dots. One level deeper: documents, per-client threads, workflow
 detail, reasons in full. At 2 clients there are no labels or caps — just
-rows. At 200, "Needs you" shows the five most urgent plus "Show 9 more",
-everyone else is A–Z with a count, search opens inline, and the briefing
+rows. At 200, the tray shows the three most urgent plus "Show 11 more",
+the rail stays A–Z with inline search and filters on Instead's existing
+Filter icon (Needs you, In a workflow, entity type — with counts; no
+user-made folders to maintain), and the briefing
 groups the rest by what's blocking them ("6 waiting on documents →
 Request them all") so a group is one workflow, not six chats.
 
-**Tradeoffs made:** the form badge gives way to the reason on rows that need
-you; single-client workflows appear in two places (tab and client panel) on
+**Tradeoffs made:** the rail no longer sorts who needs you to the top (the
+tray does that job; inside a thread they're amber dots in A–Z); single-client workflows appear in two places (tab and client panel) on
 purpose; Instead offers workflows instead of assuming, at the cost of one
 click.
 

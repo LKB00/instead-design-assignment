@@ -113,8 +113,8 @@ instead.
 
 | Pain point | Improvement |
 |---|---|
-| Every client row looks the same: name + form badge. Nothing says who needs attention; the pro has to open clients one by one. | Clients who need you **float to the top, most urgent first**, even if only one. Their row shows an **amber dot + a two-word reason** ("Unsigned 6d", "Due Friday") in place of the form badge. Rows stay one line. |
-| The empty home offers only a generic question; the product doesn't tell the pro anything about their day. | One quiet line under the empty composer: **"3 clients need you today →"**. Clicking it asks Instead "Who needs me today?" and the reply lists each client, what's wrong and the next step; each opens the client in one click. Nothing shows when nobody needs you. |
+| Every client row looks the same: name + form badge. Nothing says who needs attention; the pro has to open clients one by one. | Rows that need you carry an **amber dot** beside the form badge (reason on hover). The rail stays Instead's **A–Z book**; the "who and why" lives in the home tray below. An earlier version also sorted these clients to the top of the rail with a two-word reason — dropped because, once the tray existed, the same three names and reasons appeared twice on one screen. **One job per surface: the tray is today, the rail is the book.** |
+| The empty home offers only a generic question; the product doesn't tell the pro anything about their day. | The **hero headline leads with it**: "3 clients need you today. Where should we start?" (or "Priya Nair needs you today…"), A calm week keeps Instead's "How can I support your firm today?". Plain Libre Baskerville text, same logo-flip + typewriter; the amber stays in the rail. **The home answers its own headline**: under it, Instead's own **sand composer tray** holds a "NEEDS YOU" section header (label left, "4 workflows running →" right, the rail's section-head pattern) and up to three one-line pill rows (amber dot, name, the problem in grey; "Open →" on hover), with the composer inside the tray below, so everything shares one width and edge; past three, "Show 11 more" (opens the full briefing in chat: the three most urgent, then the rest grouped by what's blocking them with one action per group). Headline and list come from one `homeStatus()` function; workflows count once however many clients they cover. Earlier this took three steps — headline, a "3 clients need you · 4 workflows moving →" line, then a briefing in chat — where the click only revealed what the page could just show. Also dropped: two equal-weight lists (clients + workflows) that repeated the same problems, and a "decision-first" card that needed explaining. The kept version is the familiar list with things **removed**. |
 | (Early iteration of this prototype) two-line rows, grey status dots, a bold "Needs you · 3" header with divider, and chips under the composer repeating the same clients — **felt cluttered compared with the live app.** | Stripped back to Instead's own density: one-line rows, a single amber dot, small grey labels ("Needs you" / "Everyone else"), and one line of text instead of chips. |
 
 ### 5.2 Workflows and scopes (brief prompt 2)
@@ -140,7 +140,8 @@ instead.
 |---|---|
 | A flat list that only grows; at 200 clients the ones who need you are buried. | **On home:** the composer, one line of who needs you, a rail sorted by need. **One level down:** documents, per-client threads, workflow detail, full reasons. |
 | — | **2 clients:** no labels, no caps — just rows and the one line. |
-| — | **200 clients:** "Needs you" shows the **five most urgent + "Show 9 more"**; everyone else is **A–Z with a count**; **search** opens inline in the rail ("Search 200 clients"). |
+| — | **200 clients:** the tray shows the **three most urgent + "Show 11 more"**; the rail stays **A–Z** with **inline search** ("Search 200 clients"). |
+| Organizing a 200-client book. (Considered: user-made groups — rejected as upkeep that goes stale, and it would bring back rail sections.) | **Filters on Instead's existing Filter icon**, built only from data Instead already has: *Status* (Needs you, In a workflow) and *Entity* (Individual 1040, S Corp 1120S, …), each with a live count; one at a time; the active one shows as a "Needs you · 3 ×" pill under the header; search works inside it. No folders to maintain, always correct. |
 | Handling many clients one by one doesn't scale. | The at-scale briefing lists the top three, then **groups the rest by what's blocking them** — "6 waiting on documents → Request them all", "2 waiting on a signature → Resend all", "3 deadlines, not started → Start extensions". Each group becomes **one cross-client workflow**, not six chats. |
 
 Rule of thumb: **the home grows with what needs you, not with the size of
@@ -160,8 +161,10 @@ the book.**
 
 ## 6. Tradeoffs (owned)
 
-1. **Reason replaces the form badge** on rows that need you. The badge is the
-   least useful fact in that moment; it remains in the client panel.
+1. **The rail doesn't sort by need.** The home tray does that job, so the
+   rail stays Instead's A–Z book. Cost: inside a thread, who needs you is
+   only amber dots scattered through A–Z (the context picker's "Needs you"
+   is one click).
 2. **Single-client workflows appear in two places** (Workflows tab and the
    client panel) on purpose: the tab answers "what's running?", the panel
    answers "what's happening with this client?".
@@ -174,16 +177,16 @@ the book.**
 ## 7. How to use the prototype (demo script)
 
 1. Open http://localhost:5173 (12-client book by default).
-2. Note the rail: three clients on top with reasons; everyone else A–Z.
-3. Click **"3 clients need you today →"** — the briefing.
-4. Open a client from the briefing; see the client panel and the **context
+2. Note the rail: Instead's A–Z book; amber dots on the three who need you.
+3. Read the headline and the three clients listed under it.
+4. Open a client from that list; see the client panel and the **context
    pill** in the composer. Click the pill or type `@` to switch.
 5. Rail → **Workflows** → "Collect missing K-1s": checklist in chat. Click
    Meera Iyer → her file; the workflow is first under Recent in the pill.
 6. In a client, type "can we file an extension?" → offer to start, or answer.
 7. Composer workflow button, or `/` — start from templates.
-8. Press **3** (200 clients): capped Needs you, search, grouped briefing →
-   "Request them all". Press **1** (2 clients) and **4** (calm week).
+8. Press **3** (200 clients): tray shows three + "Show 11 more", rail search →
+   grouped briefing → "Request them all". Press **1** (2 clients) and **4** (calm week).
 
 URL params: `?scenario=two|grouped|large|calm`, `?scope=<clientId>`,
 `?demo=0` hides the prototype control, `?scenario=reference` mirrors the live
@@ -236,7 +239,7 @@ plugin, which maps flexbox to auto layout):
   `display`-toggled, not hidden overlays — an import contains only what's
   visible, with no invisible stray layers.
 - Sections carry **readable class names** that become layer names
-  (`rail`, `clients-pane`, `list-section needs-you`, `everyone-else`,
+  (`rail`, `clients-pane`, `list-section`, `today-tray`, `today-row`,
   `client-panel`, `cp-header`, `composer`, `ctx-pill`, `brief`, …).
 - The hero heading settles into **one text node** after typing, instead of
   one span per character.
