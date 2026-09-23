@@ -430,11 +430,13 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .wf-chip-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--lime); color: var(--charcoal); }
 .wf-note { margin: 0; padding: 0 8px 2px; font-size: 12px; line-height: 18px; color: var(--charcoal-light); }
 .wf-done { height: 22px; display: flex; align-items: center; padding: 0 10px; border-radius: 9999px; background: var(--charcoal); color: #fff; font-size: 11px; line-height: 16px; font-weight: 600; }
-.wf-sets { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 0 0 4px; }
-.wf-set { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 9999px; background: #fff; border: 0.5px solid var(--control-border); font-size: 11px; line-height: 16px; color: var(--charcoal-light); }
+.wf-sets { display: flex; flex-wrap: wrap; gap: 2px; padding: 0 0 0 4px; }
+.wf-set { height: 22px; display: flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 9999px; font-size: 11px; line-height: 16px; color: var(--charcoal-50); transition: background .15s, color .15s; }
+.wf-set:hover { color: var(--charcoal); }
 .wf-set .dot { width: 5px; height: 5px; }
-.wf-set.on { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
-.wf-set.on .filter-count { color: rgba(255, 255, 255, 0.6); }
+.wf-set .filter-count { color: var(--charcoal-50); }
+.wf-set.on { background: var(--sand-dark); color: var(--charcoal); }
+.wf-set.on > svg { color: var(--charcoal); }
 .wf-search { flex: none; height: 26px; }
 .wf-head .wf-search { width: 160px; }
 .wf-client-list { max-height: 188px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; scrollbar-width: thin; }

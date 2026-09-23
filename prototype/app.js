@@ -959,7 +959,7 @@ class App extends Component {
         <div class="wf-sets">${sets.map(([label, cs]) => {
           const ids = cs.map((c) => c.id);
           const on = ids.every((id) => sel.has(id));
-          return html`<button class=${'wf-set' + (on ? ' on' : '')} aria-pressed=${on} onClick=${() => toggle(ids)}>${label === 'Needs you' && html`<span class="dot"></span>`}${label}<span class="filter-count">${cs.length}</span></button>`;
+          return html`<button class=${'wf-set' + (on ? ' on' : '')} aria-pressed=${on} onClick=${() => toggle(ids)}>${on ? html`<${Icon} name="check" size=${11} stroke=${2} />` : label === 'Needs you' && html`<span class="dot"></span>`}${label}<span class="filter-count">${cs.length}</span></button>`;
         })}</div>
         <label class="search-field wf-search"><${Icon} name="search" size=${12} />
           <input placeholder=${`Search ${clients.length} clients`} value=${st.wfClientQ} onInput=${(e) => this.setState({ wfClientQ: e.target.value })} />
