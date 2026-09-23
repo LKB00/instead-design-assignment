@@ -10,66 +10,90 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap">
 <style>
   body{margin:0}
   .rail *{box-sizing:border-box}
-  .rail{font-family:'Public Sans',-apple-system,sans-serif}
+  .rail{font-family:'Lato',-apple-system,sans-serif}
+  .rail .heading{font-family:'Libre Baskerville',Georgia,serif}
   .row-btn{all:unset;box-sizing:border-box;cursor:pointer}
-  .row-btn:focus-visible{outline:2px solid #24282C;outline-offset:2px;border-radius:12px}
+  .row-btn:hover{background:rgba(36,40,44,0.05)}
+  .row-btn:focus-visible{outline:1.5px solid #24282C;outline-offset:1px}
+  .avatar{width:32px;height:32px;border-radius:999px;border:0.5px solid rgba(36,40,44,0.32);display:flex;align-items:center;justify-content:center;color:#24282C;flex:none}
+  .avatar svg{width:15px;height:15px}
 </style>
 </helmet>
 
-<div class="rail" style="width: 380px; height: 760px; background: #F7F6F0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #E4E1D6;">
+<div class="rail" style="width: 380px; height: 760px; background: #F7F6F0; display: flex; flex-direction: column; overflow: hidden; border: 0.5px solid rgba(36,40,44,0.22);">
 
   <!-- header -->
-  <div style="padding: 22px 20px 14px; display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid #E4E1D6;">
-    <div style="font-size: 19px; font-weight: 700; color: #24282C; letter-spacing: -0.01em;">Clients</div>
-    <div style="font-size: 12.5px; color: #767A72;">{{clientCount}} active</div>
+  <div style="padding: 20px 18px 12px; display: flex; flex-direction: column; gap: 2px; border-bottom: 0.5px solid rgba(36,40,44,0.16);">
+    <div class="heading" style="font-size: 20px; font-weight: 400; color: #24282C;">Clients</div>
+    <div style="font-size: 12px; font-weight: 400; color: rgba(36,40,44,0.58);">{{clientCount}} active</div>
   </div>
 
-  <div style="flex: 1; overflow-y: auto; padding: 10px 12px 24px;">
+  <div style="flex: 1; overflow-y: auto; padding: 8px 10px 20px;">
 
     <!-- grouped: attention section -->
     <sc-if value="{{grouped}}" hint-placeholder-val="{{true}}">
-      <div style="display: flex; align-items: center; gap: 8px; padding: 14px 8px 6px;">
-        <span style="width: 7px; height: 7px; border-radius: 999px; background: #C97B4A; display: inline-block; flex: none;"></span>
-        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8A4B22;">Needs attention · {{attentionCount}}</span>
+      <div style="display: flex; align-items: center; gap: 7px; padding: 12px 10px 5px;">
+        <span style="width: 6px; height: 6px; border-radius: 999px; background: #C97B4A; display: inline-block; flex: none;"></span>
+        <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #24282C;">Needs attention &middot; {{attentionCount}}</span>
       </div>
 
       <sc-for list="{{attentionRows}}" as="client" hint-placeholder-count="3">
-        <button type="button" class="row-btn" aria-label="{{client.ariaLabel}}" style="width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 8px; border-radius: 12px;">
-          <div style="position: relative; flex: none; width: 38px; height: 38px;">
-            <div style="width: 38px; height: 38px; border-radius: 999px; background: #E7E4D8; color: #24282C; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">{{client.initials}}</div>
-            <span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 12px; height: 12px; border-radius: 999px; background: #C97B4A; border: 2px solid #F7F6F0;"></span>
+        <button type="button" class="row-btn" aria-label="{{client.ariaLabel}}" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 999px;">
+          <div style="position: relative; flex: none; width: 32px; height: 32px;">
+            <div class="avatar">
+              <sc-if value="{{client.iconUser}}" hint-placeholder-val="{{true}}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </sc-if>
+              <sc-if value="{{client.iconLandmark}}" hint-placeholder-val="{{false}}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>
+              </sc-if>
+              <sc-if value="{{client.iconBuilding}}" hint-placeholder-val="{{false}}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+              </sc-if>
+            </div>
+            <span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 999px; background: #C97B4A; border: 1.5px solid #F7F6F0;"></span>
           </div>
-          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left;">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left;">
             <div style="font-size: 14px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.name}}</div>
-            <div style="font-size: 11.5px; color: #8A4B22; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.note}}</div>
+            <div style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.note}}</div>
           </div>
-          <span style="flex: none; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; color: #24282C; background: #C2EF72; padding: 3px 9px; border-radius: 999px;">{{client.entity}}</span>
+          <span style="flex: none; font-size: 11.5px; font-weight: 700; letter-spacing: 0.01em; color: #24282C; background: #C2EF72; padding: 3px 10px; border-radius: 999px;">{{client.entity}}</span>
         </button>
       </sc-for>
 
-      <div style="height: 1px; background: #E4E1D6; margin: 10px 8px 4px;"></div>
+      <div style="height: 0.5px; background: rgba(36,40,44,0.16); margin: 8px 10px 4px;"></div>
     </sc-if>
 
     <!-- remaining / all clients -->
     <sc-for list="{{otherRows}}" as="client" hint-placeholder-count="4">
-      <button type="button" class="row-btn" aria-label="{{client.ariaLabel}}" style="width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 8px; border-radius: 12px;">
-        <div style="position: relative; flex: none; width: 38px; height: 38px;">
-          <div style="width: 38px; height: 38px; border-radius: 999px; background: #E7E4D8; color: #24282C; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">{{client.initials}}</div>
+      <button type="button" class="row-btn" aria-label="{{client.ariaLabel}}" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 999px;">
+        <div style="position: relative; flex: none; width: 32px; height: 32px;">
+          <div class="avatar">
+            <sc-if value="{{client.iconUser}}" hint-placeholder-val="{{true}}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </sc-if>
+            <sc-if value="{{client.iconLandmark}}" hint-placeholder-val="{{false}}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>
+            </sc-if>
+            <sc-if value="{{client.iconBuilding}}" hint-placeholder-val="{{false}}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
+            </sc-if>
+          </div>
           <sc-if value="{{client.showDot}}" hint-placeholder-val="{{false}}">
-            <span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 12px; height: 12px; border-radius: 999px; background: {{client.dotColor}}; border: 2px solid #F7F6F0;"></span>
+            <span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 999px; background: {{client.dotColor}}; border: 1.5px solid #F7F6F0;"></span>
           </sc-if>
         </div>
-        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left;">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; text-align: left;">
           <div style="font-size: 14px; font-weight: 600; color: #24282C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.name}}</div>
           <sc-if value="{{client.note}}" hint-placeholder-val="{{false}}">
-            <div style="font-size: 11.5px; color: #767A72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.note}}</div>
+            <div style="font-size: 11.5px; font-weight: 400; color: rgba(36,40,44,0.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{client.note}}</div>
           </sc-if>
         </div>
-        <span style="flex: none; font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; color: #24282C; background: #C2EF72; padding: 3px 9px; border-radius: 999px;">{{client.entity}}</span>
+        <span style="flex: none; font-size: 11.5px; font-weight: 700; letter-spacing: 0.01em; color: #24282C; background: #C2EF72; padding: 3px 10px; border-radius: 999px;">{{client.entity}}</span>
       </button>
     </sc-for>
 
@@ -78,11 +102,10 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"scenario":{"editor":"enum","default":"grouped","options":["grouped","few-attention","calm"]},"$preview":{"width":380,"height":760}}'>
 class Component extends DCLogic {
-  initials(name) {
-    const parts = name.trim().split(/\s+/);
-    const first = parts[0] ? parts[0][0] : '';
-    const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
-    return (first + last).toUpperCase();
+  iconKindFor(entity) {
+    if (entity.indexOf('1040') === 0) return 'user';
+    if (entity.indexOf('1041') === 0 || entity === '706' || entity === '709') return 'landmark';
+    return 'building';
   }
 
   dataset(scenario) {
@@ -126,15 +149,20 @@ class Component extends DCLogic {
     const attention = clients.filter((c) => c.status === 'needs_attention');
     const grouped = attention.length >= 3;
 
-    const toRow = (c) => ({
-      name: c.name,
-      entity: c.entity,
-      initials: this.initials(c.name),
-      note: c.note || null,
-      showDot: c.status === 'in_progress' || (c.status === 'needs_attention' && !grouped),
-      dotColor: c.status === 'needs_attention' ? '#C97B4A' : 'rgba(36,40,44,0.55)',
-      ariaLabel: c.name + ', ' + c.entity + ', ' + this.statusWord(c.status)
-    });
+    const toRow = (c) => {
+      const kind = this.iconKindFor(c.entity);
+      return {
+        name: c.name,
+        entity: c.entity,
+        iconUser: kind === 'user',
+        iconLandmark: kind === 'landmark',
+        iconBuilding: kind === 'building',
+        note: c.note || null,
+        showDot: c.status === 'in_progress' || (c.status === 'needs_attention' && !grouped),
+        dotColor: c.status === 'needs_attention' ? '#C97B4A' : 'rgba(36,40,44,0.55)',
+        ariaLabel: c.name + ', ' + c.entity + ', ' + this.statusWord(c.status)
+      };
+    };
 
     return {
       clientCount: clients.length,

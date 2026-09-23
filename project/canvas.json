@@ -1,16 +1,25 @@
 {
   "v": 3,
-  "createdOnFiles": { "v": 1, "at": "2026-09-23T00:00:00Z" },
-  "title": "Client List — Status Signal",
-  "launch": { "view": "canvas" },
-  "pages": [],
+  "attachments": {},
   "boards": {
-    "ClientList.dc.html": { "x": 0, "y": 0, "w": 380, "h": 760, "is_interactive": true },
-    "StatusKey.dc.html": { "x": 460, "y": 0, "w": 380, "h": 420 }
+    "ClientList.dc.html": { "h": 760, "is_interactive": true, "w": 380, "x": 0, "y": 0 },
+    "StatusKey.dc.html": { "h": 420, "w": 460, "x": 460, "y": 0 }
+  },
+  "createdOnFiles": { "at": "2026-09-23T00:00:00Z", "v": 1 },
+  "designSystems": [],
+  "launch": { "view": "canvas" },
+  "notes": {
+    "n1": {
+      "kind": "title1",
+      "maxW": 700,
+      "size": 14,
+      "text": "Toggle \"scenario\" in Tweaks: grouped (3 attention) / few-attention (1, ungrouped) / calm",
+      "w": 240,
+      "x": 0,
+      "y": -70
+    }
   },
   "order": ["ClientList.dc.html", "StatusKey.dc.html"],
-  "notes": {
-    "n1": { "x": 0, "y": -70, "text": "Toggle \"scenario\" in Tweaks: grouped (3 attention) / few-attention (1, ungrouped) / calm", "kind": "title1", "maxW": 700, "size": "s" }
-  },
-  "designSystems": []
+  "pages": [],
+  "title": "Client List — Status Signal"
 }
