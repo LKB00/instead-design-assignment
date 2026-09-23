@@ -45,6 +45,8 @@ img { display: block; }
 .serif { font-family: 'Libre Baskerville', serif; }
 
 .app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+/* On a phone held upright the 1280px-wide layout is very tall; keep it desktop-shaped at the top. */
+@media (max-aspect-ratio: 3/4) { .app { height: 860px; } .proto { top: 812px; bottom: auto; } }
 
 .body { flex: 1; display: flex; min-height: 0; }
 

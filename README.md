@@ -16,7 +16,8 @@ readable on its own without any other history.
 The clickable prototype in `prototype/` is the current design and the source
 of truth. **Open it in the browser:
 https://lkb00.github.io/instead-design-assignment/** (redeployed from
-`prototype/` on every push to `main`). Or run it locally:
+`prototype/` on every push to `main`; on a phone it shows the desktop layout
+scaled to fit, so pinch to zoom). Or run it locally:
 
 ```bash
 python3 -m http.server 5173 --directory prototype
