@@ -5,6 +5,9 @@ const html = htm.bind(h);
 
 // ---------- Lucide icons ----------
 const PATHS = {
+  circle: html`<circle cx="12" cy="12" r="9" />`,
+  circleCheck: html`<circle cx="12" cy="12" r="9" /><path d="m9 12 2 2 4-4" />`,
+  arrowLeft: html`<path d="m12 19-7-7 7-7" /><path d="M19 12H5" />`,
   userRound: html`<path d="M18 20a6 6 0 0 0-12 0" /><circle cx="12" cy="10" r="4" /><circle cx="12" cy="12" r="10" />`,
   building: html`<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /><path d="M10 6h4" /><path d="M10 10h4" /><path d="M10 14h4" /><path d="M10 18h4" />`,
   landmark: html`<path d="M3 22h18" /><path d="M6 18v-7" /><path d="M10 18v-7" /><path d="M14 18v-7" /><path d="M18 18v-7" /><path d="m12 2 8 5H4z" />`,
@@ -47,17 +50,38 @@ const Icon = ({ name, size = 14, stroke = 1.5 }) => html`
 // ---------- Mock data ----------
 const ENTITY = { '1040': 'Individual', '1120': 'C Corp', '1120S': 'S Corp', '1065': 'Partnership', '1041': 'Trust & Estate' };
 
+// A deterministic 188-client book so the 200-client state is the same on every load.
+const FIRSTS = ['Aarav', 'Beth', 'Carlos', 'Dana', 'Elena', 'Farid', 'Grace', 'Hiro', 'Isla', 'Jonah', 'Kavya', 'Liam', 'Maya', 'Noah', 'Olivia', 'Pedro', 'Quinn', 'Rhea', 'Sam', 'Tara', 'Uma', 'Victor', 'Wen', 'Yusuf', 'Zoe'];
+const LASTS = ['Abbott', 'Bose', 'Chen', 'Duarte', 'Ellis', 'Fischer', 'Gupta', 'Hale', 'Ibarra', 'Jansen', 'Kaur', 'Lindqvist', 'Mehta', 'Novak', 'Okafor', 'Park', 'Reyes', 'Sato', 'Tan', 'Varga', 'Walsh', 'Young'];
+const FIRMS = ['Bluebird Bakery LLC', 'Cedar Row Dental PC', 'Driftwood Studios', 'Eastline Logistics', 'Foxglove Farms', 'Granite Peak Partners', 'Hollis & Mercer LLP', 'Ironbark Holdings', 'Juniper Health PLLC', 'Kestrel Media Inc.', 'Lantern Coffee Co.', 'Marlow Trust'];
+const GEN_ISSUES = [
+  { cat: 'docs', note: 'W-2 missing, return due in 5 days', flag: 'Due in 5 days', urgency: 5, next: 'Request the W-2' },
+  { cat: 'docs', note: '1099-B missing for 9 days', flag: 'Docs 9d late', urgency: 4, next: 'Request the 1099-B' },
+  { cat: 'sign', note: '8879 unsigned for 3 days', flag: 'Unsigned 3d', urgency: 4, next: 'Nudge them to sign' },
+  { cat: 'deadline', note: 'Extension due next week, not started', flag: 'Due next wk', urgency: 6, next: 'Start the extension' },
+];
+function generatedBook(n) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const isFirm = i % 9 === 4;
+    const entity = isFirm ? ['1120S', '1065', '1120', '1041'][i % 4] : '1040';
+    const c = isFirm ? { id: `g${i}`, name: `${FIRMS[i % FIRMS.length].replace(/(LLC|PC|LLP|Inc\.|PLLC|Co\.)$/, '').trim()} ${['', 'II', 'East', 'West'][Math.floor(i / FIRMS.length) % 4]}`.trim(), entity }
+      : { id: `g${i}`, first: FIRSTS[i % FIRSTS.length], last: LASTS[(i * 7) % LASTS.length], entity };
+    const issue = i % 17 === 3 ? GEN_ISSUES[i % GEN_ISSUES.length] : null;
+    out.push(issue ? { ...c, status: 'needs_attention', ...issue } : { ...c, status: i % 5 === 0 ? 'in_progress' : 'on_track' });
+  }
+  return out;
+}
+
 function clientsFor(scenario) {
   // Same data as the real app.instead.com/firm capture, for side-by-side comparison.
   if (scenario === 'reference') return [{ id: 'ref-ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'on_track' }];
   const ashish = { id: 'ashish', first: 'Ashish', last: 'Khoshya', entity: '1040', status: 'in_progress', note: 'Review 1040 draft' };
-  if (scenario === 'few-attention') return [
+  if (scenario === 'two') return [
     ashish,
-    { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
-    { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', note: '8879 unsigned 4 days' },
-    { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1s' },
-    { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
+    { id: 'c2', first: 'Priya', last: 'Nair', entity: '1040', status: 'needs_attention', cat: 'sign', note: '8879 unsigned for 4 days', flag: '8879 unsigned', urgency: 1, next: 'Nudge Priya to sign' },
   ];
+  if (scenario === 'large') return clientsFor('grouped').concat(generatedBook(188));
   if (scenario === 'calm') return [
     ashish,
     { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
@@ -65,9 +89,9 @@ function clientsFor(scenario) {
     { id: 'c7', name: 'Fern & Co.', entity: '1120S', status: 'on_track' },
   ];
   return [
-    { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', note: 'K-1 missing · due in 2 days' },
-    { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', note: 'E-sign overdue 6 days' },
-    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', note: 'Extension due Friday' },
+    { id: 'c1', first: 'Meera', last: 'Iyer', entity: '1040', status: 'needs_attention', cat: 'docs', note: 'K-1 missing, return due in 2 days', flag: 'Due in 2 days', urgency: 2, next: 'Chase the K-1 or file an extension' },
+    { id: 'c2', name: 'Sethi Holdings', entity: '1120', status: 'needs_attention', cat: 'sign', note: 'E-sign request unsigned for 6 days', flag: 'Unsigned 6d', urgency: 1, next: 'Resend the e-sign request' },
+    { id: 'c3', name: 'Whitfield Family Trust', entity: '1041', status: 'needs_attention', cat: 'deadline', note: 'Extension due Friday, not started', flag: 'Due Friday', urgency: 3, next: 'Start the extension' },
     ashish,
     { id: 'c5', name: 'Alderwood LLC', entity: '1065', status: 'in_progress', note: 'Gathering K-1s' },
     { id: 'c6', first: 'Daniel', last: 'Cho', entity: '1040', status: 'on_track' },
@@ -80,17 +104,71 @@ function clientsFor(scenario) {
   ];
 }
 
+// A workflow is a thread with a checklist. Cross-client items are clients; single-client items are steps.
 const WORKFLOWS = {
   across: [
-    { id: 'w1', name: 'Collect missing K-1s', clients: 5, done: 3, total: 5 },
-    { id: 'w2', name: 'Send Q3 estimate reminders', clients: 12, done: 7, total: 12 },
+    { id: 'w1', name: 'Collect missing K-1s', ask: 'Chase the missing K-1s', clients: 5, done: 3, total: 5, items: [
+      { clientId: 'c1', label: 'Meera Iyer', state: 'attn', note: 'No reply in 5 days, return due in 2' },
+      { clientId: 'c9', label: 'Owen Brecker', state: 'open', note: 'Reminder sent yesterday' },
+      { clientId: 'c5', label: 'Alderwood LLC', state: 'done', note: 'Received' },
+      { clientId: 'c7', label: 'Fern & Co.', state: 'done', note: 'Received' },
+      { clientId: 'c12', label: 'Harbor & Pine LLP', state: 'done', note: 'Received' },
+    ], doneSummary: 'Received from Alderwood LLC, Fern & Co. and Harbor & Pine LLP' },
+    { id: 'w2', name: 'Send Q3 estimate reminders', ask: 'Send the Q3 estimate reminders', clients: 12, done: 7, total: 12, items: [
+      { clientId: 'c2', label: 'Sethi Holdings', state: 'attn', note: 'Bounced, check the email on file' },
+      { clientId: 'c6', label: 'Daniel Cho', state: 'open', note: 'Scheduled for Monday' },
+      { clientId: 'c8', label: 'Sana Kapoor', state: 'open', note: 'Scheduled for Monday' },
+      { clientId: 'c10', label: 'Northgate Dental PC', state: 'open', note: 'Scheduled for Monday' },
+      { clientId: 'c11', label: 'Lena Ortiz', state: 'open', note: 'Scheduled for Monday' },
+    ], doneSummary: '7 reminders sent' },
   ],
   single: [
-    { id: 'w3', name: 'Review 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 2, total: 3 },
-    { id: 'w4', name: 'File extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2 },
+    { id: 'w3', name: 'Review 1040 draft', ask: 'Review Ashish’s 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 2, total: 3, items: [
+      { label: 'Reconcile W-2 and 1099 income', state: 'done' },
+      { label: 'Check itemized deductions against receipts', state: 'done' },
+      { label: 'Final review with you', state: 'attn', note: '2 questions waiting' },
+    ] },
+    { id: 'w4', tid: 't-ext', name: 'File extension', ask: 'File the Whitfield extension', clientId: 'c3', clientName: 'Whitfield Family Trust', done: 0, total: 2, items: [
+      { label: 'Estimate the 2025 tax due', state: 'open', note: 'Needs the prior-year 1041' },
+      { label: 'Prepare and e-file Form 7004', state: 'open', note: 'Due Friday' },
+    ] },
   ],
 };
 const ALL_WF = WORKFLOWS.across.concat(WORKFLOWS.single);
+const wfKey = (id) => `wf:${id}`;
+
+// What a pro can start. Scope decides the shape: across clients (a checklist of clients) or for one (a checklist of steps).
+const TEMPLATES = [
+  { id: 't-remind', answer: 'Q3 estimates are due September 15. I can draft the reminder text for you to send yourself, if you’d rather not track it.', scope: 'across', name: 'Send estimate reminders', icon: 'users', match: /remind|estimate/i,
+    targets: (cs) => cs.filter((c) => c.entity === '1040').slice(0, 6), note: 'Scheduled for Monday' },
+  { id: 't-docs', answer: 'I can list what’s missing for each client from their uploaded documents and last year’s return, without sending anything yet.', scope: 'across', name: 'Request missing documents', icon: 'fileText', match: /missing|document|k-1|k1/i,
+    targets: (cs) => cs.filter((c) => c.status !== 'on_track'), note: 'Request drafted' },
+  { id: 't-ext', answer: 'Yes. An extension moves the filing deadline to October 15, but any tax owed is still due on the original date. Want me to estimate what’s owed?', scope: 'one', name: 'Prepare an extension', icon: 'timerReset', match: /extension|7004|4868/i,
+    steps: ['Estimate the tax due', 'Prepare the extension form', 'E-file and confirm acceptance'] },
+  { id: 't-gather', answer: 'I can compare what’s been uploaded against last year and tell you what’s still missing.', scope: 'one', name: 'Gather documents', icon: 'folder', match: /gather|collect|upload/i,
+    steps: ['Compare against last year’s documents', 'Send the client a request list', 'Check off documents as they arrive'] },
+  { id: 't-strategy', answer: 'I can take a quick look at the prior-year return and name the strategies worth a closer look.', scope: 'one', name: 'Run a strategy analysis', icon: 'library', match: /strateg|plan|save/i,
+    steps: ['Read the prior-year return', 'Screen for applicable strategies', 'Write up the estimated savings'] },
+  { id: 't-onboard', answer: 'I can draft the engagement letter and a first request list for you to send.', scope: 'one', name: 'Onboard client', icon: 'userPlus', match: /onboard|engagement/i,
+    steps: ['Send the engagement letter', 'Collect prior-year returns', 'Set up the client’s document folder'] },
+];
+// Bulk versions used by the at-scale briefing; not in the start menu.
+TEMPLATES.push(
+  { id: 't-sign', scope: 'across', hidden: true, name: 'Resend e-sign requests', icon: 'filePen', note: 'Resent today', answer: '' },
+  { id: 't-exts', scope: 'across', hidden: true, name: 'Prepare extensions', icon: 'timerReset', note: 'Estimating tax due', answer: '' },
+);
+const templateFor = (text) => TEMPLATES.find((t) => t.match && t.match.test(text));
+const CATS = {
+  docs: { label: 'Waiting on documents', tid: 't-docs', action: 'Request them all' },
+  sign: { label: 'Waiting on a signature', tid: 't-sign', action: 'Resend all' },
+  deadline: { label: 'Deadline coming, not started', tid: 't-exts', action: 'Start extensions' },
+};
+const wfFromKey = (key) => key && key.startsWith('wf:') && ALL_WF.find((w) => wfKey(w.id) === key);
+// Every workflow thread opens with the ask that started it and Instead's live checklist.
+const WF_THREADS = Object.fromEntries(ALL_WF.map((w) => [wfKey(w.id), [
+  { from: 'user', text: w.ask },
+  { from: 'assistant', blocks: [{ p: `${w.done} of ${w.total} done. Here’s where it stands:` }, { progress: w.id }] },
+]]));
 
 const PARAMS = new URLSearchParams(location.search);
 const SHOW_DEMO_SWITCH = PARAMS.get('demo') !== '0';
@@ -127,9 +205,14 @@ class App extends Component {
       seenTip: PARAMS.has('scope'),
       showTip: false,
       menu: false,
+      rowMenu: null,
+      showAllNeeds: false,
+      query: null, // null = search closed; '' = open // client id whose ⋮ menu is open
       draft: '',
       typing: false,
+      from: null, // the scope to go back to after drilling from a workflow into a client
       threads: {
+        ...WF_THREADS,
         'ashish#1': [{ from: 'user', text: 'Hey' }, greeting('Ashish Khoshya')],
         'c1#1': [
           { from: 'user', text: "What's blocking Meera's return?" },
@@ -160,11 +243,15 @@ class App extends Component {
       selectedWorkflow: null,
     };
     this.scrollPos = { clients: 0, workflows: 0 };
-    this.onKeyDown = (e) => { if (e.key === 'Escape') this.setState({ menu: false, showTip: false }); };
+    this.onKeyDown = (e) => { if (e.key === 'Escape') this.setState({ menu: false, rowMenu: null, showTip: false }); };
   }
 
-  componentDidMount() { document.addEventListener('keydown', this.onKeyDown); }
-  componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); }
+  componentDidMount() {
+    document.addEventListener('keydown', this.onKeyDown);
+    this.onDocClick = () => { if (this.state.rowMenu) this.setState({ rowMenu: null }); };
+    document.addEventListener('click', this.onDocClick);
+  }
+  componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); document.removeEventListener('click', this.onDocClick); }
 
   threadKey(scope = this.state.scope) {
     if (!scope) return 'general';
@@ -216,25 +303,119 @@ class App extends Component {
     this.setState({ tab });
   }
 
-  pickClient(id) {
+  pickClient(id, { from = null, thread = null } = {}) {
     if (this.listEl && !(this.state.scope && this.state.scope.type === 'client')) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
-    this.setState((s) => ({ scope: { type: 'client', id }, seenTip: true, showTip: !s.seenTip, menu: false, panelLoading: id, panelEntering: id }));
+    this.setState((s) => ({
+      scope: { type: 'client', id }, from, seenTip: true, showTip: !s.seenTip && !from && !thread, menu: false, panelLoading: id, panelEntering: id,
+      activeThread: thread ? { ...s.activeThread, [id]: thread } : s.activeThread,
+    }));
     clearTimeout(this.loadT); clearTimeout(this.enterT);
     this.enterT = setTimeout(() => this.setState({ panelEntering: null }), 320);
     this.loadT = setTimeout(() => this.setState({ panelLoading: null }), 700);
   }
 
+  // Single-client workflows live inside their client; cross-client ones stay at the firm level.
   pickWorkflow(id) {
-    this.setState({ scope: { type: 'workflow', id }, menu: false, showTip: false });
+    const w = ALL_WF.find((x) => x.id === id);
+    if (w.clientId) {
+      if (this.state.scope && this.state.scope.type === 'client' && this.state.scope.id === w.clientId) this.openClientThread(w.clientId, wfKey(id));
+      else this.pickClient(w.clientId, { thread: wfKey(id) });
+      return;
+    }
+    this.setState({ scope: { type: 'workflow', id }, from: null, menu: false, showTip: false });
+  }
+
+  // Every way in (composer menu, "/", plain language, a client's ⋮) lands here and becomes a chat thread.
+  startWorkflow(tid, clientId, clients, targetIds = null) {
+    const t = TEMPLATES.find((x) => x.id === tid);
+    const n = (this.wfSeq = (this.wfSeq || 0) + 1);
+    const id = `new${n}`;
+    const c = clientId && clients.find((x) => x.id === clientId);
+    // Already running for this client? Don't start a second one; open it and say so.
+    const dupe = c && WORKFLOWS.single.find((x) => x.clientId === c.id && x.tid === tid);
+    if (dupe) {
+      const dk = wfKey(dupe.id);
+      const note = { from: 'assistant', blocks: [{ p: `“${dupe.name}” is already running for ${fullName(c)}, so I’ve opened it rather than starting a second one.` }] };
+      this.setState((st) => ({ menu: false, rowMenu: null, draft: '', threads: { ...st.threads, [dk]: (st.threads[dk] || []).concat([note]) } }));
+      const cur0 = this.state.scope;
+      if (cur0 && cur0.type === 'client' && cur0.id === c.id) this.openClientThread(c.id, dk);
+      else this.pickClient(c.id, { thread: dk });
+      return;
+    }
+    let w;
+    if (t.scope === 'one') {
+      w = { id, tid, name: t.name, ask: `${t.name} for ${fullName(c)}`, clientId: c.id, clientName: fullName(c), done: 0, total: t.steps.length,
+        items: t.steps.map((label, i) => ({ label, state: 'open', note: i === 0 ? 'Working on it now' : '' })) };
+      WORKFLOWS.single.unshift(w);
+    } else {
+      const targets = targetIds ? clients.filter((x) => targetIds.includes(x.id)) : t.targets(clients);
+      w = { id, name: t.name, ask: t.name, clients: targets.length, done: 0, total: targets.length,
+        items: targets.map((x) => ({ clientId: x.id, label: fullName(x), state: 'open', note: t.note })) };
+      WORKFLOWS.across.unshift(w);
+    }
+    ALL_WF.unshift(w);
+    const key = wfKey(id);
+    this.setState((st) => ({
+      threads: { ...st.threads, [key]: [{ from: 'user', text: w.ask }] },
+      typing: t.scope === 'one' ? `Setting up ${t.name.toLowerCase()}` : `Building the list of ${w.total} clients`,
+      menu: false, rowMenu: null, draft: '',
+    }));
+    const cur = this.state.scope;
+    if (c && cur && cur.type === 'client' && cur.id === c.id) this.openClientThread(c.id, key);
+    else if (c) this.pickClient(c.id, { thread: key, from: cur && cur.type === 'workflow' ? cur : null });
+    else this.setState({ scope: { type: 'workflow', id }, from: null, showTip: false });
+    setTimeout(() => this.setState((st) => ({
+      typing: false,
+      threads: { ...st.threads, [key]: st.threads[key].concat([{ from: 'assistant', blocks: [
+        { p: c ? `Started. I’ll work through this for ${fullName(c)} and check in when I need you.` : `Started for ${w.total} clients. I’ll keep this list current as replies come in.` },
+        { progress: id },
+      ] }]) },
+    })), 1100);
+  }
+
+  answerInstead(t) {
+    const key = this.threadKey();
+    this.setState((st) => ({ threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'assistant', blocks: [{ p: t.answer }] }]) } }));
+  }
+
+  askWhichClient(tid) {
+    const t = TEMPLATES.find((x) => x.id === tid);
+    this.setState((st) => ({
+      menu: false, scope: null, from: null,
+      threads: { ...st.threads, general: (st.threads.general || []).concat([
+        { from: 'user', text: t.name },
+        { from: 'assistant', blocks: [{ p: 'Which client is it for?' }, { choose: { tid } }] },
+      ]) },
+    }));
+  }
+
+  goBack() {
+    this.setState((s) => ({ scope: s.from, from: null, showTip: false, menu: false }));
   }
 
   clearScope() {
-    this.setState({ scope: null, showTip: false, menu: false });
+    this.setState({ scope: null, from: null, showTip: false, menu: false });
   }
 
-  replyFor(scope, clients, isFirst) {
-    const c = scope && scope.type === 'client' ? clients.find((x) => x.id === scope.id) : null;
-    const w = scope && scope.type === 'workflow' ? ALL_WF.find((x) => x.id === scope.id) : null;
+  replyFor(scope, clients, isFirst, key, text = '') {
+    const w = wfFromKey(key);
+    const t = !w && templateFor(text);
+    const here = scope && scope.type === 'client' ? clients.find((x) => x.id === scope.id) : null;
+    if (t && (here || t.scope === 'across')) return {
+      status: 'Reading your request',
+      msg: { from: 'assistant', blocks: [
+        { p: here ? `I can run this as a workflow for ${fullName(here)}, so each step is tracked and you’ll see it in their panel.` : 'I can run this as a workflow across your clients, so every reply is tracked in one place.' },
+        { offer: { tid: t.id, clientId: here && here.id } },
+      ] },
+    };
+    if (t) return {
+      status: 'Reading your request',
+      msg: { from: 'assistant', blocks: [
+        { p: `Happy to ${t.name.toLowerCase()}. Which client is it for?` },
+        { choose: { tid: t.id } },
+      ] },
+    };
+    const c = !w && scope && scope.type === 'client' ? clients.find((x) => x.id === scope.id) : null;
     if (c && isFirst) return { status: `Opening ${fullName(c)}'s file`, msg: greeting(fullName(c)) };
     if (c) return {
       status: `Reading ${fullName(c)}'s documents`,
@@ -262,10 +443,10 @@ class App extends Component {
     const s = this.state.scope;
     const key = this.threadKey(s);
     const isFirst = !(this.state.threads[key] || []).length;
-    const { status, msg } = this.replyFor(s, clients, isFirst);
+    const { status, msg } = this.replyFor(s, clients, isFirst, key, text);
     this.setState((st) => {
       const next = { threads: { ...st.threads, [key]: (st.threads[key] || []).concat([{ from: 'user', text }]) }, draft: '', typing: status, menu: false, showTip: false };
-      if (s && s.type === 'client' && isFirst) {
+      if (s && s.type === 'client' && isFirst && !wfFromKey(key)) {
         const list = st.clientThreads[s.id] || [];
         next.clientThreads = { ...st.clientThreads, [s.id]: [key, ...list.filter((k) => k !== key)] };
         next.activeThread = { ...st.activeThread, [s.id]: key };
@@ -281,29 +462,132 @@ class App extends Component {
     }, 1100);
   }
 
+  // The at-a-glance answer lives in chat: one tap asks Instead for today's briefing.
+  brief(attention) {
+    const text = 'Who needs me today?';
+    this.setState((st) => ({ threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'user', text }]) }, typing: 'Checking deadlines and open requests', menu: false }));
+    setTimeout(() => {
+      const n = attention.length;
+      this.setState((st) => ({
+        typing: false,
+        threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'assistant', blocks: [
+          ...(n <= 5 ? [
+            { p: n === 1 ? 'One client needs you today:' : `${n} clients need you today, most urgent first:` },
+            { brief: attention.map((c) => c.id) },
+            { p: 'Open a client to work on their file, or tell me to handle the next step for all of them.' },
+          ] : [
+            { p: `${n} clients need you today. The three most urgent:` },
+            { brief: attention.slice(0, 3).map((c) => c.id) },
+            { p: `The other ${n - 3}, by what’s blocking them:` },
+            { groups: Object.keys(CATS).map((cat) => ({ cat, ids: attention.slice(3).filter((c) => c.cat === cat).map((c) => c.id) })).filter((g) => g.ids.length) },
+            { p: 'Each of those can run as one workflow, so you handle a group in one step instead of client by client.' },
+          ]),
+        ] }]) },
+      }));
+    }, 1100);
+  }
+
+  renderProgress(id, clients) {
+    const w = ALL_WF.find((x) => x.id === id);
+    const here = this.state.scope;
+    const icon = (state) => state === 'done' ? html`<span class="pg-icon done"><${Icon} name="circleCheck" /></span>`
+      : state === 'attn' ? html`<span class="pg-icon"><span class="dot"></span></span>`
+      : html`<span class="pg-icon"><${Icon} name="circle" /></span>`;
+    const open = w.items.filter((it) => it.state !== 'done');
+    const done = w.items.filter((it) => it.state === 'done');
+    const row = (it) => {
+      const c = it.clientId && clients.find((x) => x.id === it.clientId);
+      const body = html`${icon(it.state)}
+        <span class="brief-text"><span class=${'pg-label' + (it.state === 'done' ? ' muted' : '')}>${it.label}</span>${it.note && html`<span class="brief-note">${it.note}</span>`}</span>
+        ${c && html`<span class="brief-open">Open<${Icon} name="moveRight" size=${12} /></span>`}`;
+      return c
+        ? html`<button class="brief-row pg-row" onClick=${() => this.pickClient(c.id, { from: here })}>${body}</button>`
+        : html`<div class="brief-row pg-row">${body}</div>`;
+    };
+    return html`<div class="brief">
+      ${open.map(row)}
+      ${w.doneSummary ? html`<div class="brief-row pg-row">${icon('done')}<span class="brief-text"><span class="pg-label muted">${w.doneSummary}</span></span></div>` : done.map(row)}
+    </div>`;
+  }
+
+  renderOffer({ tid, clientId }, clients) {
+    const t = TEMPLATES.find((x) => x.id === tid);
+    return html`<div class="offer">
+      <button class="offer-go" onClick=${() => this.startWorkflow(tid, clientId, clients)}><${Icon} name="workflow" size=${12} />Start “${t.name}”</button>
+      <button class="offer-alt" onClick=${() => this.answerInstead(t)}>Just answer in chat</button>
+    </div>`;
+  }
+
+  renderChoose({ tid }, clients) {
+    const picks = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency).concat(clients.filter((c) => c.status !== 'needs_attention')).slice(0, 4);
+    return html`<div class="brief">
+      ${picks.map((c) => html`<button class="brief-row pg-row" onClick=${() => this.startWorkflow(tid, c.id, clients)}>
+        <span class="pg-icon"><${Icon} name=${iconFor(c.entity)} /></span>
+        <span class="brief-text"><span class="pg-label">${fullName(c)}</span>${c.note && html`<span class="brief-note">${c.note}</span>`}</span>
+        <span class="brief-open">Start<${Icon} name="moveRight" size=${12} /></span>
+      </button>`)}
+    </div>`;
+  }
+
+  renderGroups(groups, clients) {
+    return html`<div class="brief">
+      ${groups.map(({ cat, ids }) => {
+        const names = ids.map((id) => fullName(clients.find((c) => c.id === id)));
+        const who = names.length <= 2 ? names.join(' and ') : `${names.slice(0, 2).join(', ')} and ${names.length - 2} more`;
+        return html`<div class="brief-row pg-row">
+          <span class="pg-icon"><span class="count">${ids.length}</span></span>
+          <span class="brief-text"><span class="pg-label">${CATS[cat].label}</span><span class="brief-note">${who}</span></span>
+          <button class="offer-alt sm" onClick=${() => this.startWorkflow(CATS[cat].tid, null, clients, ids)}>${CATS[cat].action}</button>
+        </div>`;
+      })}
+    </div>`;
+  }
+
+  renderBrief(ids, clients) {
+    return html`<div class="brief">
+      ${ids.map((id) => clients.find((c) => c.id === id)).filter(Boolean).map((c) => html`
+        <button class="brief-row" onClick=${() => this.pickClient(c.id)}>
+          <span class="dot" aria-hidden="true"></span>
+          <span class="brief-text">
+            <span class="brief-name">${fullName(c)}</span>
+            <span class="brief-note">${c.note}. ${c.next}.</span>
+          </span>
+          <span class="brief-open">Open<${Icon} name="moveRight" size=${12} /></span>
+        </button>`)}
+    </div>`;
+  }
+
   // ---------- render pieces ----------
-  renderClientRow(c, { selected, divider, wf }) {
+  renderClientRow(c, { selected, wf }) {
     const attn = c.status === 'needs_attention';
-    const busy = c.status === 'in_progress';
     return html`
-      ${divider && html`<div class="divider"></div>`}
-      <div class=${'row' + (selected ? ' on' : '') + (attn ? ' tall' : '')} role="button" tabindex="0"
+      <div class=${'row' + (selected ? ' on' : '')} role="button" tabindex="0" title=${attn ? c.note : undefined}
         onClick=${() => this.pickClient(c.id)} onKeyDown=${(e) => { if (e.key === 'Enter') this.pickClient(c.id); }}
-        aria-label=${`${fullName(c)}, ${ENTITY[c.entity] || c.entity}${attn ? ', needs attention' : ''}`}>
+        aria-label=${`${fullName(c)}, ${ENTITY[c.entity] || c.entity}${attn ? `, needs attention: ${c.note}` : ''}`}>
         <span class="avatar">
           <span class="avatar-icon"><${Icon} name=${iconFor(c.entity)} /></span>
           <span class="avatar-check"><${Icon} name="check" size=${9} /></span>
-          ${(attn || busy) && html`<span class=${'status-dot' + (attn ? ' attn' : '')}></span>`}
         </span>
-        <span class="row-text">
-          <span class="row-name">${railName(c)}</span>
-          ${attn && html`<span class="row-note">${c.note}</span>`}
-        </span>
+        <span class="row-text"><span class="row-name">${railName(c)}</span></span>
         <span class="row-meta">
-          ${wf && html`<span class="pill-xxs outline" title=${`${wf.name} — ${wf.done} of ${wf.total} done`}><${Icon} name="workflow" size=${10} />${wf.done}/${wf.total}</span>`}
-          <span class="pill-xxs lime">${c.entity}</span>
+          ${attn
+            ? html`<span class="flag"><span class="dot" aria-hidden="true"></span>${c.flag}</span>`
+            : html`
+              ${wf && html`<button class="wf-count" title=${`${wf.name}: ${wf.done} of ${wf.total} done`} aria-label=${`Open ${wf.name}`}
+                onClick=${(e) => { e.stopPropagation(); this.pickWorkflow(wf.id); }}><${Icon} name="workflow" size=${10} />${wf.done}/${wf.total}</button>`}
+              <span class="pill-xxs lime">${c.entity}</span>`}
         </span>
-        <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
+        <button class="ic row-more" aria-label="More" aria-expanded=${this.state.rowMenu === c.id}
+          onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ rowMenu: s.rowMenu === c.id ? null : c.id })); }}><${Icon} name="moreVertical" /></button>
+        ${this.state.rowMenu === c.id && html`
+          <div class="row-menu menu" role="menu" onClick=${(e) => e.stopPropagation()}>
+            <button class="menu-item" role="menuitem" onClick=${() => { this.setState({ rowMenu: null }); this.pickClient(c.id); }}>
+              <span class="menu-icon"><${Icon} name="messagePlus" /></span><span class="row-text"><span class="row-name">Ask about ${fullName(c)}</span></span>
+            </button>
+            <button class="menu-item" role="menuitem" onClick=${() => { this.pickClient(c.id); this.setState({ rowMenu: null, menu: true, showTip: false }); }}>
+              <span class="menu-icon"><${Icon} name="workflow" /></span><span class="row-text"><span class="row-name">Start a workflow…</span></span>
+            </button>
+          </div>`}
       </div>`;
   }
 
@@ -311,11 +595,11 @@ class App extends Component {
     const s = this.state.scope;
     const selected = s && s.type === 'workflow' && s.id === w.id;
     return html`
-      <div class=${'row tall' + (selected ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.pickWorkflow(w.id)}
-        aria-label=${`${w.name}, ${w.done} of ${w.total} done`}>
+      <div class=${'row' + (selected ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.pickWorkflow(w.id)}
+        title=${sub} aria-label=${`${w.name}, ${sub}, ${w.done} of ${w.total} done`}>
         <span class="avatar"><span class="avatar-icon"><${Icon} name="workflow" /></span></span>
-        <span class="row-text"><span class="row-name">${w.name}</span><span class="row-note">${sub}</span></span>
-        <span class="row-meta"><span class="pill-xxs outline">${w.done} of ${w.total}</span></span>
+        <span class="row-text"><span class="row-name">${w.name}</span></span>
+        <span class="row-meta"><span class="wf-count">${w.done}/${w.total}</span></span>
         <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
       </div>`;
   }
@@ -324,6 +608,7 @@ class App extends Component {
     const st = this.state;
     const list = st.clientThreads[c.id] || [];
     const loading = st.panelLoading === c.id;
+    const cWf = WORKFLOWS.single.filter((w) => w.clientId === c.id);
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
     const year = (y) => html`
       <div class="doc-row" role="button" tabindex="0" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
@@ -379,12 +664,16 @@ class App extends Component {
             <div class="threads-list">
               ${loading
                 ? [0, 1, 2].map((i) => html`<div class="skeleton" style=${{ animationDelay: `${i * 60}ms` }}></div>`)
-                : list.length
-                  ? list.map((k) => html`<div class=${'thread-row' + (k === activeKey ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.openClientThread(c.id, k)}>
+                : list.length || cWf.length
+                  ? html`${cWf.map((w) => html`<div class=${'thread-row wf' + (wfKey(w.id) === activeKey ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.openClientThread(c.id, wfKey(w.id))}>
+                      <${Icon} name="workflow" size=${12} />
+                      <span class="t">${w.name}</span>
+                      <span class="thread-when">${w.done}/${w.total}</span>
+                    </div>`)}${list.map((k) => html`<div class=${'thread-row' + (k === activeKey ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.openClientThread(c.id, k)}>
                       <span class="t">${st.titles[k] || 'New thread'}</span>
                       <span class="thread-when">${k.endsWith('#1') ? '1h' : 'Now'}</span>
                       <span class="thread-actions"><button class="ic sm" aria-label="Bookmark" onClick=${(e) => e.stopPropagation()}><${Icon} name="bookmark" /></button><button class="ic sm" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button></span>
-                    </div>`)
+                    </div>`)}`
                   : html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
             </div>
           </div>
@@ -395,9 +684,15 @@ class App extends Component {
   render() {
     const st = this.state;
     const clients = clientsFor(st.scenario);
-    const attention = clients.filter((c) => c.status === 'needs_attention');
+    // Whoever needs the pro floats to the top, most urgent first; a label only once there's a group worth naming.
+    const attention = clients.filter((c) => c.status === 'needs_attention').sort((a, b) => a.urgency - b.urgency);
     const grouped = attention.length >= 3;
-    const ordered = grouped ? attention.concat(clients.filter((c) => c.status !== 'needs_attention')) : clients;
+    const others = clients.filter((c) => c.status !== 'needs_attention').sort((a, b) => railName(a).localeCompare(railName(b)));
+    // At scale the short list stays short: the five most urgent, the rest one tap away.
+    const NEED_CAP = 5;
+    const needShown = st.showAllNeeds ? attention : attention.slice(0, NEED_CAP);
+    const q = (st.query || '').trim().toLowerCase();
+    const matches = q ? clients.filter((c) => fullName(c).toLowerCase().includes(q) || railName(c).toLowerCase().includes(q)) : null;
     const wfByClient = Object.fromEntries(WORKFLOWS.single.map((w) => [w.clientId, w]));
 
     const scope = st.scope;
@@ -419,11 +714,6 @@ class App extends Component {
 
     return html`
       <div class="app">
-        <div class="banner">
-          <span class="banner-text"><b>Lokesh Kumar Bhatia</b> trial ends in 7 days.</span>
-          <button class="btn-dark">Schedule with the Instead team</button>
-        </div>
-
         <div class="body">
           ${sc ? this.renderClientShell(sc, key) : html`
           <aside class="rail" style=${{ '--rail-w': `${st.railW}px`, '--threads-h': `${st.threadsH}px` }}>
@@ -442,16 +732,31 @@ class App extends Component {
             <div class="clients-pane">
               <div class="section-head">
                 ${isClients
-                  ? html`<span class="label">Clients</span>
-                      <div class="head-icons">${I('search', 'Search clients')}${I('archiveX', 'Archived')}${I('arrowUpDown', 'Sort')}${I('listFilter', 'Filter')}${I('plus', 'Add client')}</div>`
+                  ? st.query !== null
+                    ? html`<label class="search-field"><${Icon} name="search" size=${12} />
+                        <input ref=${(el) => el && !el.dataset.f && (el.dataset.f = '1', el.focus())} placeholder=${`Search ${clients.length} clients`} value=${st.query}
+                          onInput=${(e) => this.setState({ query: e.target.value })} onKeyDown=${(e) => { if (e.key === 'Escape') this.setState({ query: null }); }} />
+                        <button class="chip-x" aria-label="Close search" onClick=${() => this.setState({ query: null })}><${Icon} name="x" size=${10} stroke=${2} /></button>
+                      </label>`
+                    : html`<span class="label">Clients</span>
+                      <div class="head-icons">${I('search', 'Search clients', () => this.setState({ query: '' }))}${I('archiveX', 'Archived')}${I('arrowUpDown', 'Sort')}${I('listFilter', 'Filter')}${I('plus', 'Add client')}</div>`
                   : html`<span class="label">Workflows</span>
                       <div class="head-icons">${I('search', 'Search workflows')}${I('plus', 'Start a workflow', () => this.setState((s) => ({ menu: !s.menu })))}</div>`}
               </div>
               <div class="list" ref=${(el) => (this.listEl = el)}>
                 ${isClients
                   ? html`
-                      ${grouped && html`<div class="group-label"><span class="dot"></span><b>Needs you</b><span>· ${attention.length}</span></div>`}
-                      ${ordered.map((c, i) => this.renderClientRow(c, { selected: false, divider: grouped && i === attention.length, wf: wfByClient[c.id] }))}
+                      ${matches
+                        ? matches.length
+                          ? matches.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))
+                          : html`<div class="no-match">No client matches “${st.query}”</div>`
+                        : html`
+                          ${grouped && html`<div class="group-label">Needs you${attention.length > NEED_CAP ? ` · ${attention.length}` : ''}</div>`}
+                          ${needShown.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}
+                          ${attention.length > NEED_CAP && html`<button class="more-row" onClick=${() => this.setState((s) => ({ showAllNeeds: !s.showAllNeeds }))}>
+                            ${st.showAllNeeds ? 'Show fewer' : `Show ${attention.length - NEED_CAP} more`}</button>`}
+                          ${grouped && others.length > 0 && html`<div class="group-label spaced">Everyone else${clients.length > 20 ? ` · ${others.length}` : ''}</div>`}
+                          ${others.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}`}
                       <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>`
                   : html`
                       <div class="group-label">Across clients</div>
@@ -499,7 +804,8 @@ class App extends Component {
                   ${messages.map((m, i) => (m.from === 'user'
                     ? html`<div class=${'serif user-turn' + (i === 0 ? ' first' : '')}>${m.text}</div>`
                     : html`<div class="answer">
-                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.ul ? html`<ul>${b.ul.map((li) => html`<li>${li}</li>`)}</ul>` : html`<p>${b.p}</p>`))}
+                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.offer ? this.renderOffer(b.offer, clients) : b.choose ? this.renderChoose(b.choose, clients) : b.progress ? this.renderProgress(b.progress, clients) : b.groups ? this.renderGroups(b.groups, clients) : b.brief ? this.renderBrief(b.brief, clients)
+                          : b.ul ? html`<ul>${b.ul.map((li) => html`<li>${li}</li>`)}</ul>` : html`<p>${b.p}</p>`))}
                         <div class="msg-actions">
                           ${I('thumbsUp', 'Good response', null, 'fb')}${I('thumbsDown', 'Bad response', null, 'fb')}${I('filePen', 'Edit as document', null, 'fb')}
                         </div>
@@ -517,17 +823,23 @@ class App extends Component {
 
               ${st.menu && html`
                 <div class="popover menu" role="menu">
-                  <span class="label">Start a workflow</span>
-                  ${ALL_WF.map((w, i) => html`
-                    <button class="menu-item" role="menuitem" onClick=${() => this.pickWorkflow(w.id)}>
-                      <span class="menu-num">${i + 1}</span>
-                      <span class="row-text"><span class="row-name">${w.name}</span><span class="row-note">${w.clients ? `${w.clients} clients` : w.clientName} · ${w.done} of ${w.total}</span></span>
-                    </button>`)}
+                  ${(sc ? [['one', `For ${fullName(sc)}`]] : [['across', 'Across clients'], ['one', 'For one client']]).map(([grp, title]) => html`
+                    <span class="label">${title}</span>
+                    ${TEMPLATES.filter((t) => t.scope === grp && !t.hidden).map((t) => html`
+                      <button class="menu-item" role="menuitem" onClick=${() => (sc || grp === 'across' ? this.startWorkflow(t.id, sc && sc.id, clients) : this.askWhichClient(t.id))}>
+                        <span class="menu-icon"><${Icon} name=${t.icon} /></span>
+                        <span class="row-text"><span class="row-name">${t.name}</span></span>
+                      </button>`)}`)}
+                  <div class="menu-foot">Tip: type <kbd>/</kbd> in chat, or just describe the work</div>
                 </div>`}
 
               <div class=${'tray' + (scoped ? ' scoped' : '')}>
                 ${scoped && html`
                   <div class="tray-chips">
+                    ${st.from && st.from.type === 'workflow' && html`
+                      <button class="scope-chip back-chip" onClick=${() => this.goBack()} aria-label=${`Back to ${ALL_WF.find((w) => w.id === st.from.id).name}`}>
+                        <${Icon} name="arrowLeft" size=${12} /><span class="chip-name">${ALL_WF.find((w) => w.id === st.from.id).name}</span>
+                      </button>`}
                     <div class="scope-chip">
                       <${Icon} name=${sc ? 'userRound' : 'workflow'} />
                       <span class="chip-name">${sc ? fullName(sc) : sw.name}</span>
@@ -540,14 +852,14 @@ class App extends Component {
                   <textarea ref=${(el) => (this.inputEl = el)} rows="1"
                     placeholder=${scoped ? 'Ask a follow up...' : 'Give me a task or question to work on...'}
                     value=${st.draft}
-                    onInput=${(e) => this.setState({ draft: e.target.value })}
+                    onInput=${(e) => (e.target.value === '/' ? this.setState({ draft: '', menu: true, showTip: false }) : this.setState({ draft: e.target.value }))}
                     onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
                   <div class="composer-controls">
                     <div class="controls-group">
                       ${I('paperclip', 'Attach files', null, 'circ')}
                       ${I('settings2', 'Settings', null, 'circ')}
-                      ${!(sc && hasMessages) && html`<button type="button" class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
-                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" /></button>`}
+                      <button type="button" class=${'circ' + (st.menu ? ' active' : '')} aria-label="Start a workflow" aria-expanded=${st.menu}
+                        onClick=${() => this.setState((s) => ({ menu: !s.menu, showTip: false }))}><${Icon} name="workflow" /></button>
                     </div>
                     <div class="controls-group">
                       ${I('mic', 'Dictate', null, 'circ')}
@@ -558,19 +870,19 @@ class App extends Component {
               </div>
 
               ${!scoped && !hasMessages && attention.length > 0 && html`
-                <div class="needs-you">
-                  <span class="needs-you-label">Needs you today</span>
-                  ${attention.slice(0, 3).map((c) => html`
-                    <button class="need-chip" onClick=${() => this.pickClient(c.id)}><span class="dot"></span><span>${fullName(c)}</span><span class="note">${c.note}</span></button>`)}
-                </div>`}
+                <button class="brief-link" onClick=${() => this.brief(attention)}>
+                  <span class="dot" aria-hidden="true"></span>
+                  ${attention.length === 1 ? `${fullName(attention[0])} needs you today` : `${attention.length} clients need you today`}
+                  <${Icon} name="moveRight" size=${12} />
+                </button>`}
             </div>
           </main>
         </div>
 
         ${SHOW_DEMO_SWITCH && html`<div class="scenario" aria-label="Prototype data scenario">
           <span>Data</span>
-          ${[['grouped', '12 clients'], ['few-attention', '5 clients'], ['calm', 'Calm']].map(([id, label]) => html`
-            <button aria-pressed=${String(st.scenario === id)} onClick=${() => this.setState({ scenario: id, scope: null, showTip: false })}>${label}</button>`)}
+          ${[['two', '2 clients'], ['grouped', '12 clients'], ['large', '200 clients'], ['calm', 'Calm']].map(([id, label]) => html`
+            <button aria-pressed=${String(st.scenario === id)} onClick=${() => this.setState({ scenario: id, scope: null, from: null, showTip: false, showAllNeeds: false, query: null })}>${label}</button>`)}
         </div>`}
       </div>`;
   }

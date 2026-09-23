@@ -24,8 +24,8 @@ python3 -m http.server 5173 --directory prototype
 
 Then open http://localhost:5173. The standalone prototype in `prototype/`
 (Preact + htm from a CDN, no build step) mirrors the `Workspace` artboard;
-the "Data" switch in the top-right swaps between the 12-client, 5-client and
-calm scenarios.
+the "Data" switch in the top-right swaps between 2, 12 and 200 clients and a
+calm book where nobody needs attention (or use `?scenario=two|grouped|large|calm`).
 
 ## The approach
 
@@ -34,9 +34,9 @@ question, one composer) so it reads as the actual product. The real app is
 already chat-first; the work is in what the rail and the empty chat tell a
 Pro in the first three seconds:
 
-- **"Needs you" at two depths** — clients needing attention float to the
-  top of the rail with a one-line reason; the same people appear as chips
-  under the empty composer, one tap from a scoped chat.
+- **"Needs you", quietly** — clients needing attention float to the top of
+  the rail under a small label, marked only by an amber dot; the reason
+  shows on hover. Rows stay one line, exactly like Instead's.
 - **Clients | Workflows** as one toggle in the rail, each tab keeping its
   own scroll and selection.
 - **Selecting is scoping** — clicking a client pins a chip above the
@@ -63,22 +63,46 @@ left unresolved, is written out on the `Decisions` artboard on the canvas
   new colour, documented.
 - `project/canvas.json` — layout index for the artboards above.
 
-## End-to-end behavior implemented
+## The brief's four questions
 
-- **Status at a glance**: needs-attention / in-progress / on-track per
-  client — amber dot + one-line reason for clients who need you, a muted
-  dot for work in progress, nothing for calm clients.
-- **Client-scoped chat**: click a client row or a "Needs you today" chip →
-  chip pinned above the composer with ×, heading and thread switch to that
-  client, and each client keeps its own history. One-time tooltip on the
-  first selection.
-- **Workflows**: Clients | Workflows toggle in the rail (per-tab scroll and
-  selection memory), cross-client vs. single-client groups, a progress pill
-  on client rows with a running single-client workflow, and workflows
-  startable from the composer too.
-- **Scale (2 vs. 200 clients)**: "Needs you" grouping only appears at 3+;
-  the top of the rail is always the short list that matters, and the chat
-  chips cap at three.
+**1. Who needs something from me right now?**
+Clients who need you float to the top of the rail, most urgent first, with a
+two-word reason ("Unsigned 6d", "Due Friday") and an amber dot in place of the
+form badge. Rows stay one line. Under the empty composer, one quiet line —
+"3 clients need you today →" — asks Instead for the briefing: who, what's
+wrong, and the next step, each one tap from their file. Nothing shows when
+nobody needs you.
+
+**2. Where do cross-client vs. single-client workflows live, and how do I move
+between them?** A workflow lives where its work lives. Cross-client ones stay
+at the firm level; single-client ones open inside their client's panel. The
+Workflows tab indexes both. Every workflow is a chat thread that opens with
+Instead's checklist (open items first, finished ones folded into one line).
+Drilling from a workflow into a client leaves a back chip
+("← Collect missing K-1s"); × always goes home with the rail's tab and
+scroll intact.
+
+**3. Chat and the client list: does selecting a client change context? Where
+do workflows start?** Selecting a client scopes the chat to them. Workflows
+start from both places, through one path: the composer's workflow menu, typing
+`/`, plain language ("can we file an extension?" → Instead offers to start one
+or just answer), or a client's ⋮ menu. The scope decides who it's for; a
+single-client workflow started from the firm asks "which client?" in chat.
+Starting one that's already running opens the existing one instead.
+
+**4. What earns a spot on the home screen, and does it hold at 2 and 200?**
+On the home screen: the composer, one line of "who needs you", and a rail
+sorted by need. One level deeper: documents, per-client threads, workflow
+detail, reasons in full. At 2 clients there are no labels or caps — just
+rows. At 200, "Needs you" shows the five most urgent plus "Show 9 more",
+everyone else is A–Z with a count, search opens inline, and the briefing
+groups the rest by what's blocking them ("6 waiting on documents →
+Request them all") so a group is one workflow, not six chats.
+
+**Tradeoffs made:** the form badge gives way to the reason on rows that need
+you; single-client workflows appear in two places (tab and client panel) on
+purpose; Instead offers workflows instead of assuming, at the cost of one
+click.
 
 ## Design system
 
