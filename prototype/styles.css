@@ -496,3 +496,4 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .cl-status .dot { width: 5px; height: 5px; }
 .cl-row:hover .cl-status { display: none; }
 .cl-summary { height: 44px; padding: 0 4px; }
+.wf-excluded { text-transform: none; letter-spacing: 0; color: var(--charcoal-50); }

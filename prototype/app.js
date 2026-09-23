@@ -123,7 +123,7 @@ const WORKFLOWS = {
       { clientId: 'c8', label: 'Sana Kapoor', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c10', label: 'Northgate Dental PC', state: 'open', note: 'Scheduled for Monday' },
       { clientId: 'c11', label: 'Lena Ortiz', state: 'open', note: 'Scheduled for Monday' },
-    ], doneSummary: '7 reminders sent' },
+    ], doneSummary: '7 reminders sent', doneIds: ['c1', 'c3', 'ashish', 'c5', 'c7', 'c9', 'c12'] },
   ],
   single: [
     { id: 'w3', name: 'Review 1040 draft', ask: 'Review Ashish’s 1040 draft', clientId: 'ashish', clientName: 'Ashish Khoshya', done: 1, total: 3, items: [
@@ -138,6 +138,7 @@ const WORKFLOWS = {
   ],
 };
 const ALL_WF = WORKFLOWS.across.concat(WORKFLOWS.single);
+const coveredBy = (w) => new Set(w.items.map((it) => it.clientId).filter(Boolean).concat(w.doneIds || []));
 const wfKey = (id) => `wf:${id}`;
 
 // What a pro can start. Scope decides the shape: across clients (a checklist of clients) or for one (a checklist of steps).
@@ -289,7 +290,7 @@ class App extends Component {
       // The workflow tray above the composer: 'browse' | 'build' | null. wfPick is a staged workflow,
       // wfTargets who it will run for, wfFull the expanded library.
       wfTray: null, wfTab: 'all', wfFull: false, wfQuery: '', wfPreview: null,
-      wfPick: null, wfTargets: [], wfChoosing: false, wfClientQ: '', wfFile: null,
+      wfPick: null, wfTargets: [], wfChoosing: false, wfClientQ: '', wfFile: null, wfExclude: [], // wfExclude: clients a running copy already covers
       drafts: {},
       gk: 'general', // the open firm-level thread; New thread starts another
       draft: '',
@@ -486,12 +487,12 @@ class App extends Component {
 
   // ---------- The workflow tray ----------
   openWf({ full = false } = {}) {
-    this.setState({ wfTray: 'browse', wfFull: full, wfPick: null, wfChoosing: false, wfFile: null, wfQuery: '', wfPreview: null, menu: false, ctxOpen: false, showTip: false });
+    this.setState({ wfTray: 'browse', wfFull: full, wfPick: null, wfChoosing: false, wfFile: null, wfQuery: '', wfPreview: null, wfExclude: [], menu: false, ctxOpen: false, showTip: false });
     if (this.inputEl) this.inputEl.focus();
   }
 
   closeWf() {
-    this.setState({ wfTray: null, wfFull: false, wfPick: null, wfTargets: [], wfChoosing: false, wfFile: null });
+    this.setState({ wfTray: null, wfFull: false, wfPick: null, wfTargets: [], wfChoosing: false, wfFile: null, wfExclude: [] });
   }
 
   // Picking a workflow doesn't run it: it sits in the tray with who it's for, ready to send.
@@ -499,7 +500,7 @@ class App extends Component {
     const t = TEMPLATES.find((x) => x.id === tid);
     const sc = this.state.scope && this.state.scope.type === 'client';
     const targets = !sc && t.scope === 'across' && t.targets ? t.targets(clients).map((c) => c.id) : [];
-    this.setState({ wfTray: 'browse', wfPick: tid, wfTargets: targets, wfFull: false, wfChoosing: false, draft: '' });
+    this.setState({ wfTray: 'browse', wfPick: tid, wfTargets: targets, wfFull: false, wfChoosing: false, wfExclude: [], draft: '' });
     if (this.inputEl) this.inputEl.focus();
   }
 
@@ -758,7 +759,8 @@ class App extends Component {
     const w = existing && ALL_WF.find((x) => x.id === existing);
     if (w) return html`<div class="offer">
       <button class="offer-go" onClick=${() => this.pickWorkflow(w.id)}><${Icon} name="workflow" size=${12} />Open “${w.name}”</button>
-      ${!clientId && html`<button class="offer-alt" onClick=${() => { this.stageWorkflow(tid, clients); this.setState({ wfTargets: [], wfChoosing: true, wfClientQ: '' }); }}>Start one for other clients</button>`}
+      ${!clientId && clients.some((c) => !coveredBy(w).has(c.id)) && html`<button class="offer-alt"
+        onClick=${() => { this.stageWorkflow(tid, clients); this.setState({ wfTargets: [], wfChoosing: true, wfClientQ: '', wfExclude: [...coveredBy(w)] }); }}>Start one for other clients</button>`}
       <button class="offer-alt" onClick=${() => this.answerInstead(t)}>Just answer in chat</button>
     </div>`;
     return html`<div class="offer">
@@ -941,6 +943,8 @@ class App extends Component {
 
     // Choosing who a staged workflow runs for: quick sets from data Instead has, then any client.
     if (st.wfPick && st.wfChoosing) {
+      const excluded = clients.length - clients.filter((c) => !st.wfExclude.includes(c.id)).length;
+      clients = clients.filter((c) => !st.wfExclude.includes(c.id));
       const sel = new Set(st.wfTargets);
       const toggle = (ids) => { const all = ids.every((id) => sel.has(id)); this.setState({ wfTargets: all ? st.wfTargets.filter((id) => !ids.includes(id)) : [...new Set([...st.wfTargets, ...ids])] }); };
       const sets = [['Needs you', clients.filter((c) => c.status === 'needs_attention')]]
@@ -949,7 +953,7 @@ class App extends Component {
       const shown = clients.filter((c) => !cq || fullName(c).toLowerCase().includes(cq)).sort((a, b) => railName(a).localeCompare(railName(b)));
       return wrap('', html`
         <div class="section-head today-head">
-          <span class="label">Run for</span>
+          <span class="label">Run for${excluded ? html` <span class="wf-excluded">· ${excluded} already covered by the running one</span>` : ''}</span>
           <button class="wf-done" onClick=${() => this.setState({ wfChoosing: false })}>Done${sel.size ? ` · ${sel.size}` : ''}</button>
         </div>
         <div class="wf-sets">${sets.map(([label, cs]) => {

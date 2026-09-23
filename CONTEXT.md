@@ -299,4 +299,6 @@ plugin, which maps flexbox to auto layout):
     to start it (client and cross-client, and in "which client?"). New
     thread starts an empty firm thread; old ones stay in Threads. Research
     questions get an answer, not a scoping question. Drafts keep a schedule
-    the pro mentions ("every Friday").
+    the pro mentions ("every Friday"). "Start one for other clients" leaves
+    out everyone the running workflow already covers, and doesn't appear
+    when that's the whole book.
