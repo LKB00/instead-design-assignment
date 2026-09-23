@@ -7,6 +7,10 @@ when they open Instead Pro. The brief is explicit that **chat is the room,
 not a feature inside the room** — this reworks the home screen around that,
 rather than placing a client list and a chat box side by side.
 
+**Full context:** [CONTEXT.md](CONTEXT.md) explains the brief, the live
+product's pain points, every improvement and tradeoff, and the code map —
+readable on its own without any other history.
+
 ## Live artifact
 
 Interactive canvas (Claude Artifact — Design, clickable prototype):
