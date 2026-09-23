@@ -16,7 +16,7 @@ Each file becomes a frame; text layers stay text, icons are vectors.
 | 02-filter-menu | Rail filter menu open (Status / Entity, with counts) |
 | 03-start-workflow-menu | Composer workflow menu open |
 | 04-client-thread | Client panel + thread (Meera Iyer) |
-| 05-context-picker | Context pill picker open |
+| 05-context-picker | Context pill picker open at the firm level |
 | 06-workflow-offer | Plain-language request → offer to start a workflow |
 | 07-workflow-checklist | Cross-client workflow as a chat checklist |
 | 08-200-clients | 200-client book: tray with top 3 + Show 11 more, A–Z rail |
@@ -30,7 +30,8 @@ Rail (firm, workflows tab, toolbar toggle, filtered to Needs you), filter menu, 
 with workflow, hover), user card, composer (firm,
 client), context pill (firm, client, workflow), context picker, workflow
 menu, "Needs you" tray with composer, today row, briefing list, grouped briefing, workflow checklist,
-workflow offer buttons, assistant answer, client panel.
+workflow offer buttons, assistant answer, client panel, client panel back link
+(to the workflow you came from).
 
 ## Regenerate
 

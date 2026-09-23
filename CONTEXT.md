@@ -126,13 +126,13 @@ instead.
 | Workflows sit behind a separate "Workflows" button, disconnected from clients and from chat. | A **Clients \| Workflows** toggle in the rail, each tab remembering its own scroll and selection. |
 | No distinction between cross-client and single-client work. | **A workflow lives where its work lives.** Cross-client workflows stay at the firm level; single-client workflows open **inside the client's panel** (listed first under Client threads with progress, e.g. 2/3). The Workflows tab indexes both. |
 | A workflow's status isn't visible in conversation. | Every workflow **is a chat thread**: the request that started it as the heading, then Instead's **checklist** — open items first, anything needing you marked amber, finished items folded into one line ("Received from Alderwood LLC, Fern & Co. and Harbor & Pine LLP"). |
-| Moving from a workflow into a client loses your place. | Clicking a client inside a workflow opens their file, and the workflow stays at the top of the context picker's **Recent** list, one tap back. × always returns home with the rail's tab and scroll intact. A small workflow count on a client row ("2/3") jumps straight into it. |
+| Moving from a workflow into a client loses your place. | Clicking a client inside a workflow opens their file with a **"‹ Collect missing K-1s"** link at the top of the panel, one tap back (it was first under Recent in the context picker, which hid the way back inside a menu). × always returns home with the rail's tab and scroll intact. A small workflow count on a client row ("2/3") jumps straight into it. |
 
 ### 5.3 Chat context and starting work (brief prompt 3)
 
 | Pain point | Improvement |
 |---|---|
-| Context (which client the chat is about) is implied by navigation only. An earlier version of this prototype added a chip above the composer, which repeated the panel header, couldn't be changed in place, and didn't scale (back chip + client chip + workflow chip). | A **context pill inside the composer**: `All clients ⌄`, `Alderwood LLC ⌄ ×`, or a workflow's name. Clicking it opens a picker with **search, All clients, Recent, Needs you**. Typing **`@`** opens it too. The placeholder follows the context ("Ask about Sethi Holdings…"). The composer looks identical in every state. This is the model/context-picker pattern familiar from Claude, Cursor and ChatGPT. |
+| Context (which client the chat is about) is implied by navigation only. An earlier version of this prototype added a chip above the composer, which repeated the panel header, couldn't be changed in place, and didn't scale (back chip + client chip + workflow chip). | A **context pill inside the composer**: `All clients ⌄` or a workflow's name at the firm level, where clicking it (or typing **`@`**) opens a picker with **search, All clients, Recent, Needs you**. **Inside a client it's a label, `Alderwood LLC ×`**, with no switcher: a client thread belongs to that client, and "switch this chat to Meera" either moved you out of the file (the rail's job) or mixed two clients in one thread. The placeholder no longer repeats the name ("Ask a question or give a task…"), so it appears once in the panel header and once in the pill. The pill sits in the same place in every state. This is the model/context-picker pattern familiar from Claude, Cursor and ChatGPT. |
 | Starting a workflow isn't possible from chat or from a client row. | **Both, through one path — every start becomes a chat thread**, scoped by where you are: the composer's workflow button (templates grouped *Across clients* / *For one client*), typing **`/`**, **plain language** ("can we file an extension?" → Instead offers *Start "Prepare an extension"* or *Just answer in chat*), or a client row's **⋮ → Start a workflow…**. From the firm level, a single-client template makes Instead ask "Which client is it for?" in chat. |
 | Nothing prevents duplicate work. | Starting a workflow that's already running for that client **opens the existing one** and says so. |
 
@@ -172,8 +172,9 @@ the book.**
    answers "what's happening with this client?".
 3. **Instead offers workflows instead of assuming**, because not every
    question is a workflow. Cost: one extra click when the pro did mean it.
-4. **The back chip became "Recent"** in the context picker: consistent and
-   scalable, but going back to a workflow is two clicks instead of one.
+4. **No client switcher inside a client chat.** Changing client from the
+   composer would be faster at 200 clients, but it blurred whose thread you
+   were in; the rail's search does it instead.
 5. **Amber is the only added colour**, used for nothing but "needs you".
 
 ## 7. How to use the prototype (demo script)
@@ -182,9 +183,9 @@ the book.**
 2. Note the rail: Instead's A–Z book; amber dots on the three who need you.
 3. Read the headline and the three clients listed under it.
 4. Open a client from that list; see the client panel and the **context
-   pill** in the composer. Click the pill or type `@` to switch.
+   pill** in the composer (a label here; × goes home).
 5. Rail → **Workflows** → "Collect missing K-1s": checklist in chat. Click
-   Meera Iyer → her file; the workflow is first under Recent in the pill.
+   Meera Iyer → her file; "‹ Collect missing K-1s" at the top goes back.
 6. In a client, type "can we file an extension?" → offer to start, or answer.
 7. Composer workflow button, or `/` — start from templates.
 8. Press **3** (200 clients): tray shows three + "Show 11 more", rail search →
@@ -274,3 +275,5 @@ plugin, which maps flexbox to auto layout):
 6. Worked through the brief's four prompts one by one (sections 5.1–5.4).
 7. Replaced the floating data switch with a labelled prototype control.
 8. Replaced the scope chip with the composer context pill and picker.
+9. Made the pill a label inside a client chat, with a back link to the
+   workflow you came from.

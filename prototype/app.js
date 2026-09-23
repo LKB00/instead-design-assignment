@@ -30,6 +30,7 @@ const PATHS = {
   thumbsDown: html`<path d="M17 14V2" /><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />`,
   filePen: html`<path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M13.378 15.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />`,
   chevronDown: html`<path d="m6 9 6 6 6-6" />`,
+  chevronLeft: html`<path d="m15 18-6-6 6-6" />`,
   moreVertical: html`<circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />`,
   timerReset: html`<path d="M10 2h4" /><path d="M12 14v-4" /><path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-5.3 14L4 17.6" /><path d="M9 17H4v5" />`,
   panelLeftClose: html`<rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="m16 15-3-3 3-3" />`,
@@ -726,6 +727,8 @@ class App extends Component {
     const list = st.clientThreads[c.id] || [];
     const loading = st.panelLoading === c.id;
     const cWf = WORKFLOWS.single.filter((w) => w.clientId === c.id);
+    // Drilled in from a workflow: the way back sits at the top of the panel, not inside a menu.
+    const backTo = st.from && st.from.type === 'workflow' && ALL_WF.find((w) => w.id === st.from.id);
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
     const year = (y) => html`<div class="doc-year">
       <div class="doc-row" role="button" tabindex="0" aria-expanded=${!!st.openYears[y]} onClick=${() => this.setState((s) => ({ openYears: { ...s.openYears, [y]: !s.openYears[y] } }))}>
@@ -746,6 +749,7 @@ class App extends Component {
         </nav>
 
         <section class=${'client-panel' + (st.panelEntering === c.id ? ' entering' : '')} aria-label=${`${fullName(c)} workspace`}>
+          ${backTo && html`<div class="cp-back-row"><button class="cp-back" onClick=${() => this.pickWorkflow(backTo.id)}><${Icon} name="chevronLeft" size=${12} /><span class="cp-back-name">${backTo.name}</span></button></div>`}
           <header class="cp-header">
             <h2 class="serif cp-name">${fullName(c)}</h2>
             <span class="pill-xxs lime">${c.entity}</span>
@@ -841,7 +845,7 @@ class App extends Component {
     const composerEl = html`<div class="composer-anchor">
         ${st.showTip && sc && html`
           <div class="popover tooltip" role="status">
-            Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. Switch or clear it from the pill in the chat box.
+            Chat is now scoped to <b>${fullName(sc)}</b>. Answers use only their documents and history. The × in the chat box takes you back to all clients.
             <div class="tooltip-actions"><button class="tooltip-btn" onClick=${() => this.setState({ showTip: false })}>Got it</button></div>
           </div>`}
 
@@ -860,24 +864,31 @@ class App extends Component {
         ${st.ctxOpen && this.renderContextPicker(clients, attention)}
       <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
         <textarea ref=${(el) => (this.inputEl = el)} rows="1"
-          placeholder=${sc ? (hasMessages ? 'Ask a follow up...' : `Ask about ${fullName(sc)}...`) : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
+          placeholder=${sc ? (hasMessages ? 'Ask a follow up...' : 'Ask a question or give a task...') : sw ? `Ask about “${sw.name}”...` : 'Give me a task or question to work on...'}
           value=${st.draft}
           onInput=${(e) => {
             const v = e.target.value;
             if (v === '/') return this.setState({ draft: '', menu: true, showTip: false, ctxOpen: false });
-            if (v === '@' || v.endsWith(' @')) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
+            if (!sc && (v === '@' || v.endsWith(' @'))) return this.setState({ draft: v.slice(0, -1), ctxOpen: true, ctxQuery: '', menu: false, showTip: false });
             this.setState({ draft: v });
           }}
           onKeyDown=${(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(clients); } }}></textarea>
         <div class="composer-controls">
           <div class="controls-group">
             <div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
-              <button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label=${`Chat context: ${sc ? fullName(sc) : sw ? sw.name : 'All clients'}. Change`}
+              ${sc
+                // Inside a client the thread belongs to them: the pill says whose data this uses, and
+                // switching clients is the rail's job. Firm and workflow chats keep the switcher.
+                ? html`<span class="ctx-btn ctx-label" aria-label=${`Chat context: ${fullName(sc)}`}>
+                    <${Icon} name=${iconFor(sc.entity)} size=${13} />
+                    <span class="ctx-name">${fullName(sc)}</span>
+                  </span>`
+                : html`<button type="button" class="ctx-btn" aria-haspopup="listbox" aria-expanded=${st.ctxOpen} aria-label=${`Chat context: ${sw ? sw.name : 'All clients'}. Change`}
                 onClick=${(e) => { e.stopPropagation(); this.setState((s) => ({ ctxOpen: !s.ctxOpen, ctxQuery: '', menu: false, showTip: false })); }}>
-                <${Icon} name=${sc ? iconFor(sc.entity) : sw ? 'workflow' : 'users'} size=${13} />
-                <span class="ctx-name">${sc ? fullName(sc) : sw ? sw.name : 'All clients'}</span>
+                <${Icon} name=${sw ? 'workflow' : 'users'} size=${13} />
+                <span class="ctx-name">${sw ? sw.name : 'All clients'}</span>
                 <${Icon} name="chevronDown" size=${12} />
-              </button>
+              </button>`}
               ${scoped && html`<button type="button" class="chip-x" aria-label="Back to all clients" onClick=${() => this.clearScope()}><${Icon} name="x" size=${10} stroke=${2} /></button>`}
             </div>
             ${I('paperclip', 'Attach files', null, 'circ')}

@@ -185,6 +185,13 @@ img { display: block; }
 }
 .client-panel.entering { animation: panelIn .3s var(--ease); }
 @keyframes panelIn { from { width: 72px; } to { width: 360px; } }
+.cp-back-row { flex: none; display: flex; padding: 12px 20px 0 14px; }
+.cp-back {
+  min-width: 0; height: 24px; display: flex; align-items: center; gap: 4px;
+  padding: 0 10px 0 6px; border-radius: 9999px; font-size: 12px; line-height: 16px; color: var(--charcoal-light);
+}
+.cp-back:hover { background: rgba(36, 40, 44, 0.06); color: var(--charcoal); }
+.cp-back-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-header { height: 54px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 20px; }
 .cp-name { margin: 0; font-size: 16px; line-height: 24px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-header-end { flex: 1; display: flex; justify-content: flex-end; }
@@ -354,6 +361,10 @@ button.wf-count:hover { background: var(--sand-dark); color: var(--charcoal); }
 .ctx-btn { min-width: 0; height: 100%; display: flex; align-items: center; gap: 6px; padding: 0 4px 0 10px; font-size: 12px; line-height: 16px; font-weight: 500; }
 .ctx-pill:not(.scoped) .ctx-btn { padding-right: 6px; }
 .ctx-btn > svg:last-child { color: var(--charcoal-50); }
+/* Inside a client the pill is a label, not a switcher. */
+.ctx-label { cursor: default; }
+.ctx-label > svg:last-child { color: inherit; }
+.ctx-pill.scoped:has(.ctx-label):hover { border-color: transparent; }
 .ctx-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ctx-pill .chip-x:hover { background: rgba(36, 40, 44, 0.08); }
 .ctx-picker { width: 320px; max-height: 420px; overflow-y: auto; }

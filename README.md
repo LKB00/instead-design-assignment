@@ -28,7 +28,7 @@ Things to try:
 - Read the home: the headline and the "Needs you" tray answer who needs you
   today; click a client to open their file.
 - Switch the rail to **Workflows** and open "Collect missing K-1s".
-- Click the **All clients ⌄** pill in the composer (or type `@`) to change who
+- Click the **All clients ⌄** pill in the composer (or type `@`) to choose who
   the chat is about; type `/` to start a workflow.
 - Use the rail's **Filter** icon (Needs you, In a workflow, entity type).
 - The dashed button bottom-right (or keys 1–4) previews the home at 2, 12
@@ -56,7 +56,7 @@ Pro in the first three seconds:
 - **Clients | Workflows** as one toggle in the rail, each tab keeping its
   own scroll and selection.
 - **Selecting is scoping** — clicking a client opens their panel and sets
-  the composer's context pill ("Meera Iyer ⌄ ×"); sending a message gets a
+  the composer's context pill ("Meera Iyer ×"); sending a message gets a
   mock reply.
 
 Directions tried and dropped (a top strip + drawer instead of the rail;
@@ -91,16 +91,18 @@ between them?** A workflow lives where its work lives. Cross-client ones stay
 at the firm level; single-client ones open inside their client's panel. The
 Workflows tab indexes both. Every workflow is a chat thread that opens with
 Instead's checklist (open items first, finished ones folded into one line).
-Drilling from a workflow into a client keeps the workflow at the top of the
-context picker's Recent list, one tap back; × always goes home with the
+Drilling from a workflow into a client puts a "‹ Collect missing K-1s" link at
+the top of the client's panel, one tap back; × always goes home with the
 rail's tab and scroll intact.
 
 **3. Chat and the client list: does selecting a client change context? Where
 do workflows start?** Selecting a client scopes the chat to them, and the
-context lives in the composer itself: a pill reading "All clients ⌄" or
-"Alderwood LLC ⌄" that switches context without leaving the chat (search,
-Recent, Needs you; or type `@`). The composer looks the same in every
-state, and the same control scales from one client to a workflow. Workflows
+context lives in the composer itself. At the firm level it's a switcher,
+"All clients ⌄", that narrows the chat to a client or workflow without leaving
+it (search, Recent, Needs you; or type `@`). Inside a client it's a label,
+"Alderwood LLC ×": the thread belongs to that client, so switching clients is
+the rail's job, and × goes home. The pill sits in the same place in every
+state. Workflows
 start from both places, through one path: the composer's workflow menu, typing
 `/`, plain language ("can we file an extension?" → Instead offers to start one
 or just answer), or a client's ⋮ menu. The scope decides who it's for; a

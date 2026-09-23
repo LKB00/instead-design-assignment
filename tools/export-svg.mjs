@@ -104,12 +104,15 @@ await comp('.composer', 'composer-client');
 await comp('.ctx-pill', 'context-pill-client');
 await comp('.answer', 'assistant-answer');
 
+// The context switcher lives at the firm level; inside a client the pill is a label.
+await open('');
 await page.click('.ctx-btn');
 await sleep(400);
 await screen('05-context-picker');
 await comp('.ctx-picker', 'context-picker');
 await page.keyboard.press('Escape');
 
+await open('scope=c1');
 await page.type('textarea', 'Can we file an extension?');
 await page.keyboard.press('Enter');
 await sleep(1600);
@@ -125,6 +128,10 @@ await sleep(600);
 await screen('07-workflow-checklist');
 await comp('.brief', 'workflow-checklist');
 await comp('.ctx-pill', 'context-pill-workflow');
+// Drill from the workflow into a client: the panel carries the way back.
+await page.evaluate(() => [...document.querySelectorAll('.brief button, .brief [role=button]')].find((e) => /Meera/.test(e.textContent)).click());
+await sleep(900);
+await comp('.cp-back-row', 'client-panel-back-link');
 
 await open('scenario=large');
 await screen('08-200-clients');
