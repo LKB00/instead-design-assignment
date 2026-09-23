@@ -14,7 +14,7 @@ Each file becomes a frame; text layers stay text, icons are vectors.
 |---|---|
 | 01-firm-home | Firm home: headline, the 3 clients who need you, composer |
 | 02-filter-menu | Rail filter menu open (Status / Entity, with counts) |
-| 03-start-workflow-menu | Composer workflow menu open |
+| 03-workflow-tray | Workflow library in the composer tray |
 | 04-client-thread | Client panel + thread (Meera Iyer) |
 | 05-context-picker | Context pill picker open at the firm level |
 | 06-workflow-offer | Plain-language request → offer to start a workflow |
@@ -23,14 +23,15 @@ Each file becomes a frame; text layers stay text, icons are vectors.
 | 09-200-clients-grouped-briefing | "Show 11 more" → briefing grouped by what's blocking clients |
 | 10-two-clients | 2-client book |
 | 11-calm-week | Nobody needs you |
+| 12-workflow-library | Tray expanded into the full library with a preview |
+| 13-workflow-draft | A workflow drafted in chat, editable before saving |
 
 ## Components (`components/`)
 
 Rail (firm, workflows tab, toolbar toggle, filtered to Needs you), filter menu, client rows (default, needs you,
 with workflow, hover), user card, composer (firm,
-client), context pill (firm, client, workflow), context picker, workflow
-menu, "Needs you" tray with composer, today row, briefing list, grouped briefing, workflow checklist,
-workflow offer buttons, assistant answer, client panel, client panel back link
+client), context pill (firm, client, workflow), context picker, "Needs you" tray with composer, today row, briefing list, grouped briefing, workflow checklist, workflow tray (browse, staged, choose clients, build),
+workflow library preview, workflow draft card, workflow offer buttons, assistant answer, client panel, client panel back link
 (to the workflow you came from).
 
 ## Regenerate

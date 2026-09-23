@@ -29,7 +29,12 @@ Things to try:
   today; click a client to open their file.
 - Switch the rail to **Workflows** and open "Collect missing K-1s".
 - Click the **All clients ⌄** pill in the composer (or type `@`) to choose who
-  the chat is about; type `/` to start a workflow.
+  the chat is about.
+- Click the workflow button in the composer (or type `/`): the library opens
+  in the sand tray above the chat box. Type to search, pick one, choose who
+  it's for, send. The expand icon grows it into the full library with a
+  preview; **Build a new workflow** and **Upload a workflow** sit at the
+  bottom of the tray.
 - Use the rail's **Filter** icon (Needs you, In a workflow, entity type).
 - The dashed button bottom-right (or keys 1–4) previews the home at 2, 12
   and 200 clients and a calm week (or use `?scenario=two|grouped|large|calm`).
@@ -103,11 +108,18 @@ it (search, Recent, Needs you; or type `@`). Inside a client it's a label,
 "Alderwood LLC ×": the thread belongs to that client, so switching clients is
 the rail's job, and × goes home. The pill sits in the same place in every
 state. Workflows
-start from both places, through one path: the composer's workflow menu, typing
-`/`, plain language ("can we file an extension?" → Instead offers to start one
-or just answer), or a client's ⋮ menu. The scope decides who it's for; a
-single-client workflow started from the firm asks "which client?" in chat.
-Starting one that's already running opens the existing one instead.
+start from both places, through one path: the composer's workflow button,
+typing `/`, plain language ("can we file an extension?" → Instead offers to
+start one or just answer), or a client's ⋮ menu. The library opens in the same
+sand tray as "Needs you", above the chat box, so starting work never leaves the
+chat: pick a workflow and it sits there as a chip next to who it's for (the
+current client, or "Choose clients" with quick sets like Needs you or S Corps),
+with a line on what you'll get; add context and send. Nothing runs before
+send. Run it for one client and it's a single-client run in their panel; for
+many, it's a cross-client run with a row per client. Building is chat too:
+describe the work or upload the checklist you already use, Instead drafts the
+steps in the thread, you edit them in place and save to Mine or Firm. Starting
+one that's already running opens the existing one instead.
 
 **4. What earns a spot on the home screen, and does it hold at 2 and 200?**
 On the home screen: a headline and a short list of who needs you, the
@@ -123,7 +135,8 @@ Request them all") so a group is one workflow, not six chats.
 **Tradeoffs made:** the rail no longer sorts who needs you to the top (the
 tray does that job; inside a thread they're amber dots in A–Z); single-client workflows appear in two places (tab and client panel) on
 purpose; Instead offers workflows instead of assuming, at the cost of one
-click.
+click; the workflow tray takes the place of "Needs you" while it's open (one
+tray, one job at a time), so closing it brings today's list back.
 
 ## Design system
 

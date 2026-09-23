@@ -405,3 +405,81 @@ button.wf-count:hover { background: var(--sand-dark); color: var(--charcoal); }
 .filter-bar { flex: none; display: flex; padding: 0 4px; }
 .filter-chip { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 3px 0 10px; border-radius: 9999px; background: var(--sand-dark); font-size: 11px; line-height: 16px; color: var(--charcoal); }
 .filter-chip .chip-x:hover { background: rgba(36, 40, 44, 0.08); }
+
+/* ---------- Workflows: in the composer tray, expandable into the library ---------- */
+.wf-head .wf-tabs { flex: 1; }
+.wf-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.wf-tab { height: 22px; display: flex; align-items: center; padding: 0 8px; border-radius: 9999px; font-size: 11px; line-height: 16px; color: var(--charcoal-50); transition: background .15s, color .15s; }
+.wf-tab:hover { color: var(--charcoal); }
+.wf-tab[aria-selected="true"] { background: var(--sand-dark); color: var(--charcoal); }
+.wf-row-icon { width: 16px; flex: none; display: flex; align-items: center; justify-content: center; color: var(--charcoal-50); }
+.wf-row .today-note { flex: 1; }
+.wf-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 0 0 4px; }
+.wf-action {
+  height: 26px; display: flex; align-items: center; gap: 6px; padding: 0 12px 0 10px; border-radius: 9999px; cursor: pointer;
+  background: #fff; border: 0.5px solid var(--control-border); font-size: 12px; line-height: 16px; color: var(--charcoal-light); transition: color .15s, border-color .15s;
+}
+.wf-action svg { color: var(--charcoal-50); }
+.wf-action:hover { color: var(--charcoal); border-color: var(--gray-400); }
+.wf-empty { padding: 8px 10px; font-size: 12px; line-height: 18px; color: var(--charcoal-50); }
+.wf-stage { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0 0 0 4px; }
+.wf-chip {
+  height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 0 6px 0 4px; border-radius: 9999px;
+  background: #fff; border: 0.5px solid var(--control-border); font-size: 12px; line-height: 16px; color: var(--charcoal);
+}
+button.wf-chip { padding-right: 10px; transition: border-color .15s; }
+button.wf-chip:hover { border-color: var(--gray-400); }
+.wf-chip > svg:first-child { color: var(--charcoal-light); }
+.wf-chip:not(:has(.wf-chip-icon)) { padding-left: 10px; }
+.wf-chip.add { border-style: dashed; color: var(--charcoal-light); }
+.wf-chip-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--lime); color: var(--charcoal); }
+.wf-note { margin: 0; padding: 0 8px 2px; font-size: 12px; line-height: 18px; color: var(--charcoal-light); }
+.wf-done { height: 22px; display: flex; align-items: center; padding: 0 10px; border-radius: 9999px; background: var(--charcoal); color: #fff; font-size: 11px; line-height: 16px; font-weight: 600; }
+.wf-sets { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 0 0 4px; }
+.wf-set { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 9999px; background: #fff; border: 0.5px solid var(--control-border); font-size: 11px; line-height: 16px; color: var(--charcoal-light); }
+.wf-set .dot { width: 5px; height: 5px; }
+.wf-set.on { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
+.wf-set.on .filter-count { color: rgba(255, 255, 255, 0.6); }
+.wf-search { flex: none; height: 26px; }
+.wf-head .wf-search { width: 160px; }
+.wf-client-list { max-height: 188px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; scrollbar-width: thin; }
+.wf-client { height: 30px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px; border-radius: 9999px; text-align: left; transition: background .15s; }
+.wf-client:hover { background: var(--sand-dark); }
+.wf-client .row-name { flex: 1; min-width: 0; }
+.wf-client .dot { width: 5px; height: 5px; }
+.wf-check { display: flex; color: var(--charcoal-50); }
+.wf-client.on .wf-check { color: var(--charcoal); }
+
+/* Expanded library: the tray grows over the chat; the composer stays put underneath. */
+.main.wf-full { justify-content: flex-end; gap: 0; padding-top: 20px; }
+.main.wf-full .hero-wrap, .main.wf-full .chat-scroll { display: none; }
+.main.wf-full .composer-wrap { flex: 1; min-height: 0; max-width: 880px; }
+.wf-tray.full { flex: 1; min-height: 0; }
+.wf-tray.full > .wf { flex: 1; min-height: 0; gap: 10px; }
+.wf-tray.full .wf-head { height: 28px; }
+.wf-lib { flex: 1; min-height: 0; display: flex; gap: 12px; }
+.wf-lib-list { width: 300px; flex: none; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
+.wf-lib-group { display: flex; flex-direction: column; gap: 2px; }
+.wf-lib-row { height: 30px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 8px; border-radius: 9999px; text-align: left; transition: background .15s; }
+.wf-lib-row:hover, .wf-lib-row.on { background: var(--sand-dark); }
+.wf-lib-row .row-name { min-width: 0; }
+.wf-preview { flex: 1; align-self: flex-start; min-width: 0; max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px 24px; background: #fff; border: 0.5px solid var(--control-border); border-radius: 16px; }
+.wf-preview-empty { align-items: center; justify-content: center; }
+.wf-preview-top, .wf-preview-block { display: flex; flex-direction: column; gap: 6px; }
+.wf-preview-title { margin: 0; font-size: 20px; line-height: 30px; font-weight: 400; color: var(--charcoal); }
+.wf-preview-desc { margin: 0; font-size: 13px; line-height: 20px; color: var(--charcoal-light); }
+.wf-preview-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 0.5px solid var(--control-border); }
+.wf-by { font-size: 11px; line-height: 16px; color: var(--charcoal-50); }
+.wf-steps { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.wf-step { display: flex; align-items: center; gap: 10px; font-size: 13px; line-height: 20px; color: var(--charcoal); }
+.step-n { width: 20px; height: 20px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--sand); font-size: 10px; line-height: 14px; color: var(--charcoal-light); }
+
+/* A drafted workflow in chat, edited in place. */
+.draft-card { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: #fff; border: 0.5px solid var(--control-border); border-radius: 16px; }
+.draft-name { all: unset; font-family: 'Libre Baskerville', serif; font-size: 18px; line-height: 28px; color: var(--charcoal); }
+.draft-step { all: unset; flex: 1; min-width: 0; height: 28px; padding: 0 10px; border-radius: 9999px; font-size: 13px; line-height: 20px; color: var(--charcoal); }
+.draft-step:not(:disabled):hover, .draft-step:focus { background: var(--sand); }
+.draft-card .wf-step .chip-x { display: none; }
+.draft-card .wf-step:hover .chip-x { display: flex; }
+.add-step { align-self: flex-start; padding-left: 30px; }
+.draft-card .offer { padding-top: 4px; }
