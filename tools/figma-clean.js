@@ -14,7 +14,7 @@ window.figmaClean = function figmaClean(doc) {
     ['filter-bar', 'Rail / Active filter'], ['add-row', 'Rail / Add client'], ['empty-threads', 'Rail / Empty threads'],
     ['row', 'Client row'], ['thread-row', 'Thread row'], ['avatar', 'Avatar'], ['wf-count', 'Workflow progress'],
     ['pill-xxs', 'Form badge'], ['dot', 'Needs-you dot'], ['initials', 'Initials'], ['round-btn', 'Round button'],
-    ['filter-menu', 'Filter menu'], ['ctx-picker', 'Context picker'], ['menu-item', 'Menu item'], ['menu-foot', 'Menu tip'],
+    ['filter-menu', 'Filter menu'], ['run-picker', 'Client picker'], ['ctx-picker', 'Context picker'], ['pick-foot', 'Picker footer'], ['menu-item', 'Menu item'], ['menu-foot', 'Menu tip'],
     ['filter-chip', 'Filter chip'], ['search-field', 'Search field'], ['section-head', 'Section header'],
     // Client panel
     ['client-shell', 'Client panel'], ['icon-col', 'Client panel / Nav'], ['client-panel', 'Client panel / Content'],
@@ -32,8 +32,7 @@ window.figmaClean = function figmaClean(doc) {
     ['today-head', 'Tray / Header'], ['today-rows', 'Tray / Rows'], ['wf-row', 'Tray / Workflow row'], ['today-row', 'Tray / Client row'],
     ['today-link', 'Tray / Link'], ['more-row', 'Show more'], ['today-open', 'Open link'], ['wf-foot', 'Tray / Actions'],
     ['wf-action', 'Action button'], ['wf-tabs', 'Tabs'], ['wf-tab', 'Tab'], ['wf-stage', 'Tray / Picked workflow'],
-    ['wf-chip', 'Workflow chip'], ['wf-sets', 'Client groups'], ['wf-set', 'Group'], ['wf-client-list', 'Client options'],
-    ['wf-client', 'Client option'], ['wf-done', 'Done button'],
+    ['wf-chip', 'Workflow chip'], ['wf-done', 'Done button'],
     // Library
     ['wf-lib', 'Library'], ['wf-lib-list', 'Library / List'], ['wf-lib-group', 'Library / Category'], ['wf-lib-row', 'Library / Row'],
     ['wf-preview', 'Library / Preview'], ['wf-preview-foot', 'Library / Preview footer'], ['wf-steps', 'Steps'], ['wf-step', 'Step'], ['step-n', 'Step number'],

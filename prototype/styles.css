@@ -429,23 +429,8 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .ctx-pill.pick { border-style: dashed; }
 .wf-chip-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 9999px; background: var(--lime); color: var(--charcoal); }
 .wf-note { margin: 0; padding: 0 8px 2px; font-size: 12px; line-height: 18px; color: var(--charcoal-light); }
-.wf-done { height: 22px; display: flex; align-items: center; padding: 0 10px; border-radius: 9999px; background: var(--charcoal); color: #fff; font-size: 11px; line-height: 16px; font-weight: 600; }
-.wf-sets { display: flex; flex-wrap: wrap; gap: 2px; padding: 0 0 0 4px; }
-.wf-set { height: 22px; display: flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 9999px; font-size: 11px; line-height: 16px; color: var(--charcoal-50); transition: background .15s, color .15s; }
-.wf-set:hover { color: var(--charcoal); }
-.wf-set .dot { width: 5px; height: 5px; }
-.wf-set .filter-count { color: var(--charcoal-50); }
-.wf-set.on { background: var(--sand-dark); color: var(--charcoal); }
-.wf-set.on > svg { color: var(--charcoal); }
 .wf-search { flex: none; height: 26px; }
 .wf-head .wf-search { width: 160px; }
-.wf-client-list { max-height: 188px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; scrollbar-width: thin; }
-.wf-client { height: 30px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px; border-radius: 9999px; text-align: left; transition: background .15s; }
-.wf-client:hover { background: var(--sand-dark); }
-.wf-client .row-name { flex: 1; min-width: 0; }
-.wf-client .dot { width: 5px; height: 5px; }
-.wf-check { display: flex; color: var(--charcoal-50); }
-.wf-client.on .wf-check { color: var(--charcoal); }
 
 /* Expanded library: the tray grows over the chat; the composer stays put underneath. */
 .main.wf-full { justify-content: flex-end; gap: 0; padding-top: 20px; }
@@ -498,4 +483,10 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .cl-status .dot { width: 5px; height: 5px; }
 .cl-row:hover .cl-status { display: none; }
 .cl-summary { height: 44px; padding: 0 4px; }
-.wf-excluded { text-transform: none; letter-spacing: 0; color: var(--charcoal-50); }
+
+/* Run-for picker: the context picker in multi-select mode. */
+.pick-check { flex: none; display: flex; color: var(--charcoal-50); }
+.ctx-item[aria-selected="true"] .pick-check { color: var(--charcoal); }
+.pick-note { padding: 2px 8px 4px; font-size: 10px; line-height: 16px; color: var(--charcoal-50); }
+.pick-foot { position: sticky; bottom: -6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 4px 2px 8px; background: #fff; font-size: 11px; color: var(--charcoal-light); }
+.wf-done { height: 24px; display: flex; align-items: center; padding: 0 12px; border-radius: 9999px; background: var(--charcoal); color: #fff; font-size: 11px; line-height: 16px; font-weight: 600; }

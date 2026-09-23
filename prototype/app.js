@@ -332,7 +332,7 @@ class App extends Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.onKeyDown);
-    this.onDocClick = () => { if (this.state.rowMenu || this.state.ctxOpen || this.state.filterOpen) this.setState({ rowMenu: null, ctxOpen: false, filterOpen: false }); };
+    this.onDocClick = () => { if (this.state.rowMenu || this.state.ctxOpen || this.state.filterOpen || this.state.wfChoosing) this.setState({ rowMenu: null, ctxOpen: false, filterOpen: false, wfChoosing: false }); };
     document.addEventListener('click', this.onDocClick);
   }
   componentWillUnmount() { document.removeEventListener('keydown', this.onKeyDown); document.removeEventListener('click', this.onDocClick); }
@@ -786,6 +786,52 @@ class App extends Component {
     </div>`;
   }
 
+  // Who a workflow runs for: the context picker's popover, rows and search, but you can pick
+  // several, and groups (Needs you, Individuals…) select all their clients at once.
+  renderRunPicker(allClients) {
+    const st = this.state;
+    const clients = allClients.filter((c) => !st.wfExclude.includes(c.id));
+    const excluded = allClients.length - clients.length;
+    const sel = new Set(st.wfTargets);
+    const toggle = (ids) => { const all = ids.every((id) => sel.has(id)); this.setState({ wfTargets: all ? st.wfTargets.filter((id) => !ids.includes(id)) : [...new Set([...st.wfTargets, ...ids])] }); };
+    const PLURAL = { '1040': 'Individuals', '1041': 'Trusts & estates', '1065': 'Partnerships', '1120': 'C Corps', '1120S': 'S Corps' };
+    const groups = [{ name: 'Needs you', icon: null, cs: clients.filter((c) => c.status === 'needs_attention') }]
+      .concat(Object.keys(ENTITY).map((e) => ({ name: PLURAL[e], icon: iconFor(e), cs: clients.filter((c) => c.entity === e) }))).filter((g) => g.cs.length);
+    const q = st.wfClientQ.trim().toLowerCase();
+    const shown = clients.filter((c) => !q || fullName(c).toLowerCase().includes(q)).sort((a, b) => railName(a).localeCompare(railName(b)));
+    const check = (on) => html`<span class="pick-check"><${Icon} name=${on ? 'circleCheck' : 'circle'} size=${14} /></span>`;
+    return html`
+      <div class="popover menu ctx-picker run-picker" role="listbox" aria-multiselectable="true" aria-label="Run for" onClick=${(e) => e.stopPropagation()}>
+        <label class="search-field ctx-search"><${Icon} name="search" size=${12} />
+          <input ref=${(el) => el && !el.dataset.f && (el.dataset.f = '1', el.focus())} placeholder=${`Search ${clients.length} clients`}
+            value=${st.wfClientQ} onInput=${(e) => this.setState({ wfClientQ: e.target.value })} />
+        </label>
+        ${excluded > 0 && html`<div class="pick-note">${excluded} already in the running workflow, not shown</div>`}
+        ${!q && html`<span class="label">Groups</span>
+          ${groups.map((g) => {
+            const ids = g.cs.map((c) => c.id);
+            const on = ids.every((id) => sel.has(id));
+            return html`<button class="menu-item ctx-item" role="option" aria-selected=${on} onClick=${() => toggle(ids)}>
+              <span class="menu-icon">${g.icon ? html`<${Icon} name=${g.icon} />` : html`<span class="dot"></span>`}</span>
+              <span class="row-text"><span class="row-name">${g.name}</span><span class="row-note">${g.cs.length} client${g.cs.length === 1 ? '' : 's'}</span></span>
+              ${check(on)}
+            </button>`;
+          })}
+          <span class="label">Clients</span>`}
+        ${shown.map((c) => html`<button class="menu-item ctx-item" role="option" aria-selected=${sel.has(c.id)} onClick=${() => toggle([c.id])}>
+            <span class="menu-icon"><${Icon} name=${iconFor(c.entity)} /></span>
+            <span class="row-text"><span class="row-name">${fullName(c)}</span><span class="row-note">${c.status === 'needs_attention' ? c.flag : ENTITY[c.entity]}</span></span>
+            ${c.status === 'needs_attention' && html`<span class="dot"></span>`}
+            ${check(sel.has(c.id))}
+          </button>`)}
+        ${q && !shown.length && html`<div class="no-match">No client matches “${st.wfClientQ}”</div>`}
+        <div class="menu-foot pick-foot">
+          <span>${sel.size ? `${sel.size} selected` : 'None selected'}</span>
+          <button class="wf-done" onClick=${() => this.setState({ wfChoosing: false })}>Done</button>
+        </div>
+      </div>`;
+  }
+
   renderContextPicker(clients, attention) {
     const st = this.state;
     const cur = st.scope;
@@ -927,38 +973,6 @@ class App extends Component {
             : html`<article class="wf-preview wf-preview-empty">${actions}</article>`}
         </div>
         ${actions}`);
-    }
-
-    // Choosing who a staged workflow runs for: quick sets from data Instead has, then any client.
-    if (st.wfPick && st.wfChoosing) {
-      const excluded = clients.length - clients.filter((c) => !st.wfExclude.includes(c.id)).length;
-      clients = clients.filter((c) => !st.wfExclude.includes(c.id));
-      const sel = new Set(st.wfTargets);
-      const toggle = (ids) => { const all = ids.every((id) => sel.has(id)); this.setState({ wfTargets: all ? st.wfTargets.filter((id) => !ids.includes(id)) : [...new Set([...st.wfTargets, ...ids])] }); };
-      const sets = [['Needs you', clients.filter((c) => c.status === 'needs_attention')]]
-        .concat(Object.keys(ENTITY).map((e) => [ENTITY[e], clients.filter((c) => c.entity === e)])).filter(([, cs]) => cs.length);
-      const cq = st.wfClientQ.trim().toLowerCase();
-      const shown = clients.filter((c) => !cq || fullName(c).toLowerCase().includes(cq)).sort((a, b) => railName(a).localeCompare(railName(b)));
-      return wrap('', html`
-        <div class="section-head today-head">
-          <span class="label">Run for${excluded ? html` <span class="wf-excluded">· ${excluded} already covered by the running one</span>` : ''}</span>
-          <button class="wf-done" onClick=${() => this.setState({ wfChoosing: false })}>Done${sel.size ? ` · ${sel.size}` : ''}</button>
-        </div>
-        <div class="wf-sets">${sets.map(([label, cs]) => {
-          const ids = cs.map((c) => c.id);
-          const on = ids.every((id) => sel.has(id));
-          return html`<button class=${'wf-set' + (on ? ' on' : '')} aria-pressed=${on} onClick=${() => toggle(ids)}>${on ? html`<${Icon} name="check" size=${11} stroke=${2} />` : label === 'Needs you' && html`<span class="dot"></span>`}${label}<span class="filter-count">${cs.length}</span></button>`;
-        })}</div>
-        <label class="search-field wf-search"><${Icon} name="search" size=${12} />
-          <input placeholder=${`Search ${clients.length} clients`} value=${st.wfClientQ} onInput=${(e) => this.setState({ wfClientQ: e.target.value })} />
-        </label>
-        <div class="wf-client-list">${shown.map((c) => html`
-          <button class=${'wf-client' + (sel.has(c.id) ? ' on' : '')} aria-pressed=${sel.has(c.id)} onClick=${() => toggle([c.id])}>
-            <span class="wf-check"><${Icon} name=${sel.has(c.id) ? 'circleCheck' : 'circle'} size=${14} /></span>
-            <span class="row-name">${railName(c)}</span>
-            ${c.status === 'needs_attention' && html`<span class="dot"></span>`}
-            <span class="pill-xxs lime">${c.entity}</span>
-          </button>`)}</div>`);
     }
 
     // Staged: the workflow as a chip; who it runs for is the composer pill. Send starts it; nothing runs before that.
@@ -1216,6 +1230,7 @@ class App extends Component {
           </div>`}
 
         ${st.ctxOpen && this.renderContextPicker(clients, attention)}
+        ${audience && st.wfChoosing && this.renderRunPicker(clients)}
       <form class="composer" onSubmit=${(e) => { e.preventDefault(); this.send(clients); }}>
         <textarea ref=${(el) => (this.inputEl = el)} rows="1"
           placeholder=${st.wfPick ? 'Add any context for this workflow, or send to start...'
