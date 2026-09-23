@@ -27,7 +27,9 @@ Things to try:
 
 - Read the home: the headline and the "Needs you" tray answer who needs you
   today; click a client to open their file.
-- Switch the rail to **Running** (workflows in progress) and open "Collect missing K-1s".
+- Open "Collect missing K-1s" under **Threads** in the rail: a cross-client
+  workflow is a firm thread with a checklist. "4 workflows running →" in the
+  home tray lists everything in progress.
 - Click the **All clients ⌄** pill in the composer (or type `@`) to choose who
   the chat is about.
 - Click the workflow button in the composer (or type `/`): the library opens
@@ -58,8 +60,9 @@ Pro in the first three seconds:
 - **One job per surface** — the home's tray says who needs you today and
   why; the rail stays Instead's A–Z book of clients, marking those clients
   with only an amber dot, so nothing is said twice on one screen.
-- **Clients | Running** as one toggle in the rail (running = workflows in progress), each tab keeping its
-  own scroll and selection.
+- **No tabs in the rail.** It's Instead's own: the **Workflows** button at the
+  top opens the library above the chat box, then Clients A–Z, then Threads.
+  A workflow run is a thread, so it lives with threads.
 - **Selecting is scoping** — clicking a client opens their panel and sets
   the composer's context pill ("Meera Iyer ×"); sending a message gets a
   mock reply.
@@ -93,12 +96,15 @@ composer. A calm week keeps Instead's greeting and shows nothing extra.
 
 **2. Where do cross-client vs. single-client workflows live, and how do I move
 between them?** A workflow lives where its work lives. Cross-client ones stay
-at the firm level; single-client ones open inside their client's panel. The
-The rail's Running tab indexes both; the library of workflows you can start opens from the composer. Every workflow is a chat thread that opens with
+at the firm level; single-client ones open inside their client's panel. A run
+is a thread, so it lives where its threads live: cross-client runs in the
+rail's Threads (with progress, "3/5"), single-client runs in the client's
+Client threads (with a "2/3" badge on their row). "4 workflows running →" on
+the home lists them all in chat. Every workflow is a chat thread that opens with
 Instead's checklist (open items first, finished ones folded into one line).
 Drilling from a workflow into a client puts a "‹ Collect missing K-1s" link at
 the top of the client's panel, one tap back; × always goes home with the
-rail's tab and scroll intact.
+rail's scroll intact.
 
 **3. Chat and the client list: does selecting a client change context? Where
 do workflows start?** Selecting a client scopes the chat to them, and the

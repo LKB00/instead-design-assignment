@@ -276,7 +276,6 @@ class App extends Component {
     super();
     this.state = {
       scenario: PARAMS.get('scenario') || 'grouped',
-      tab: 'clients',
       scope: PARAMS.get('scope') ? { type: 'client', id: PARAMS.get('scope') } : null, // { type: 'client' | 'workflow', id }
       seenTip: PARAMS.has('scope'),
       showTip: false,
@@ -323,7 +322,7 @@ class App extends Component {
       railW: 316,
       threadsH: 260,
     };
-    this.scrollPos = { clients: 0, workflows: 0 };
+    this.scrollPos = { clients: 0 };
     this.onKeyDown = (e) => {
       if (e.key === 'Escape') {
         if (this.state.wfChoosing) return this.setState({ wfChoosing: false });
@@ -360,13 +359,10 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.tab !== this.state.tab && this.listEl) {
-      this.listEl.scrollTop = this.scrollPos[this.state.tab] || 0;
-    }
     // Leaving a client: the firm rail remounts — put it back exactly where it was.
     const wasClient = prevState.scope && prevState.scope.type === 'client';
     const isClient = this.state.scope && this.state.scope.type === 'client';
-    if (wasClient && !isClient && this.listEl) this.listEl.scrollTop = this.scrollPos[this.state.tab] || 0;
+    if (wasClient && !isClient && this.listEl) this.listEl.scrollTop = this.scrollPos.clients || 0;
     if (this.chatEl) this.chatEl.scrollTop = this.chatEl.scrollHeight;
     const scopeChanged = prevState.scope !== this.state.scope;
     if (scopeChanged && this.inputEl) this.inputEl.focus();
@@ -387,12 +383,6 @@ class App extends Component {
     window.addEventListener('mouseup', up);
   }
 
-  setTab(tab) {
-    if (tab === this.state.tab) return;
-    if (this.listEl) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
-    this.setState({ tab });
-  }
-
   remember(scope) {
     this.setState((s) => ({ recent: [scope, ...s.recent.filter((r) => !(r.type === scope.type && r.id === scope.id))].slice(0, 6) }));
   }
@@ -408,7 +398,7 @@ class App extends Component {
 
   pickClient(id, { from = null, thread = null } = {}) {
     this.remember({ type: 'client', id });
-    if (this.listEl && !(this.state.scope && this.state.scope.type === 'client')) this.scrollPos[this.state.tab] = this.listEl.scrollTop;
+    if (this.listEl && !(this.state.scope && this.state.scope.type === 'client')) this.scrollPos.clients = this.listEl.scrollTop;
     this.setState((s) => ({
       scope: { type: 'client', id }, from, seenTip: true, showTip: !s.seenTip && !from && !thread, menu: false, panelLoading: id, panelEntering: id,
       activeThread: thread ? { ...s.activeThread, [id]: thread } : s.activeThread,
@@ -673,6 +663,32 @@ class App extends Component {
     }, 1100);
   }
 
+  // Everything in progress, on demand: the overview a separate tab used to hold, one click from home.
+  briefRunning(clients) {
+    const runs = activeWorkflows(clients);
+    this.setState((st) => ({ scope: null, from: null, threads: { ...st.threads, general: (st.threads.general || []).concat([{ from: 'user', text: 'What’s running?' }]) }, typing: 'Checking workflows', menu: false }));
+    setTimeout(() => {
+      const across = runs.filter((w) => !w.clientId), one = runs.filter((w) => w.clientId);
+      const blocks = [{ p: `${runs.length} workflow${runs.length === 1 ? ' is' : 's are'} running.` }];
+      if (across.length) blocks.push({ p: 'Across clients (in your threads):' }, { runs: across.map((w) => w.id) });
+      if (one.length) blocks.push({ p: 'For one client (in their files):' }, { runs: one.map((w) => w.id) });
+      this.setState((st) => ({ typing: false, threads: { ...st.threads, general: st.threads.general.concat([{ from: 'assistant', blocks }]) } }));
+    }, 900);
+  }
+
+  renderRuns(ids) {
+    return html`<div class="brief">
+      ${ids.map((id) => ALL_WF.find((w) => w.id === id)).filter(Boolean).map((w) => {
+        const waiting = w.items.some((it) => it.state === 'attn');
+        return html`<button class="brief-row pg-row" onClick=${() => this.pickWorkflow(w.id)}>
+          <span class="pg-icon">${waiting ? html`<span class="dot"></span>` : html`<${Icon} name="workflow" />`}</span>
+          <span class="brief-text"><span class="pg-label">${w.name}</span><span class="brief-note">${w.clientName || `${w.clients} clients`} · ${w.done} of ${w.total} done${waiting ? ' · needs you' : ''}</span></span>
+          <span class="brief-open">Open<${Icon} name="moveRight" size=${12} /></span>
+        </button>`;
+      })}
+    </div>`;
+  }
+
   renderProgress(id, clients) {
     const w = ALL_WF.find((x) => x.id === id);
     const here = this.state.scope;
@@ -786,7 +802,7 @@ class App extends Component {
       <section class="today" aria-label="Clients who need you today">
         <div class="section-head today-head">
           <span class="label">Needs you</span>
-          ${k > 0 && html`<button class="today-link" onClick=${() => this.setTab('workflows')}>${k} workflow${k === 1 ? '' : 's'} running<${Icon} name="moveRight" size=${12} /></button>`}
+          ${k > 0 && html`<button class="today-link" onClick=${() => this.briefRunning(clients)}>${k} workflow${k === 1 ? '' : 's'} running<${Icon} name="moveRight" size=${12} /></button>`}
         </div>
         <div class="today-rows">
           ${attention.slice(0, 3).map((c) => html`
@@ -1035,19 +1051,6 @@ class App extends Component {
       </div>`;
   }
 
-  renderWorkflowRow(w, sub) {
-    const s = this.state.scope;
-    const selected = s && s.type === 'workflow' && s.id === w.id;
-    return html`
-      <div class=${'row' + (selected ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.pickWorkflow(w.id)}
-        title=${sub} aria-label=${`${w.name}, ${sub}, ${w.done} of ${w.total} done`}>
-        <span class="avatar"><span class="avatar-icon"><${Icon} name="workflow" /></span></span>
-        <span class="row-text"><span class="row-name">${w.name}</span></span>
-        <span class="row-meta"><span class="wf-count">${w.done}/${w.total}</span></span>
-        <button class="ic row-more" aria-label="More" onClick=${(e) => e.stopPropagation()}><${Icon} name="moreVertical" /></button>
-      </div>`;
-  }
-
   renderClientShell(c, activeKey) {
     const st = this.state;
     const list = st.clientThreads[c.id] || [];
@@ -1155,6 +1158,8 @@ class App extends Component {
     const messages = st.threads[key] || [];
     const hasMessages = messages.length > 0;
     const firstGeneral = (st.threads.general || []).find((m) => m.from === 'user');
+    // A run is a thread: cross-client runs are firm threads, single-client runs sit in their client's panel.
+    const firmRuns = status.workflows.filter((w) => !w.clientId);
 
     // A calm week keeps Instead's greeting; otherwise the home leads with who needs you.
     let heroText = status.headline;
@@ -1164,7 +1169,6 @@ class App extends Component {
     if (sw) heroText = `Let’s keep “${sw.name}” moving.`;
 
     const canSend = st.draft.trim().length > 0 || !!st.wfPick || (st.wfTray === 'build' && !!st.wfFile);
-    const isClients = st.tab === 'clients';
     const I = (name, label, onClick, cls = 'ic') => html`<button class=${cls} aria-label=${label} onClick=${onClick}><${Icon} name=${name} /></button>`;
 
     // Pop-ups anchor to the composer itself, so they open just above it wherever it sits.
@@ -1230,18 +1234,16 @@ class App extends Component {
             <div class="rail-logo"><img src="./img/instead-logo.svg" alt="instead" /></div>
 
             <div class="toolbar">
-              <div class="toggle" role="tablist">
-                <button role="tab" aria-selected=${isClients} onClick=${() => this.setTab('clients')}><${Icon} name="users" />Clients</button>
-                <button role="tab" aria-selected=${!isClients} onClick=${() => this.setTab('workflows')}><${Icon} name="workflow" />Running</button>
-              </div>
+              <button class=${'nav-pill wf-nav' + (st.wfTray ? ' on' : '')} aria-expanded=${!!st.wfTray} onClick=${() => (st.wfTray ? this.closeWf() : this.openWf())}>
+                <span class="nav-pill-icon"><${Icon} name="workflow" /></span><span class="nav-pill-label">Workflows</span><span class="nav-pill-go"><${Icon} name="moveRight" /></span>
+              </button>
               ${I('library', 'Library', null, 'round-btn')}
               ${I('messagePlus', 'New thread', () => this.clearScope(), 'round-btn')}
             </div>
 
             <div class="clients-pane">
               <div class="section-head">
-                ${isClients
-                  ? st.query !== null
+                ${st.query !== null
                     ? html`<label class="search-field"><${Icon} name="search" size=${12} />
                         <input ref=${(el) => el && !el.dataset.f && (el.dataset.f = '1', el.focus())} placeholder=${`Search ${clients.length} clients`} value=${st.query}
                           onInput=${(e) => this.setState({ query: e.target.value })} onKeyDown=${(e) => { if (e.key === 'Escape') this.setState({ query: null }); }} />
@@ -1265,34 +1267,21 @@ class App extends Component {
                                     ${st.filter === o.id && html`<span class="proto-check"><${Icon} name="check" size=${12} /></span>`}
                                   </button>`)}`)}
                             </div>`}
-                        </span>${I('plus', 'Add client')}</div>`
-                  : html`<span class="label">Running</span>
-                      <div class="head-icons">${I('search', 'Search running work')}${I('plus', 'Start a workflow', () => this.openWf())}</div>`}
+                        </span>${I('plus', 'Add client')}</div>`}
               </div>
-              ${isClients && activeFilter && html`
+              ${activeFilter && html`
                 <div class="filter-bar">
                   <span class="filter-chip">${activeFilter.label} · ${book.length}
                     <button class="chip-x" aria-label="Clear filter" onClick=${() => this.setState({ filter: null })}><${Icon} name="x" size=${10} stroke=${2} /></button>
                   </span>
                 </div>`}
               <div class="list" ref=${(el) => (this.listEl = el)}>
-                ${isClients
-                  ? html`
-                      ${matches
-                        ? matches.length
-                          ? matches.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))
-                          : html`<div class="no-match">No client matches “${st.query}”${activeFilter ? ` in ${activeFilter.label}` : ''}</div>`
-                        : html`<div class="list-section">${book.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}</div>`}
-                      <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>`
-                  : html`
-                      <div class="list-section across-clients">
-                        <div class="group-label">Across clients</div>
-                        ${WORKFLOWS.across.map((w) => this.renderWorkflowRow(w, `${w.clients} clients`))}
-                      </div>
-                      <div class="list-section single-client">
-                        <div class="group-label">For one client</div>
-                        ${WORKFLOWS.single.map((w) => this.renderWorkflowRow(w, w.clientName))}
-                      </div>`}
+                ${matches
+                  ? matches.length
+                    ? matches.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))
+                    : html`<div class="no-match">No client matches “${st.query}”${activeFilter ? ` in ${activeFilter.label}` : ''}</div>`
+                  : html`<div class="list-section">${book.map((c) => this.renderClientRow(c, { selected: false, wf: wfByClient[c.id] }))}</div>`}
+                <div class="add-wrap"><button class="add-row"><${Icon} name="plus" />Add new client</button></div>
               </div>
             </div>
 
@@ -1303,11 +1292,14 @@ class App extends Component {
                 <div class="head-icons">${I('plus', 'New thread', () => this.clearScope())}</div>
               </div>
               <div class="threads-list">
-                ${firstGeneral
-                  ? html`<div class=${'thread-row' + (!scoped ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.clearScope()}>
-                      <span class="t">${firstGeneral.text}</span><span class="thread-when">Now</span>
-                    </div>`
-                  : html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
+                ${firstGeneral && html`<div class=${'thread-row' + (!scoped ? ' on' : '')} role="button" tabindex="0" onClick=${() => this.clearScope()}>
+                    <span class="t">${firstGeneral.text}</span><span class="thread-when">Now</span>
+                  </div>`}
+                ${firmRuns.map((w) => html`<div class=${'thread-row wf' + (sw && sw.id === w.id ? ' on' : '')} role="button" tabindex="0" title=${`${w.name}: ${w.done} of ${w.total} clients done`}
+                    onClick=${() => this.pickWorkflow(w.id)} onKeyDown=${(e) => { if (e.key === 'Enter') this.pickWorkflow(w.id); }}>
+                    <${Icon} name="workflow" size=${12} /><span class="t">${w.name}</span><span class="thread-when">${w.done}/${w.total}</span>
+                  </div>`)}
+                ${!firstGeneral && !firmRuns.length && html`<div class="empty-threads"><${Icon} name="messages" />Start your first thread</div>`}
               </div>
             </div>
 
@@ -1333,7 +1325,7 @@ class App extends Component {
                   ${messages.map((m, i) => (m.from === 'user'
                     ? html`<div class=${'serif user-turn' + (i === 0 ? ' first' : '')}>${m.text}</div>`
                     : html`<div class="answer">
-                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.offer ? this.renderOffer(b.offer, clients) : b.choose ? this.renderChoose(b.choose, clients) : b.progress ? this.renderProgress(b.progress, clients) : b.groups ? this.renderGroups(b.groups, clients) : b.brief ? this.renderBrief(b.brief, clients) : b.draft ? this.renderDraft(b.draft)
+                        ${(m.blocks || [{ p: m.text }]).map((b) => (b.offer ? this.renderOffer(b.offer, clients) : b.choose ? this.renderChoose(b.choose, clients) : b.progress ? this.renderProgress(b.progress, clients) : b.groups ? this.renderGroups(b.groups, clients) : b.brief ? this.renderBrief(b.brief, clients) : b.draft ? this.renderDraft(b.draft) : b.runs ? this.renderRuns(b.runs)
                           : b.ul ? html`<ul>${b.ul.map((li) => html`<li>${li}</li>`)}</ul>` : html`<p>${b.p}</p>`))}
                         <div class="msg-actions">
                           ${I('thumbsUp', 'Good response', null, 'fb')}${I('thumbsDown', 'Bad response', null, 'fb')}${I('filePen', 'Edit as document', null, 'fb')}

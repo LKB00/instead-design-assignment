@@ -28,7 +28,7 @@ Each file becomes a frame; text layers stay text, icons are vectors.
 
 ## Components (`components/`)
 
-Rail (firm, running tab, toolbar toggle, filtered to Needs you), filter menu, client rows (default, needs you,
+Rail (firm, workflows button, filtered to Needs you), filter menu, client rows (default, needs you,
 with workflow, hover), user card, composer (firm,
 client), context pill (firm, client, workflow), context picker, "Needs you" tray with composer, today row, briefing list, grouped briefing, workflow checklist, workflow tray (browse, staged, choose clients, build),
 workflow library preview, workflow draft card, workflow offer buttons, assistant answer, client panel, client panel back link

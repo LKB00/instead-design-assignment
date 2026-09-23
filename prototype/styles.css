@@ -67,7 +67,7 @@ img { display: block; }
 .dot { width: 6px; height: 6px; flex: none; border-radius: 9999px; background: var(--amber); }
 
 /* nav pill (Workflows / New client thread) */
-.nav-pill, .toggle {
+.nav-pill {
   height: 32px; display: flex; align-items: center; background: #fff; border: 0.5px solid var(--control-border); border-radius: 9999px;
   font-size: 12px; line-height: 16px; font-weight: 500; color: var(--charcoal);
 }
@@ -93,11 +93,6 @@ img { display: block; }
 .rail-logo img { height: 15.4px; width: 60px; }
 
 .toolbar { flex: none; display: flex; gap: 8px; padding: 0 20px 16px; }
-.toggle { flex: 1; padding: 2px; gap: 2px; }
-.toggle button { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 9999px; color: var(--charcoal-light); transition: background .18s var(--ease), color .18s; }
-.toggle button svg { color: var(--charcoal-light); }
-.toggle button:hover { color: var(--charcoal); }
-.toggle button[aria-selected="true"] { background: var(--sand-dark); color: var(--charcoal); }
 
 .clients-pane { flex: 1 1 0; min-height: 120px; display: flex; flex-direction: column; gap: 11px; padding: 5px 16px 0; }
 .threads-pane { position: relative; flex: 0 0 var(--threads-h, 260px); min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px 16px 0; }
@@ -483,3 +478,8 @@ button.wf-chip:hover { border-color: var(--gray-400); }
 .draft-card .wf-step:hover .chip-x { display: flex; }
 .add-step { align-self: flex-start; padding-left: 30px; }
 .draft-card .offer { padding-top: 4px; }
+
+/* Instead's Workflows button at the top of the rail opens the library in the composer tray. */
+.toolbar .wf-nav { flex: 1; min-width: 0; }
+.wf-nav.on { background: var(--sand-dark); }
+.threads-list .thread-row.wf > svg { flex: none; }
