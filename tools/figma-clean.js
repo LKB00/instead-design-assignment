@@ -14,7 +14,7 @@ window.figmaClean = function figmaClean(doc) {
     ['filter-bar', 'Rail / Active filter'], ['add-row', 'Rail / Add client'], ['empty-threads', 'Rail / Empty threads'],
     ['row', 'Client row'], ['thread-row', 'Thread row'], ['avatar', 'Avatar'], ['wf-count', 'Workflow progress'],
     ['pill-xxs', 'Form badge'], ['dot', 'Needs-you dot'], ['initials', 'Initials'], ['round-btn', 'Round button'],
-    ['filter-menu', 'Filter menu'], ['run-picker', 'Client picker'], ['ctx-picker', 'Context picker'], ['menu-item', 'Menu item'], ['menu-foot', 'Menu tip'],
+    ['filter-menu', 'Filter menu'], ['row-menu', 'Client row menu'], ['run-picker', 'Client picker'], ['ctx-picker', 'Context picker'], ['menu-item', 'Menu item'], ['menu-foot', 'Menu tip'],
     ['filter-chip', 'Filter chip'], ['search-field', 'Search field'], ['section-head', 'Section header'],
     // Client panel
     ['client-shell', 'Client panel'], ['icon-col', 'Client panel / Nav'], ['client-panel', 'Client panel / Content'],
@@ -37,7 +37,7 @@ window.figmaClean = function figmaClean(doc) {
     ['wf-lib', 'Library'], ['wf-lib-list', 'Library / List'], ['wf-lib-group', 'Library / Category'], ['wf-lib-row', 'Library / Row'],
     ['wf-preview', 'Library / Preview'], ['wf-preview-foot', 'Library / Preview footer'], ['wf-steps', 'Steps'], ['wf-step', 'Step'], ['step-n', 'Step number'],
     // Composer
-    ['composer', 'Composer'], ['placeholder', 'Composer / Placeholder'], ['composer-controls', 'Composer / Controls'],
+    ['composer', 'Composer'], ['placeholder', 'Placeholder'], ['typed', 'Typed text'], ['composer-controls', 'Composer / Controls'],
     ['controls-group', 'Control group'], ['ctx-pill', 'Context pill'], ['circ', 'Icon button'], ['send', 'Send button'],
     ['chip-x', 'Remove'], ['tooltip', 'Tooltip'],
   ];

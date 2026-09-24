@@ -35,13 +35,13 @@ async function toSVG(selector, file, { fullPage = false } = {}) {
     const { elementToSVG, inlineResources } = await import('https://esm.sh/dom-to-svg@0.12.2');
     const el = full ? document.documentElement : document.querySelector(sel);
     if (!el) return null;
-    // Placeholders aren't exported as text; stand in a real text node while converting.
-    const swaps = [...document.querySelectorAll('textarea, input')].filter((t) => !t.value && t.placeholder).map((t) => {
+    // Form fields aren't exported as text, typed or placeholder; stand in a real text node while converting.
+    const swaps = [...document.querySelectorAll('textarea, input')].filter((t) => t.type !== 'file' && t.offsetParent && (t.value || t.placeholder)).map((t) => {
       const cs = getComputedStyle(t);
       const d = document.createElement('div');
-      d.className = 'placeholder';
-      d.textContent = t.placeholder;
-      Object.assign(d.style, { font: cs.font, padding: cs.padding, height: cs.height, color: '#919395', flex: cs.flex, boxSizing: 'border-box', whiteSpace: 'nowrap', overflow: 'hidden' });
+      d.className = t.value ? 'typed' : 'placeholder';
+      d.textContent = t.value || t.placeholder;
+      Object.assign(d.style, { font: cs.font, padding: cs.padding, height: cs.height, color: t.value ? cs.color : '#919395', flex: cs.flex, boxSizing: 'border-box', whiteSpace: 'nowrap', overflow: 'hidden' });
       t.style.display = 'none';
       t.after(d);
       return [t, d];
@@ -177,6 +177,47 @@ await screen('10-two-clients');
 await open('scenario=calm');
 await screen('11-calm-week');
 await comp('.ctx-pill', 'composer-context-pill-firm');
+
+// ---- States reached by clicking, not by a link ----
+// First visit to a client from the home: the tip that explains the chat is now about them.
+await open('');
+await page.evaluate(() => [...document.querySelectorAll('.today-row')].find((r) => /Meera/.test(r.textContent)).click());
+await sleep(900);
+await screen('14-client-first-visit-tip');
+await comp('.tooltip', 'composer-scope-tip');
+
+// A client row's ⋮ menu.
+await open('');
+await page.evaluate(() => { const r = [...document.querySelectorAll('.row')].find((x) => /Cho, Daniel/.test(x.textContent)); r.querySelector('.row-more').click(); });
+await sleep(300);
+await comp('.row-menu', 'rail-client-row-menu');
+
+// @ typed in the chat box: the picker filters as you type.
+await page.keyboard.press('Escape');
+await page.click('textarea');
+await page.type('textarea', "what's due for @as");
+await sleep(400);
+await screen('15-inline-mention');
+await comp('.ctx-picker', 'composer-mention-picker');
+
+// Plain requests at the firm level: "which client?", "already running", and what's running.
+await open('');
+await page.type('textarea', 'can we file an extension?');
+await page.keyboard.press('Enter');
+await sleep(1600);
+await page.evaluate(() => { document.querySelectorAll('[data-x]').forEach((e) => e.removeAttribute('data-x')); [...document.querySelectorAll('.answer')].pop().querySelector('.brief').setAttribute('data-x', ''); });
+await comp('[data-x]', 'chat-which-client');
+await page.type('textarea', 'remind clients about their tax payment');
+await page.keyboard.press('Enter');
+await sleep(1600);
+await screen('16-already-running');
+await page.evaluate(() => { document.querySelectorAll('[data-x]').forEach((e) => e.removeAttribute('data-x')); [...document.querySelectorAll('.answer')].pop().querySelector('.offer').setAttribute('data-x', ''); });
+await comp('[data-x]', 'chat-already-running-buttons');
+await open('');
+await page.click('.today-link');
+await sleep(1400);
+await screen('17-whats-running');
+await comp('.brief', 'chat-running-list');
 
 await browser.close();
 console.log('done');

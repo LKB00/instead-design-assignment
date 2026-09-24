@@ -25,6 +25,10 @@ Each file becomes a frame; text layers stay text, icons are vectors.
 | 11-calm-week | Nobody needs you |
 | 12-workflow-library | Tray expanded into the full library with a preview |
 | 13-workflow-draft | A workflow drafted in chat, editable before saving |
+| 14-client-first-visit-tip | First time a client is opened from the home: the tip above the chat box |
+| 15-inline-mention | `@` typed in the chat box, the picker filtering as you type |
+| 16-already-running | Asking for work that's already running: Open it, or start one for other clients |
+| 17-whats-running | "4 workflows running →": every running workflow, in chat |
 
 ## Components (`components/`)
 
@@ -32,10 +36,10 @@ File names are `area-part-variant`, matching the layer names inside.
 
 | Area | Files |
 |---|---|
-| Rail | `rail`, `rail-toolbar`, `rail-client-row-default`, `-needs-you`, `-with-workflow`, `-hover`, `rail-filter-menu`, `rail-filtered-needs-you`, `rail-user-card` |
+| Rail | `rail`, `rail-toolbar`, `rail-client-row-default`, `-needs-you`, `-with-workflow`, `-hover`, `rail-filter-menu`, `rail-filtered-needs-you`, `rail-client-row-menu`, `rail-user-card` |
 | Tray (above the composer) | `tray-needs-you`, `tray-client-row`, `tray-workflows-browse`, `-picked`, `-build` |
-| Composer | `composer-firm`, `composer-client`, `composer-context-pill-firm`, `-client`, `-workflow`, `composer-context-picker`, `composer-client-picker` |
-| Chat | `chat-reply`, `chat-buttons`, `chat-client-checklist`, `chat-briefing-list`, `chat-briefing-groups`, `chat-draft-workflow` |
+| Composer | `composer-firm`, `composer-client`, `composer-context-pill-firm`, `-client`, `-workflow`, `composer-context-picker`, `composer-client-picker`, `composer-mention-picker`, `composer-scope-tip` |
+| Chat | `chat-reply`, `chat-buttons`, `chat-client-checklist`, `chat-briefing-list`, `chat-briefing-groups`, `chat-draft-workflow`, `chat-which-client`, `chat-already-running-buttons`, `chat-running-list` |
 | Library | `library-preview` |
 | Client panel | `client-panel`, `client-panel-back-link` |
 
