@@ -7,19 +7,20 @@ Baskerville (install Libre Baskerville if Figma swaps the headings).
 **Import:** drag the files onto a Figma canvas. Each file becomes a frame
 named after the file.
 
-## Screens — by user flow
+## Screens — by the problem they solve
 
-Each folder is one thing a pro does; files are numbered in the order they
-happen.
+Each folder answers one question from the brief; files are numbered in the
+order you'd show them.
 
-| Flow | Screens |
-|---|---|
-| **1 Home** | 1.1 Home – 3 clients need you · 1.2 Home – Running workflows · 1.3 Home – Calm week · 1.4 Home – 2 clients · 1.5 Home – 200 clients · 1.6 Home – 200 clients, all who need you |
-| **2 Find a client** | 2.1 Filter the client list · 2.2 Choose who the chat is about · 2.3 Choose a client by typing @ |
-| **3 Work in a client** | 3.1 Client – First visit · 3.2 Client – Thread · 3.3 Client – Asking offers a workflow |
-| **4 Run a workflow** | 4.1 Workflows – Open · 4.2 Workflows – Library · 4.3 Workflows – Picked, choose clients · 4.4 Workflows – Choosing clients · 4.5 Workflows – Already running |
-| **5 Build a workflow** | 5.1 Build – Describe the work · 5.2 Build – Draft to review |
-| **6 Follow a workflow** | 6.1 Workflow – Checklist · 6.2 Workflow – Into a client and back |
+| Folder | Screens | Brief |
+|---|---|---|
+| **1 See who needs you** | 1.1 Home – 3 clients need you · 1.2 Open a client from the list · 1.3 Calm week – nothing needs you | Q1 |
+| **2 See work in progress** | 2.1 All running workflows · 2.2 One workflow’s checklist | Ongoing workflows at a glance |
+| **3 Move between firm and client** | 3.1 From a workflow into a client and back · 3.2 Inside a client’s thread | Q2 |
+| **4 Choose who the chat is about** | 4.1 Choose from the list · 4.2 Type @ in the chat box | Q3 |
+| **5 Start a workflow** | 5.1 Ask in plain words, Instead offers one · 5.2 Open the Workflows panel · 5.3 Browse the full library · 5.4 Pick one, then choose clients · 5.5 Choosing clients · 5.6 Already running, no duplicate | Q3 |
+| **6 Build your own workflow** | 6.1 Describe the work · 6.2 Review the draft | Beyond the brief |
+| **7 From 2 to 200 clients** | 7.1 2 clients · 7.2 200 clients · 7.3 200 clients, grouped by what’s blocking · 7.4 Filter the client list | Q4 |
 
 ## Components — by part of the screen
 
