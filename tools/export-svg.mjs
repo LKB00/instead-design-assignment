@@ -9,10 +9,7 @@ const CLEAN = fs.readFileSync(new URL('./figma-clean.js', import.meta.url), 'utf
 const BASE = 'http://localhost:5173/';
 const W = 1440, H = 900;
 // Start from empty folders so renamed files don't leave old ones behind.
-for (const dir of ['screens', 'components']) {
-  fs.mkdirSync(path.join(OUT, dir), { recursive: true });
-  for (const f of fs.readdirSync(path.join(OUT, dir))) if (f.endsWith('.svg')) fs.unlinkSync(path.join(OUT, dir, f));
-}
+for (const dir of ['screens', 'components']) fs.rmSync(path.join(OUT, dir), { recursive: true, force: true });
 
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -63,161 +60,150 @@ async function toSVG(selector, file, { fullPage = false } = {}) {
     return window.figmaClean(doc); // tools/figma-clean.js: meaningful groups, readable names
   }, selector, fullPage);
   if (!svg) { console.log('  skipped (not found):', file, selector); return; }
+  fs.mkdirSync(path.dirname(path.join(OUT, file)), { recursive: true });
   fs.writeFileSync(path.join(OUT, file), svg);
   console.log('  wrote', file, Math.round(svg.length / 1024) + 'KB');
 }
-const screen = async (name) => { await page.mouse.move(W - 2, 2); await sleep(150); return toSVG(null, `screens/${name}.svg`, { fullPage: true }); };
-const comp = (sel, name) => toSVG(sel, `components/${name}.svg`);
+// Screens are grouped by user flow and numbered in the order a pro goes through them;
+// components are grouped by the part of the screen they belong to. File name = Figma frame name.
+const screen = async (file) => { await page.mouse.move(W - 2, 2); await sleep(150); return toSVG(null, `screens/${file}.svg`, { fullPage: true }); };
+const comp = (sel, file) => toSVG(sel, `components/${file}.svg`);
+const mark = (fn) => page.evaluate(`(() => { document.querySelectorAll('[data-x]').forEach((e) => e.removeAttribute('data-x')); (${fn})().setAttribute('data-x', ''); })()`);
+const clickText = (sel, re) => page.evaluate((s, r) => [...document.querySelectorAll(s)].find((e) => new RegExp(r).test(e.textContent)).click(), sel, re);
+const send = async (text) => { await page.click('textarea'); await page.type('textarea', text); await page.keyboard.press('Enter'); await sleep(1600); };
 
-// ---- Screens ----
-console.log('screens');
+// ---- 1 Home ----
 await open('');
-await screen('01-firm-home');
-await comp('.rail', 'rail');
-await comp('.composer', 'composer-firm');
-await comp('.today-tray', 'tray-needs-you');
-await comp('.today-row', 'tray-client-row');
-await comp('.row:has(.dot)', 'rail-client-row-needs-you');
-await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'rail-client-row-default');
-await comp('.row:has(.wf-count)', 'rail-client-row-with-workflow');
-await comp('.user-card', 'rail-user-card');
-await comp('.toolbar', 'rail-toolbar');
+await screen('1 Home/1.1 Home – 3 clients need you');
+await comp('.rail', 'Left panel/Left panel');
+await comp('.toolbar', 'Left panel/Top buttons');
+await comp('.row:has(.dot)', 'Left panel/Client row – Needs you');
+await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'Left panel/Client row – Default');
+await comp('.row:has(.wf-count)', 'Left panel/Client row – In a workflow');
+await comp('.user-card', 'Left panel/User card');
+await comp('.today-tray', 'Needs you list/Needs you list');
+await comp('.today-row', 'Needs you list/Row');
+await comp('.composer', 'Chat box/Chat box – Home');
+await comp('.ctx-pill', 'Chat box/Client selector – All clients');
+await page.click('.today-link');
+await sleep(1400);
+await screen('1 Home/1.2 Home – Running workflows');
+await comp('.brief', 'Chat messages/Running workflows');
+await open('scenario=calm');
+await screen('1 Home/1.3 Home – Calm week');
+await open('scenario=two');
+await screen('1 Home/1.4 Home – 2 clients');
+await open('scenario=large');
+await screen('1 Home/1.5 Home – 200 clients');
+await page.click('.today-more');
+await sleep(1600);
+await screen('1 Home/1.6 Home – 200 clients, all who need you');
+await mark(`() => document.querySelector('.brief')`);
+await comp('[data-x]', 'Chat messages/Who needs you – Top 3');
+await comp('.brief:has(.count)', 'Chat messages/Who needs you – Grouped');
+
+// ---- 2 Find a client ----
+await open('');
 await page.click('[aria-label="Filter clients"]');
 await sleep(300);
-await screen('02-filter-menu');
-await comp('.filter-menu', 'rail-filter-menu');
+await screen('2 Find a client/2.1 Filter the client list');
+await comp('.filter-menu', 'Left panel/Filter menu');
 await page.click('.filter-item');
 await sleep(300);
-await comp('.clients-pane', 'rail-filtered-needs-you');
+await comp('.clients-pane', 'Left panel/Client list – Filtered to Needs you');
 await page.click('[aria-label="Clear filter"]');
 await sleep(200);
 await page.hover('.row:not(:has(.dot)):not(:has(.wf-count))');
 await sleep(200);
-await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'rail-client-row-hover');
-await page.mouse.move(W - 10, H - 10);
-
-// Workflows open in the composer tray: browse, staged with clients, build, and the expanded library.
-await page.click('[aria-label="Workflows"]');
-await sleep(400);
-await screen('03-workflow-tray');
-await comp('.wf-tray', 'tray-workflows-browse');
-await page.click('.wf-row');
+await comp('.row:not(:has(.dot)):not(:has(.wf-count))', 'Left panel/Client row – Hover');
+await page.evaluate(() => { const r = [...document.querySelectorAll('.row')].find((x) => /Cho, Daniel/.test(x.textContent)); r.querySelector('.row-more').click(); });
 await sleep(300);
-await comp('.wf-tray', 'tray-workflows-picked');
-await page.click('.ctx-pill .ctx-btn');
-await sleep(300);
-await page.evaluate(() => [...document.querySelectorAll('.run-picker .ctx-item')].find((b) => /Needs you/.test(b.textContent)).click());
-await sleep(200);
-await comp('.run-picker', 'composer-client-picker');
-await page.keyboard.press('Escape');
-await sleep(200);
-await page.click('.wf-tray [aria-label="Close workflows"]');
-await sleep(200);
-await page.click('[aria-label="Workflows"]');
-await sleep(300);
-await page.click('[aria-label="Expand the library"]');
-await sleep(500);
-await screen('12-workflow-library');
-await comp('.wf-preview', 'library-preview');
-await page.evaluate(() => [...document.querySelectorAll('.wf-action')].find((b) => /Build a new/.test(b.textContent)).click());
-await sleep(300);
-await comp('.wf-tray', 'tray-workflows-build');
-await page.evaluate(() => [...document.querySelectorAll('.wf-action')].find((b) => /sign/.test(b.textContent)).click());
-await sleep(200);
-await page.click('.send');
-await sleep(1600);
-await page.mouse.move(W - 2, 2);
-await screen('13-workflow-draft');
-await comp('.draft-card', 'chat-draft-workflow');
-
-await open('scope=c1');
-await screen('04-client-thread');
-await comp('.client-shell', 'client-panel');
-await comp('.composer', 'composer-client');
-await comp('.ctx-pill', 'composer-context-pill-client');
-await comp('.answer', 'chat-reply');
-
-// The context switcher lives at the firm level; inside a client the pill is a label.
+await comp('.row-menu', 'Left panel/Client row – Menu');
 await open('');
 await page.click('.ctx-btn');
 await sleep(400);
-await screen('05-context-picker');
-await comp('.ctx-picker', 'composer-context-picker');
-await page.keyboard.press('Escape');
-
-await open('scope=c1');
-await page.type('textarea', 'Can we file an extension?');
-await page.keyboard.press('Enter');
-await sleep(1600);
-await screen('06-workflow-offer');
-await comp('.offer', 'chat-buttons');
-
+await screen('2 Find a client/2.2 Choose who the chat is about');
+await comp('.ctx-picker', 'Chat box/Client selector menu');
 await open('');
-await page.click('.threads-list .thread-row.wf');
-await sleep(600);
-await screen('07-workflow-checklist');
-await comp('.brief', 'chat-client-checklist');
-await comp('.ctx-pill', 'composer-context-pill-workflow');
-// Drill from the workflow into a client: the panel carries the way back.
-await page.evaluate(() => [...document.querySelectorAll('.brief button, .brief [role=button]')].find((e) => /Meera/.test(e.textContent)).click());
-await sleep(900);
-await comp('.cp-back-row', 'client-panel-back-link');
-
-await open('scenario=large');
-await screen('08-200-clients');
-await page.click('.today-more');
-await sleep(1600);
-await screen('09-200-clients-grouped-briefing');
-await comp('.brief', 'chat-briefing-list');
-await comp('.brief:has(.count)', 'chat-briefing-groups');
-
-await open('scenario=two');
-await screen('10-two-clients');
-
-await open('scenario=calm');
-await screen('11-calm-week');
-await comp('.ctx-pill', 'composer-context-pill-firm');
-
-// ---- States reached by clicking, not by a link ----
-// First visit to a client from the home: the tip that explains the chat is now about them.
-await open('');
-await page.evaluate(() => [...document.querySelectorAll('.today-row')].find((r) => /Meera/.test(r.textContent)).click());
-await sleep(900);
-await screen('14-client-first-visit-tip');
-await comp('.tooltip', 'composer-scope-tip');
-
-// A client row's ⋮ menu.
-await open('');
-await page.evaluate(() => { const r = [...document.querySelectorAll('.row')].find((x) => /Cho, Daniel/.test(x.textContent)); r.querySelector('.row-more').click(); });
-await sleep(300);
-await comp('.row-menu', 'rail-client-row-menu');
-
-// @ typed in the chat box: the picker filters as you type.
-await page.keyboard.press('Escape');
 await page.click('textarea');
 await page.type('textarea', "what's due for @as");
 await sleep(400);
-await screen('15-inline-mention');
-await comp('.ctx-picker', 'composer-mention-picker');
+await screen('2 Find a client/2.3 Choose a client by typing @');
+await comp('.ctx-picker', 'Chat box/Client selector menu – Typing @');
 
-// Plain requests at the firm level: "which client?", "already running", and what's running.
+// ---- 3 Work in a client ----
 await open('');
-await page.type('textarea', 'can we file an extension?');
-await page.keyboard.press('Enter');
-await sleep(1600);
-await page.evaluate(() => { document.querySelectorAll('[data-x]').forEach((e) => e.removeAttribute('data-x')); [...document.querySelectorAll('.answer')].pop().querySelector('.brief').setAttribute('data-x', ''); });
-await comp('[data-x]', 'chat-which-client');
-await page.type('textarea', 'remind clients about their tax payment');
-await page.keyboard.press('Enter');
-await sleep(1600);
-await screen('16-already-running');
-await page.evaluate(() => { document.querySelectorAll('[data-x]').forEach((e) => e.removeAttribute('data-x')); [...document.querySelectorAll('.answer')].pop().querySelector('.offer').setAttribute('data-x', ''); });
-await comp('[data-x]', 'chat-already-running-buttons');
+await clickText('.today-row', 'Meera');
+await sleep(900);
+await screen('3 Work in a client/3.1 Client – First visit');
+await comp('.tooltip', 'Chat box/Tip – Chat is now about a client');
+await open('scope=c1');
+await screen('3 Work in a client/3.2 Client – Thread');
+await comp('.client-shell', 'Client file/Client file');
+await comp('.composer', 'Chat box/Chat box – In a client');
+await comp('.ctx-pill', 'Chat box/Client selector – One client');
+await comp('.answer', 'Chat messages/Reply');
+await send('Can we file an extension?');
+await screen('3 Work in a client/3.3 Client – Asking offers a workflow');
+await comp('.offer', 'Chat messages/Buttons – Start or just answer');
+
+// ---- 4 Run a workflow ----
 await open('');
-await page.click('.today-link');
-await sleep(1400);
-await screen('17-whats-running');
-await comp('.brief', 'chat-running-list');
+await page.click('[aria-label="Workflows"]');
+await sleep(400);
+await screen('4 Run a workflow/4.1 Workflows – Open');
+await comp('.wf-tray', 'Workflows panel/Open');
+await page.click('[aria-label="Expand the library"]');
+await sleep(500);
+await screen('4 Run a workflow/4.2 Workflows – Library');
+await comp('.wf-preview', 'Workflows panel/Library preview');
+await page.click('[aria-label="Collapse library"]');
+await sleep(300);
+await clickText('.wf-row', 'File an extension');
+await sleep(300);
+await screen('4 Run a workflow/4.3 Workflows – Picked, choose clients');
+await comp('.wf-tray', 'Workflows panel/Workflow picked');
+await page.click('.ctx-pill .ctx-btn');
+await sleep(300);
+await clickText('.run-picker .ctx-item', 'Needs you');
+await sleep(200);
+await screen('4 Run a workflow/4.4 Workflows – Choosing clients');
+await comp('.run-picker', 'Chat box/Choose clients menu');
+await open('');
+await send('can we file an extension?');
+await mark(`() => [...document.querySelectorAll('.answer')].pop().querySelector('.brief')`);
+await comp('[data-x]', 'Chat messages/Which client');
+await send('remind clients about their tax payment');
+await screen('4 Run a workflow/4.5 Workflows – Already running');
+await mark(`() => [...document.querySelectorAll('.answer')].pop().querySelector('.offer')`);
+await comp('[data-x]', 'Chat messages/Buttons – Already running');
+
+// ---- 5 Build a workflow ----
+await open('');
+await page.click('[aria-label="Workflows"]');
+await sleep(300);
+await clickText('.wf-action', 'Build a new');
+await sleep(300);
+await screen('5 Build a workflow/5.1 Build – Describe the work');
+await comp('.wf-tray', 'Workflows panel/Build a new workflow');
+await clickText('.wf-action', 'sign');
+await sleep(200);
+await page.click('.send');
+await sleep(1600);
+await screen('5 Build a workflow/5.2 Build – Draft to review');
+await comp('.draft-card', 'Chat messages/Draft workflow');
+
+// ---- 6 Follow a workflow ----
+await open('');
+await page.click('.threads-list .thread-row.wf');
+await sleep(600);
+await screen('6 Follow a workflow/6.1 Workflow – Checklist');
+await comp('.brief', 'Chat messages/Workflow checklist');
+await comp('.ctx-pill', 'Chat box/Client selector – In a workflow');
+await clickText('.brief button', 'Meera');
+await sleep(900);
+await screen('6 Follow a workflow/6.2 Workflow – Into a client and back');
+await comp('.cp-back-row', 'Client file/Back to workflow link');
 
 await browser.close();
 console.log('done');

@@ -80,8 +80,9 @@ user-made client groups) and the full reasoning behind each are in
   clients plus a calm week.
 - `CONTEXT.md` — standalone context: the brief, the live product's pain
   points, every improvement and tradeoff, a demo script and the code map.
-- `figma-export/` — editable SVGs of the main screens and components for
-  Figma, with a README listing each file.
+- `figma-export/` — editable SVGs for Figma: screens in one folder per user
+  flow (1 Home … 6 Follow a workflow), components by part of the screen,
+  named in the words used on screen.
 - `tools/export-svg.mjs` — regenerates `figma-export/` from the running
   prototype (Chrome + puppeteer-core); `tools/figma-clean.js` removes
   layout-only groups and names every layer.

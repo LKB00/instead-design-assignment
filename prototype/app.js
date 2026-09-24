@@ -287,7 +287,7 @@ class App extends Component {
       // The workflow tray above the composer: 'browse' | 'build' | null. wfPick is a staged workflow,
       // wfTargets who it will run for, wfFull the expanded library.
       wfTray: null, wfTab: 'all', wfFull: false, wfQuery: '', wfPreview: null,
-      wfPick: null, wfTargets: [], wfChoosing: false, wfClientQ: '', wfFile: null, wfExclude: [], // wfExclude: clients a running copy already covers
+      wfPick: null, wfTargets: [], wfGroups: [], wfChoosing: false, wfClientQ: '', wfFile: null, wfExclude: [], // wfExclude: clients a running copy already covers
       drafts: {},
       gk: 'general', // the open firm-level thread; New thread starts another
       draft: '',
@@ -500,7 +500,7 @@ class App extends Component {
   }
 
   closeWf() {
-    this.setState({ wfTray: null, wfFull: false, wfPick: null, wfTargets: [], wfChoosing: false, wfFile: null, wfExclude: [] });
+    this.setState({ wfTray: null, wfFull: false, wfPick: null, wfTargets: [], wfGroups: [], wfChoosing: false, wfFile: null, wfExclude: [] });
   }
 
   // Picking a workflow doesn't run it: it sits in the tray with who it's for, ready to send.
@@ -508,7 +508,7 @@ class App extends Component {
     const t = TEMPLATES.find((x) => x.id === tid);
     const sc = this.state.scope && this.state.scope.type === 'client';
     const targets = !sc && t.scope === 'across' && t.targets ? t.targets(clients).map((c) => c.id) : [];
-    this.setState({ wfTray: 'browse', wfPick: tid, wfTargets: targets, wfFull: false, wfChoosing: false, wfExclude: [], draft: '' });
+    this.setState({ wfTray: 'browse', wfPick: tid, wfTargets: targets, wfGroups: [], wfFull: false, wfChoosing: false, wfExclude: [], draft: '' });
     if (this.inputEl) this.inputEl.focus();
   }
 
@@ -834,8 +834,14 @@ class App extends Component {
         ${!q && html`<span class="label">Groups</span>
           ${groups.map((g) => {
             const ids = g.cs.map((c) => c.id);
-            const on = ids.every((id) => sel.has(id));
-            return html`<button class="menu-item ctx-item" role="option" aria-selected=${on} onClick=${() => toggle(ids)}>
+            // Ticked only when you picked the group (and it's still whole), not because another
+            // group happened to cover its clients.
+            const on = st.wfGroups.includes(g.name) && ids.every((id) => sel.has(id));
+            const pickGroup = () => {
+              if (on) { this.setState({ wfGroups: st.wfGroups.filter((n) => n !== g.name), wfTargets: st.wfTargets.filter((id) => !ids.includes(id)) }); return; }
+              this.setState({ wfGroups: [...st.wfGroups, g.name], wfTargets: [...new Set([...st.wfTargets, ...ids])] });
+            };
+            return html`<button class="menu-item ctx-item" role="option" aria-selected=${on} onClick=${pickGroup}>
               <span class="menu-icon">${g.icon ? html`<${Icon} name=${g.icon} />` : html`<span class="dot"></span>`}</span>
               <span class="row-text"><span class="row-name">${g.name}</span><span class="row-note">${g.cs.length} client${g.cs.length === 1 ? '' : 's'}</span></span>
               ${check(on)}
@@ -1300,7 +1306,7 @@ class App extends Component {
                   <span class="ctx-name">${audience.label}</span>
                   <${Icon} name="chevronDown" size=${12} />
                 </button>
-                ${audience.n > 0 && html`<button type="button" class="chip-x" aria-label="Clear clients" onClick=${() => this.setState({ wfTargets: [] })}><${Icon} name="x" size=${12} stroke=${2} /></button>`}
+                ${audience.n > 0 && html`<button type="button" class="chip-x" aria-label="Clear clients" onClick=${() => this.setState({ wfTargets: [], wfGroups: [] })}><${Icon} name="x" size=${12} stroke=${2} /></button>`}
               </div>`
             : html`<div class=${'ctx-pill' + (scoped ? ' scoped' : '') + (st.ctxOpen ? ' open' : '')}>
               ${sc

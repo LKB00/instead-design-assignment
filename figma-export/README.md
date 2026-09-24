@@ -1,68 +1,57 @@
 # Figma export (SVG)
 
-Editable SVGs of the prototype's major screens and components, rendered at
-1440×900 from `prototype/` with real `<text>` (not outlined), so text stays
-editable after import. Fonts: Lato and Libre Baskerville (both built into
-Figma).
+Editable SVGs of the prototype, rendered at 1440×900 with real text (not
+outlines), so text stays editable in Figma. Fonts: Lato and Libre
+Baskerville (install Libre Baskerville if Figma swaps the headings).
 
-**Import:** drag the `.svg` files onto a Figma canvas (or File → Import).
-Each file becomes a frame; text layers stay text, icons are vectors.
+**Import:** drag the files onto a Figma canvas. Each file becomes a frame
+named after the file.
 
-## Screens (`screens/`)
+## Screens — by user flow
 
-| File | State |
+Each folder is one thing a pro does; files are numbered in the order they
+happen.
+
+| Flow | Screens |
 |---|---|
-| 01-firm-home | Firm home: headline, the 3 clients who need you, composer |
-| 02-filter-menu | Rail filter menu open (Status / Entity, with counts) |
-| 03-workflow-tray | Workflow library in the composer tray |
-| 04-client-thread | Client panel + thread (Meera Iyer) |
-| 05-context-picker | Context pill picker open at the firm level |
-| 06-workflow-offer | Plain-language request → offer to start a workflow |
-| 07-workflow-checklist | Cross-client workflow as a chat checklist |
-| 08-200-clients | 200-client book: tray with top 3 + Show 11 more, A–Z rail |
-| 09-200-clients-grouped-briefing | "Show 11 more" → briefing grouped by what's blocking clients |
-| 10-two-clients | 2-client book |
-| 11-calm-week | Nobody needs you |
-| 12-workflow-library | Tray expanded into the full library with a preview |
-| 13-workflow-draft | A workflow drafted in chat, editable before saving |
-| 14-client-first-visit-tip | First time a client is opened from the home: the tip above the chat box |
-| 15-inline-mention | `@` typed in the chat box, the picker filtering as you type |
-| 16-already-running | Asking for work that's already running: Open it, or start one for other clients |
-| 17-whats-running | "4 workflows running →": every running workflow, in chat |
+| **1 Home** | 1.1 Home – 3 clients need you · 1.2 Home – Running workflows · 1.3 Home – Calm week · 1.4 Home – 2 clients · 1.5 Home – 200 clients · 1.6 Home – 200 clients, all who need you |
+| **2 Find a client** | 2.1 Filter the client list · 2.2 Choose who the chat is about · 2.3 Choose a client by typing @ |
+| **3 Work in a client** | 3.1 Client – First visit · 3.2 Client – Thread · 3.3 Client – Asking offers a workflow |
+| **4 Run a workflow** | 4.1 Workflows – Open · 4.2 Workflows – Library · 4.3 Workflows – Picked, choose clients · 4.4 Workflows – Choosing clients · 4.5 Workflows – Already running |
+| **5 Build a workflow** | 5.1 Build – Describe the work · 5.2 Build – Draft to review |
+| **6 Follow a workflow** | 6.1 Workflow – Checklist · 6.2 Workflow – Into a client and back |
 
-## Components (`components/`)
+## Components — by part of the screen
 
-File names are `area-part-variant`, matching the layer names inside.
-
-| Area | Files |
+| Folder | What's in it |
 |---|---|
-| Rail | `rail`, `rail-toolbar`, `rail-client-row-default`, `-needs-you`, `-with-workflow`, `-hover`, `rail-filter-menu`, `rail-filtered-needs-you`, `rail-client-row-menu`, `rail-user-card` |
-| Tray (above the composer) | `tray-needs-you`, `tray-client-row`, `tray-workflows-browse`, `-picked`, `-build` |
-| Composer | `composer-firm`, `composer-client`, `composer-context-pill-firm`, `-client`, `-workflow`, `composer-context-picker`, `composer-client-picker`, `composer-mention-picker`, `composer-scope-tip` |
-| Chat | `chat-reply`, `chat-buttons`, `chat-client-checklist`, `chat-briefing-list`, `chat-briefing-groups`, `chat-draft-workflow`, `chat-which-client`, `chat-already-running-buttons`, `chat-running-list` |
-| Library | `library-preview` |
-| Client panel | `client-panel`, `client-panel-back-link` |
+| **Left panel** | The whole panel, Top buttons, Client row (Default, Needs you, In a workflow, Hover, Menu), Filter menu, Client list filtered to Needs you, User card |
+| **Needs you list** | The list above the chat box on the home, and one Row |
+| **Workflows panel** | Open, Workflow picked, Build a new workflow, Library preview |
+| **Chat box** | Chat box (Home, In a client), Client selector (All clients, One client, In a workflow), Client selector menu (and while typing @), Choose clients menu, Tip – Chat is now about a client |
+| **Chat messages** | Reply, Buttons (Start or just answer, Already running), Which client, Who needs you (Top 3, Grouped), Running workflows, Workflow checklist, Draft workflow |
+| **Client file** | The client's panel, and the Back to workflow link |
 
-## Layers
+## Words used
 
-Every group means something and has a name; layout-only wrappers are
-flattened away. One naming scheme throughout:
+The same words as on screen, nothing technical:
 
-- **Area / Part** for the big pieces: `Rail / Clients`, `Rail / Threads`,
-  `Tray / Header`, `Tray / Client row`, `Chat / Reply`, `Library / Preview`,
-  `Client panel / Header`.
-- **A plain noun** for pieces used in many places: `Client row`,
-  `Thread row`, `Form badge`, `Needs-you dot`, `Tab`, `Icon button`,
-  `Primary button`, `Workflow chip`.
-- **Icon / name** for icons (`Icon / workflow`, `Icon / x`). Icons come in three
-  sizes, 12, 14 and 16, and each keeps an invisible `Bounds` square so Figma
-  measures the icon's box, not just its lines.
-- **Fill** and **Border** for a group's own background shapes.
-- Text layers are named by their text.
+- **Left panel** — Workflows button, the client list, Threads.
+- **Needs you list** — the box above the chat box on the home.
+- **Workflows panel** — the same box when the Workflows button is on.
+- **Chat box** — where you type. **Client selector** — the button in it
+  that says who the chat is about ("All clients", "Meera Iyer", "5 clients").
+- **Client file** — the panel that opens for one client.
 
-Masks are kept only where something is really clipped (a scrolling list,
-truncated text) and are named `Clip`. Hover-only controls that aren't
-showing are left out. The rules live in `tools/figma-clean.js`.
+## Layers inside each file
+
+Every group has a name and means something; layout-only wrappers are
+removed. Big pieces are named "Area / Part" (Left panel / Clients, Chat /
+Reply); pieces used in many places have a plain name (Client row, Form
+badge, Needs-you dot, Tab, Primary button); icons are "Icon / name" at
+12, 14 or 16 with an invisible Bounds square; a group's own background is
+Fill or Border; text layers are named by their text. The rules are in
+`tools/figma-clean.js`.
 
 ## Regenerate
 
@@ -71,5 +60,3 @@ With the prototype running on :5173 and Chrome installed:
 ```bash
 cd tools && npm i puppeteer-core@23 && node export-svg.mjs ../figma-export
 ```
-
-(`export-svg.mjs` loads `figma-clean.js` from the same folder.)

@@ -1,7 +1,7 @@
 // Runs in the page after dom-to-svg. Turns its output into what a designer expects in Figma:
 // only meaningful groups, each with a readable name, and no bookkeeping.
 //
-// Naming: "Area / Part" for the big pieces (Rail / Clients, Tray / Header, Chat / Reply),
+// Naming: "Area / Part" for the big pieces (Left panel / Clients, Chat / Reply, Library / Preview),
 // a plain noun for pieces that appear in many places (Client row, Tab, Icon button),
 // and "Icon / name" for icons. Text layers keep their text as their name.
 window.figmaClean = function figmaClean(doc) {
@@ -9,36 +9,35 @@ window.figmaClean = function figmaClean(doc) {
   // Most specific first. A class that isn't listed is a layout wrapper and gets flattened.
   const NAMES = [
     // Rail
-    ['rail', 'Rail'], ['rail-logo', 'Rail / Logo'], ['toolbar', 'Rail / Toolbar'], ['wf-nav', 'Rail / Workflows button'],
-    ['clients-pane', 'Rail / Clients'], ['threads-pane', 'Rail / Threads'], ['user-card', 'Rail / User card'],
-    ['filter-bar', 'Rail / Active filter'], ['add-row', 'Rail / Add client'], ['empty-threads', 'Rail / Empty threads'],
+    ['rail', 'Left panel'], ['rail-logo', 'Left panel / Logo'], ['toolbar', 'Left panel / Toolbar'], ['wf-nav', 'Left panel / Workflows button'],
+    ['clients-pane', 'Left panel / Clients'], ['threads-pane', 'Left panel / Threads'], ['user-card', 'Left panel / User card'],
+    ['filter-bar', 'Left panel / Active filter'], ['add-row', 'Left panel / Add client'], ['empty-threads', 'Left panel / Empty threads'],
     ['row', 'Client row'], ['thread-row', 'Thread row'], ['avatar', 'Avatar'], ['wf-count', 'Workflow progress'],
     ['pill-xxs', 'Form badge'], ['dot', 'Needs-you dot'], ['initials', 'Initials'], ['round-btn', 'Round button'],
-    ['filter-menu', 'Filter menu'], ['row-menu', 'Client row menu'], ['run-picker', 'Client picker'], ['ctx-picker', 'Context picker'], ['menu-item', 'Menu item'], ['menu-foot', 'Menu tip'],
+    ['filter-menu', 'Filter menu'], ['row-menu', 'Client row menu'], ['run-picker', 'Choose clients menu'], ['ctx-picker', 'Client selector menu'], ['menu-item', 'Menu item'], ['menu-foot', 'Menu tip'],
     ['filter-chip', 'Filter chip'], ['search-field', 'Search field'], ['section-head', 'Section header'],
     // Client panel
-    ['client-shell', 'Client panel'], ['icon-col', 'Client panel / Nav'], ['client-panel', 'Client panel / Content'],
-    ['cp-back-row', 'Client panel / Back link'], ['cp-header', 'Client panel / Header'], ['cp-actions', 'Client panel / Actions'],
-    ['cp-docs', 'Client panel / Documents'], ['cp-threads', 'Client panel / Threads'], ['doc-row', 'Folder row'], ['nav-pill', 'Pill button'],
+    ['client-shell', 'Client file'], ['icon-col', 'Client file / Nav'], ['client-panel', 'Client file / Content'],
+    ['cp-back-row', 'Client file / Back link'], ['cp-header', 'Client file / Header'], ['cp-actions', 'Client file / Actions'],
+    ['cp-docs', 'Client file / Documents'], ['cp-threads', 'Client file / Threads'], ['doc-row', 'Folder row'], ['nav-pill', 'Pill button'],
     // Chat
     ['hero-wrap', 'Headline'], ['chat-scroll', 'Chat'], ['user-turn', 'Chat / Your message'], ['answer', 'Chat / Reply'],
     ['msg-actions', 'Chat / Reply actions'], ['status-line', 'Chat / Status'], ['draft-card', 'Chat / Draft workflow'],
     ['offer', 'Chat / Buttons'], ['offer-go', 'Primary button'], ['offer-alt', 'Secondary button'],
     ['cl-row', 'Chat / Client line'], ['cl-summary', 'Chat / Done summary'],
     ['pg-row', (g) => (has(g, 'count') ? 'Chat / Group row' : 'Chat / Step')], ['brief', 'Chat / List'], ['brief-open', 'Open link'],
-    // Tray above the composer
-    ['wf-tray', 'Tray'], ['today-tray', 'Tray'],
-    ['today', (g) => (/\bwf\b/.test(g.getAttribute('class')) ? 'Tray / Workflows' : 'Tray / Needs you')],
-    ['today-head', 'Tray / Header'], ['today-rows', 'Tray / Rows'], ['wf-row', 'Tray / Workflow row'], ['today-row', 'Tray / Client row'],
-    ['today-link', 'Tray / Link'], ['more-row', 'Show more'], ['today-open', 'Open link'], ['wf-foot', 'Tray / Actions'],
-    ['wf-action', 'Action button'], ['wf-tabs', 'Tabs'], ['wf-tab', 'Tab'], ['wf-stage', 'Tray / Picked workflow'],
+    // The box above the chat box: the Needs you list, or the Workflows panel
+    ['wf-tray', 'Workflows panel'], ['today-tray', 'Needs you list'],
+    ['today-head', 'Header'], ['today-rows', 'Rows'], ['wf-row', 'Workflow row'], ['today-row', 'Needs you row'],
+    ['today-link', 'Running workflows link'], ['more-row', 'Show more'], ['today-open', 'Open link'], ['wf-foot', 'Build and upload buttons'],
+    ['wf-action', 'Button'], ['wf-tabs', 'Tabs'], ['wf-tab', 'Tab'], ['wf-stage', 'Picked workflow'],
     ['wf-chip', 'Workflow chip'],
     // Library
     ['wf-lib', 'Library'], ['wf-lib-list', 'Library / List'], ['wf-lib-group', 'Library / Category'], ['wf-lib-row', 'Library / Row'],
     ['wf-preview', 'Library / Preview'], ['wf-preview-foot', 'Library / Preview footer'], ['wf-steps', 'Steps'], ['wf-step', 'Step'], ['step-n', 'Step number'],
     // Composer
-    ['composer', 'Composer'], ['placeholder', 'Placeholder'], ['typed', 'Typed text'], ['composer-controls', 'Composer / Controls'],
-    ['controls-group', 'Control group'], ['ctx-pill', 'Context pill'], ['circ', 'Icon button'], ['send', 'Send button'],
+    ['composer', 'Chat box'], ['placeholder', 'Placeholder'], ['typed', 'Typed text'], ['composer-controls', 'Chat box / Controls'],
+    ['controls-group', 'Control group'], ['ctx-pill', 'Client selector'], ['circ', 'Icon button'], ['send', 'Send button'],
     ['chip-x', 'Remove'], ['tooltip', 'Tooltip'],
   ];
   const nameOf = (g) => {

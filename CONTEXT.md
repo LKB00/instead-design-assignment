@@ -342,3 +342,10 @@ plugin, which maps flexbox to auto layout):
     "1h"; a question inside a workflow gets what's still open; no duplicate
     actions when a library search finds nothing; buttons don't wrap at
     1024px.
+22. Figma export reorganised for people, not code: screens in one folder
+    per user flow, numbered in order (1 Home … 6 Follow a workflow);
+    components in one folder per part of the screen; file and layer names
+    use the words on screen (Left panel, Needs you list, Workflows panel,
+    Chat box, Client selector, Client file) instead of rail, tray, pill or
+    composer. Also: a client group in the picker is ticked only when you
+    picked it, not because another group covered its clients.
