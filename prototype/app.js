@@ -598,7 +598,7 @@ class App extends Component {
     if (t && (here || t.scope === 'across')) return {
       status: 'Reading your request',
       msg: { from: 'assistant', blocks: [
-        { p: here ? `I can run this as a workflow for ${fullName(here)}, so each step is tracked and you’ll see it in their panel.` : 'I can run this as a workflow across your clients, so each one’s progress is tracked in one place.' },
+        { p: here ? `I can run this as a workflow for ${fullName(here)}, so each step is tracked and you’ll see it in their file.` : 'I can run this as a workflow across your clients, so each one’s progress is tracked in one place.' },
         { offer: { tid: t.id, clientId: here && here.id } },
       ] },
     };

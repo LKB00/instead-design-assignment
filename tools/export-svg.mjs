@@ -150,7 +150,12 @@ await comp('.client-shell', 'Client file/Client file');
 await comp('.composer', 'Chat box/Chat box – In a client');
 await comp('.ctx-pill', 'Chat box/Client selector – One client');
 await comp('.answer', 'Chat messages/Reply');
-await send('Can we file an extension?');
+// Asking in your own words, in a client not shown elsewhere: Instead offers a workflow.
+await open('');
+await clickText('.row', 'Kapoor, Sana');
+await sleep(900);
+await page.evaluate(() => { const b = document.querySelector('.tooltip-btn'); if (b) b.click(); });
+await send('Can we find ways to save tax this year?');
 await screen('5 Start a workflow/5.1 Ask in plain words, Instead offers one');
 await comp('.offer', 'Chat messages/Buttons – Start or just answer');
 
@@ -177,10 +182,10 @@ await sleep(200);
 await screen('5 Start a workflow/5.5 Choosing clients');
 await comp('.run-picker', 'Chat box/Choose clients menu');
 await open('');
-await send('can we file an extension?');
+await send('Can we file an extension?');
 await mark(`() => [...document.querySelectorAll('.answer')].pop().querySelector('.brief')`);
 await comp('[data-x]', 'Chat messages/Which client');
-await send('remind clients about their tax payment');
+await send('Remind clients about their tax payment');
 await screen('5 Start a workflow/5.6 Already running, no duplicate');
 await mark(`() => [...document.querySelectorAll('.answer')].pop().querySelector('.offer')`);
 await comp('[data-x]', 'Chat messages/Buttons – Already running');
