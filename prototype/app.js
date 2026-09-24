@@ -67,10 +67,12 @@ const GEN_ISSUES = [
 ];
 function generatedBook(n) {
   const out = [];
+  let firmN = 0; // businesses are numbered on their own, so no two get the same name
   for (let i = 0; i < n; i++) {
     const isFirm = i % 9 === 4;
     const entity = isFirm ? ['1120S', '1065', '1120', '1041'][i % 4] : '1040';
-    const c = isFirm ? { id: `g${i}`, name: `${FIRMS[i % FIRMS.length]} ${['', 'II', 'East', 'West'][Math.floor(i / FIRMS.length) % 4]}`.trim(), entity }
+    const k = isFirm ? firmN++ : 0;
+    const c = isFirm ? { id: `g${i}`, name: `${FIRMS[k % FIRMS.length]} ${['', 'East', 'West', 'North'][Math.floor(k / FIRMS.length) % 4]}`.trim(), entity }
       : { id: `g${i}`, first: FIRSTS[i % FIRSTS.length], last: LASTS[(i * 7) % LASTS.length], entity };
     const issue = i % 17 === 3 ? GEN_ISSUES[i % GEN_ISSUES.length] : null;
     out.push(issue ? { ...c, status: 'needs_attention', ...issue } : { ...c, status: i % 5 === 0 ? 'in_progress' : 'on_track' });
