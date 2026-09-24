@@ -350,4 +350,6 @@ plugin, which maps flexbox to auto layout):
     composer. Also: a client group in the picker is ticked only when you
     picked it, not because another group covered its clients.
 23. Screens regrouped by the problem they solve, matching the brief's
-    questions (1 See who needs you … 7 From 2 to 200 clients).
+    questions (1 See who needs you … 7 From 2 to 200 clients). 3.2 shows a
+    different client (Ashish, opened from the left panel, his own workflow
+    in his file) so it doesn't repeat 3.1.

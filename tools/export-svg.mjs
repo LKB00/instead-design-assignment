@@ -137,8 +137,15 @@ await clickText('.today-row', 'Meera');
 await sleep(900);
 await screen('1 See who needs you/1.2 Open a client from the list');
 await comp('.tooltip', 'Chat box/Tip – Chat is now about a client');
+// A different client, opened from the left panel: their file holds their own workflows.
+await open('');
+await clickText('.row', 'Khoshya');
+await sleep(900);
+await page.evaluate(() => { const b = document.querySelector('.tooltip-btn'); if (b) b.click(); }); // tip already shown in 1.2
+await clickText('.client-panel .thread-row', 'Review a tax return');
+await sleep(500);
+await screen('3 Move between firm and client/3.2 A client’s file holds their own workflows');
 await open('scope=c1');
-await screen('3 Move between firm and client/3.2 Inside a client’s thread');
 await comp('.client-shell', 'Client file/Client file');
 await comp('.composer', 'Chat box/Chat box – In a client');
 await comp('.ctx-pill', 'Chat box/Client selector – One client');

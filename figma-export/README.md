@@ -16,7 +16,7 @@ order you'd show them.
 |---|---|---|
 | **1 See who needs you** | 1.1 Home – 3 clients need you · 1.2 Open a client from the list · 1.3 Calm week – nothing needs you | Q1 |
 | **2 See work in progress** | 2.1 All running workflows · 2.2 One workflow’s checklist | Ongoing workflows at a glance |
-| **3 Move between firm and client** | 3.1 From a workflow into a client and back · 3.2 Inside a client’s thread | Q2 |
+| **3 Move between firm and client** | 3.1 From a workflow into a client and back · 3.2 A client’s file holds their own workflows | Q2 |
 | **4 Choose who the chat is about** | 4.1 Choose from the list · 4.2 Type @ in the chat box | Q3 |
 | **5 Start a workflow** | 5.1 Ask in plain words, Instead offers one · 5.2 Open the Workflows panel · 5.3 Browse the full library · 5.4 Pick one, then choose clients · 5.5 Choosing clients · 5.6 Already running, no duplicate | Q3 |
 | **6 Build your own workflow** | 6.1 Describe the work · 6.2 Review the draft | Beyond the brief |
